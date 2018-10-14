@@ -4,7 +4,7 @@ import Data.Foldable     (for_)
 import Test.Hspec        (Spec, describe, it, shouldBe)
 import Test.Hspec.Runner (configFastFail, defaultConfig, hspecWith)
 
-import Lex (Token (..), lex)
+import Lexer (Token (..), lex)
 
 main :: IO ()
 main = hspecWith defaultConfig {configFastFail = True} specs
@@ -13,7 +13,7 @@ specs :: Spec
 specs = (describe "stage 1: valid"   $ for_ stage1ValidCases test) >>
         (describe "stage 1: invalid" $ for_ stage1InvalidCases test)
   where
-    test Case {..} = it description $ Lex.lex input `shouldBe` expected
+    test Case {..} = it description $ Lexer.lex input `shouldBe` expected
 
 data Case = Case { description :: String
                  , input       :: String
