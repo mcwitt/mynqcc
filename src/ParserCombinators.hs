@@ -21,28 +21,29 @@ newtype Parser a = P { parse :: String -> [(a, String)]}
 
 -- | Simplest parser. Just read a character from the input stream.
 item :: Parser Char
-item = P $ \st -> case st of []   -> []
-                             x:xs -> [(x, xs)]
+item = P $ \st ->
+  case st of [] -> []
+             x:xs -> [(x, xs)]
 
--- | Peek ahead one character without removing it from the input stream
+-- | Peek ahead one character without removing it from the input stream.
 peek :: Parser Char
-peek = P $ \st -> case st of []   -> []
+peek = P $ \st -> case st of [] -> []
                              x:xs -> [(x, x:xs)]
 
 instance Functor Parser where
   -- fmap :: (a -> b) -> f a -> f b
-  fmap f p = P $ \st -> case parse p st of
-                          []        -> []
-                          [(x, xs)] -> [(f x, xs)]
+  fmap f p = P $ \st ->
+    case parse p st of [] -> []
+                       [(x, xs)] -> [(f x, xs)]
 
 instance Applicative Parser where
   -- pure :: a -> Parser a
   pure x = P $ \st -> [(x, st)]
 
   -- (<*>) :: Parser (a -> b) -> Parser a -> Parser b
-  pf <*> px = P $ \st -> case parse pf st of
-                           [] -> []
-                           [(f, xs)] -> parse (fmap f px) xs
+  pf <*> px = P $ \st ->
+    case parse pf st of [] -> []
+                        [(f, xs)] -> parse (fmap f px) xs
 
 
 -- | Example using applicative style.
@@ -57,9 +58,9 @@ instance Monad Parser where
   return = pure
 
   -- (>>=) :: Parser a -> (a -> Parser b) -> Parser b
-  p >>= f = P $ \st -> case parse p st of
-                         []        -> []
-                         [(x, xs)] -> parse (f x) xs
+  p >>= f = P $ \st ->
+    case parse p st of [] -> []
+                       [(x, xs)] -> parse (f x) xs
 
 
 -- | Example using monadic style.
@@ -83,9 +84,9 @@ instance Alternative Parser where
   empty = P $ \st -> []
 
   -- (<|>) :: Parser a -> Parser a -> Parser a
-  p <|> q = P $ \st -> case parse p st of
-                         []  -> parse q st
-                         res -> res
+  p <|> q = P $ \st ->
+    case parse p st of []  -> parse q st
+                       res -> res
 
 
 satisfy :: (Char -> Bool) -> Parser Char

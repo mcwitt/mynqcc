@@ -31,12 +31,11 @@ data Token = OpenBrace
            | Integer Int
            deriving (Show, Eq)
 
-openBrace  = (token . char) '{' >> return OpenBrace
-closeBrace = (token . char) '}' >> return CloseBrace
-openParen  = (token . char) '(' >> return OpenParen
-closeParen = (token . char) ')' >> return CloseParen
-semicolon  = (token . char) ';' >> return Semicolon
-
+openBrace  = token (char '{') >> return OpenBrace
+closeBrace = token (char '}') >> return CloseBrace
+openParen  = token (char '(') >> return OpenParen
+closeParen = token (char ')') >> return CloseParen
+semicolon  = token (char ';') >> return Semicolon
 
 keyword :: Parser a -> Parser a
 keyword p = do val <- p
@@ -45,14 +44,14 @@ keyword p = do val <- p
                  then empty
                  else return val
 
-kwInt      = (token . keyword . string) "int"    >> return KWInt
-kwReturn   = (token . keyword . string) "return" >> return KWReturn
+kwInt    = (token . keyword) (string "int")    >> return KWInt
+kwReturn = (token . keyword) (string "return") >> return KWReturn
 
 identifier = do s <- token ident
                 return (Identifier s)
 
-integer = do i <- token $ read <$> some number
-             return (Integer i)
+integer = do s <- token (some number)
+             return $ Integer (read s)
 
 lexer :: Parser [Token]
 lexer = many $  openBrace
