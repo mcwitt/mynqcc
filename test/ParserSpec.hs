@@ -9,13 +9,14 @@ import Test.Hspec        ( Spec
                          , errorCall
                          )
 
-import Token  ( Token (..) )
-import Parser ( parse_
-              , Program (Program)
-              , Function (Function)
-              , Statement (Return)
-              , Expression (Constant)
-              )
+import Token  (Token (..))
+import Parser (parse_)
+
+import AST ( Program (Program)
+           , Function (Function)
+           , Statement (Return)
+           , Expression (Constant)
+           )
 
 spec :: Spec
 spec = do

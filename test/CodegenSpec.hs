@@ -7,18 +7,19 @@ import Test.Hspec        ( Spec
                          )
 
 import Codegen (generate)
-import Parser ( parse_
-              , Program (Program)
-              , Function (Function)
-              , Statement (Return)
-              , Expression (Constant)
-              )
+import Parser (parse_)
+
+import AST ( Program (Program)
+           , Function (Function)
+           , Statement (Return)
+           , Expression (Constant)
+           )
 
 spec :: Spec
 spec = do
   it "should generate code for multi_digit.c" $ do
     generate (Program (Function "main" (Return (Constant 100)))) `shouldBe`
-      ".globl _main\n\
-      \_main:\n\
+      ".globl main\n\
+      \main:\n\
       \movl $100, %eax\n\
       \ret"
