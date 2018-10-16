@@ -11,8 +11,8 @@ statement (Return (Constant ival)) =
 
 function :: Function -> String
 function (Function name body) =
-  ".globl _" ++ name ++ "\n" ++
-  "_" ++ name ++ ":" ++ "\n" ++
+  ".globl " ++ name ++ "\n" ++
+  name ++ ":" ++ "\n" ++
   (statement body)
 
 
