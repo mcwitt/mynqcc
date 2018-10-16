@@ -25,7 +25,7 @@ data Case = Case { description :: String
 
 validCases :: [Case]
 validCases = [
-  Case { description = "missing_paren.c"
+  Case { description = "multi_digit.c"
        , input    = [ KWInt
                     , Identifier "main"
                     , OpenParen
