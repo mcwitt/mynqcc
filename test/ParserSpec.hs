@@ -9,7 +9,7 @@ import Test.Hspec        ( Spec
                          , errorCall
                          )
 
-import Lexer (Token (..), lex)
+import Token  ( Token (..) )
 import Parser ( parse_
               , Program (Program)
               , Function (Function)

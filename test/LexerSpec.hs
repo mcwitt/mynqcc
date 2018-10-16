@@ -5,7 +5,8 @@ import Test.Hspec ( Spec
                   , it
                   , shouldBe)
 
-import Lexer (Token (..), lex)
+import Lexer (lex)
+import Token (Token (..))
 
 spec :: Spec
 spec = do

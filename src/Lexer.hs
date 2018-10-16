@@ -1,7 +1,5 @@
-module Lexer
-  ( Lexer.lex
-  , Token (..)
-  ) where
+module Lexer ( Lexer.lex
+             ) where
 
 import Data.Char
 import ParserCombinators ( Parser (..)
@@ -14,6 +12,8 @@ import ParserCombinators ( Parser (..)
                          , string
                          , (<|>)
                          )
+
+import Token (Token (..))
 
 number :: Parser Char Char
 number = satisfy isNumber
@@ -37,17 +37,6 @@ token :: Parser Char a -> Parser Char a
 token p = do space
              val <- p
              return val
-
-data Token = OpenBrace
-           | CloseBrace
-           | OpenParen
-           | CloseParen
-           | Semicolon
-           | KWInt
-           | KWReturn
-           | Identifier String
-           | Integer Int
-           deriving (Show, Eq)
 
 openBrace  = token (atom '{') >> return OpenBrace
 closeBrace = token (atom '}') >> return CloseBrace
