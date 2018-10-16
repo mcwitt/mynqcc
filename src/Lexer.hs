@@ -10,11 +10,10 @@ import ParserCombinators ( Parser (..)
                          , some
                          , many
                          , satisfy
+                         , atom
+                         , string
                          , (<|>)
                          )
-
-char :: Char -> Parser Char Char
-char c = satisfy (==c)
 
 number :: Parser Char Char
 number = satisfy isNumber
@@ -23,14 +22,8 @@ letter :: Parser Char Char
 letter = satisfy isLetter
 
 space :: Parser Char ()
-space = many (satisfy isSpace) >> return ()
-
--- | Parser that consumes the specified string.
-string :: String -> Parser Char ()
-string [] = return ()
-string (x:xs) = do c <- char x
-                   cs <- string xs
-                   return ()
+space = do many (satisfy isSpace)
+           return ()
 
 -- | Parser that consumes an identifier, defined as a string that matches the
 -- | regex "[a-zA-Z][a-zA-Z0-9]*".
@@ -56,11 +49,11 @@ data Token = OpenBrace
            | Integer Int
            deriving (Show, Eq)
 
-openBrace  = token (char '{') >> return OpenBrace
-closeBrace = token (char '}') >> return CloseBrace
-openParen  = token (char '(') >> return OpenParen
-closeParen = token (char ')') >> return CloseParen
-semicolon  = token (char ';') >> return Semicolon
+openBrace  = token (atom '{') >> return OpenBrace
+closeBrace = token (atom '}') >> return CloseBrace
+openParen  = token (atom '(') >> return OpenParen
+closeParen = token (atom ')') >> return CloseParen
+semicolon  = token (atom ';') >> return Semicolon
 
 keyword :: Parser Char a -> Parser Char a
 keyword p = do val <- p

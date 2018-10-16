@@ -17,6 +17,8 @@ module ParserCombinators
   , some
   , many
   , satisfy
+  , atom
+  , string
   , (<|>)
   ) where
 
@@ -32,7 +34,7 @@ item = P $ \st ->
   case st of [] -> []
              x:xs -> [(x, xs)]
 
--- | Peek ahead one character without removing it from the input stream.
+-- | Peek ahead one atom without removing it from the input stream.
 peek :: Parser a a
 peek = P $ \st ->
   case st of [] -> []
@@ -73,7 +75,16 @@ instance Alternative (Parser a) where
     case parse p st of []  -> parse q st
                        res -> res
 
--- | Parser that consumes a character c for which p c is true.
+-- | Parser that consumes an atom x for which p x is true.
 satisfy :: (a -> Bool) -> Parser a a
 satisfy p = do x <- item
                if p x then return x else empty
+
+-- | Parser that consumes one of the specified atom.
+atom :: (Eq a) => a -> Parser a a
+atom x = satisfy (==x)
+
+-- | Parser that consumes the specified string of atoms.
+string :: (Eq a) => [a] -> Parser a ()
+string [] = return ()
+string (x:xs) = do atom x; string xs; return ()
