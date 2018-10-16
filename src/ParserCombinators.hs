@@ -1,42 +1,50 @@
+{-|
+  This module implements a parser-combinator strategy for lexing input strings
+  into lists of tokens. If this weren't an educational project, we should
+  instead use an existing library like
+  [Parsec](http://hackage.haskell.org/package/parsec).
+
+  The implementation here basically follows the one found in Chapter 13 of
+  Graham Hutton's "Programming in Haskell", except we have generalized the
+  parser type to handle input streams of arbitrary type (not just Char) so
+  the same infrastructure can be used in separate parsing and lexing steps.
+-}
+
 module ParserCombinators
   ( Parser (..)
   , peek
   , empty
   , some
   , many
-  , space
-  , char
-  , number
-  , letter
-  , string
-  , ident
-  , token
+  , satisfy
   , (<|>)
   ) where
 
-import Data.Char
 import Control.Applicative
 
-newtype Parser a = P { parse :: String -> [(a, String)]}
+-- | A parser is a function from a list of atoms (e.g. character strings) to
+-- | zero or more possible (parsed, remainder) pairs.
+newtype Parser a b = P { parse :: [a] -> [(b, [a])]}
 
--- | Simplest parser. Just read a character from the input stream.
-item :: Parser Char
+-- | Simplest parser. Just read a single atom from the input stream.
+item :: Parser a a
 item = P $ \st ->
   case st of [] -> []
              x:xs -> [(x, xs)]
 
 -- | Peek ahead one character without removing it from the input stream.
-peek :: Parser Char
-peek = P $ \st -> case st of [] -> []
-                             x:xs -> [(x, x:xs)]
+peek :: Parser a a
+peek = P $ \st ->
+  case st of [] -> []
+             x:xs -> [(x, x:xs)]
 
-instance Functor Parser where
+instance Functor (Parser a) where
   -- fmap :: (a -> b) -> f a -> f b
   fmap f p = P $ \st ->
     case parse p st of [] -> []
                        [(x, xs)] -> [(f x, xs)]
 
-instance Applicative Parser where
+instance Applicative (Parser a) where
   -- pure :: a -> Parser a
   pure x = P $ \st -> [(x, st)]
 
@@ -45,15 +53,7 @@ instance Applicative Parser where
     case parse pf st of [] -> []
                         [(f, xs)] -> parse (fmap f px) xs
 
-
--- | Example using applicative style.
--- | Consume 3 characters, return the first and third.
-three :: Parser (Char, Char)
-three = (pure g) <*> item <*> item <*> item
-  where g = \c1 c2 c3 -> (c1, c3)
-
-
-instance Monad Parser where
+instance Monad (Parser a) where
   -- return :: a -> Parser a
   return = pure
 
@@ -63,23 +63,8 @@ instance Monad Parser where
                        [(x, xs)] -> parse (f x) xs
 
 
--- | Example using monadic style.
-mthree :: Parser (Char, Char)
-mthree = item >>= \ x ->
-                    item >>
-                    item >>= \ z ->
-                               return (x, z)
-
-
--- | Same as above, using `do` notation.
-mthree' :: Parser (Char, Char)
-mthree' = do x <- item
-             item
-             z <- item
-             return (x, z)
-
 -- | Allows chaining parsers such that if the first fails, we try the next, etc.
-instance Alternative Parser where
+instance Alternative (Parser a) where
   -- empty :: Parser a
   empty = P $ \st -> []
 
@@ -88,35 +73,7 @@ instance Alternative Parser where
     case parse p st of []  -> parse q st
                        res -> res
 
-
-satisfy :: (Char -> Bool) -> Parser Char
-satisfy p = do c <- item
-               if p c then return c else empty
-
-char :: Char -> Parser Char
-char c = satisfy (==c)
-
-number :: Parser Char
-number = satisfy isNumber
-
-letter :: Parser Char
-letter = satisfy isLetter
-
-space :: Parser String
-space = many (satisfy isSpace)
-
-string :: String -> Parser String
-string [] = return []
-string (x:xs) = do c <- char x
-                   cs <- string xs
-                   return (c:cs)
-
-ident :: Parser String
-ident = do c <- letter
-           cs <- many (letter <|> number)
-           return (c:cs)
-
-token :: Parser a -> Parser a
-token p = do space
-             val <- p
-             return val
+-- | Parser that consumes a character c for which p c is true.
+satisfy :: (a -> Bool) -> Parser a a
+satisfy p = do x <- item
+               if p x then return x else empty

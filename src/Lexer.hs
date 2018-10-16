@@ -1,24 +1,49 @@
 module Lexer
-    ( Lexer.lex
-    , Token (..)
-    ) where
+  ( Lexer.lex
+  , Token (..)
+  ) where
 
 import Data.Char
-
 import ParserCombinators ( Parser (..)
                          , peek
                          , empty
-                         , many
                          , some
-                         , space
-                         , char
-                         , number
-                         , string
-                         , ident
-                         , token
+                         , many
+                         , satisfy
                          , (<|>)
                          )
 
+char :: Char -> Parser Char Char
+char c = satisfy (==c)
+
+number :: Parser Char Char
+number = satisfy isNumber
+
+letter :: Parser Char Char
+letter = satisfy isLetter
+
+space :: Parser Char ()
+space = many (satisfy isSpace) >> return ()
+
+-- | Parser that consumes the specified string.
+string :: String -> Parser Char ()
+string [] = return ()
+string (x:xs) = do c <- char x
+                   cs <- string xs
+                   return ()
+
+-- | Parser that consumes an identifier, defined as a string that matches the
+-- | regex "[a-zA-Z][a-zA-Z0-9]*".
+ident :: Parser Char String
+ident = do c <- letter
+           cs <- many (letter <|> number)
+           return (c:cs)
+
+-- | Transforms a parser to discard leading space.
+token :: Parser Char a -> Parser Char a
+token p = do space
+             val <- p
+             return val
 
 data Token = OpenBrace
            | CloseBrace
@@ -37,7 +62,7 @@ openParen  = token (char '(') >> return OpenParen
 closeParen = token (char ')') >> return CloseParen
 semicolon  = token (char ';') >> return Semicolon
 
-keyword :: Parser a -> Parser a
+keyword :: Parser Char a -> Parser Char a
 keyword p = do val <- p
                c <- peek
                if isAlphaNum c
@@ -53,7 +78,7 @@ identifier = do s <- token ident
 integer = do s <- token (some number)
              return $ Integer (read s)
 
-lexer :: Parser [Token]
+lexer :: Parser Char [Token]
 lexer = many $  openBrace
             <|> closeBrace
             <|> openParen
