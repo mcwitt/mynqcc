@@ -1,11 +1,5 @@
-module Parser
-  ( Parser.parse_
-  , Program (Program)
-  , Function (Function)
-  , Statement (Return)
-  , Expression (Constant)
-  )
-where
+module Parser ( parse_
+              ) where
 
 import ParserCombinators ( Parser (..)
                          , satisfy

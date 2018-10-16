@@ -1,9 +1,9 @@
 module Codegen (generate) where
 
-import Parser ( Program    (Program)
-              , Function   (Function)
-              , Statement  (Return)
-              , Expression (Constant))
+import AST ( Program    (Program)
+           , Function   (Function)
+           , Statement  (Return)
+           , Expression (Constant))
 
 statement :: Statement -> String
 statement (Return (Constant ival)) =
