@@ -30,9 +30,9 @@ expression = do Integer int <- integer
 
 statement :: Parser Token Statement
 statement = do atom KWReturn
-               body <- expression
+               expr <- expression
                atom Semicolon
-               return (Return body)
+               return (Return expr)
 
 identifier :: Parser Token Token
 identifier = satisfy $ \t -> case t of
