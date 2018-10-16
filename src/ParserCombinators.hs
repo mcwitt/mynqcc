@@ -1,13 +1,13 @@
 {-|
   This module implements a parser-combinator strategy for lexing input strings
-  into lists of tokens. If this weren't an educational project, we should
-  instead use an existing library like
+  into lists of tokens, and for parsing lists of tokens into an AST. If this
+  weren't an educational project, we should instead use an existing library like
   [Parsec](http://hackage.haskell.org/package/parsec).
 
   The implementation here basically follows the one found in Chapter 13 of
   Graham Hutton's "Programming in Haskell", except we have generalized the
   parser type to handle input streams of arbitrary type (not just Char) so
-  the same infrastructure can be used in separate parsing and lexing steps.
+  the same infrastructure can be used in separate lexing and parsing steps.
 -}
 
 module ParserCombinators
