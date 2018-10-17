@@ -39,11 +39,15 @@ token p = do space
              val <- p
              return val
 
-openBrace  = token (atom '{') >> return OpenBrace
-closeBrace = token (atom '}') >> return CloseBrace
-openParen  = token (atom '(') >> return OpenParen
-closeParen = token (atom ')') >> return CloseParen
-semicolon  = token (atom ';') >> return Semicolon
+openBrace         = token (atom '{') >> return OpenBrace
+closeBrace        = token (atom '}') >> return CloseBrace
+openParen         = token (atom '(') >> return OpenParen
+closeParen        = token (atom ')') >> return CloseParen
+semicolon         = token (atom ';') >> return Semicolon
+negation          = token (atom '-') >> return Negation
+bitwiseComplement = token (atom '~') >> return BitwiseComplement
+logicalNegation   = token (atom '!') >> return LogicalNegation
+
 
 keyword :: Parser Char a -> Parser Char a
 keyword p = do val <- p
@@ -71,6 +75,9 @@ lexer = many $  openBrace
             <|> kwReturn
             <|> identifier
             <|> integer
+            <|> negation
+            <|> bitwiseComplement
+            <|> logicalNegation
 
 lexString :: String -> Either Error [Token]
 lexString st = case parse lexer st of

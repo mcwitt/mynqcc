@@ -9,4 +9,7 @@ data Token = OpenBrace
            | KWReturn
            | Identifier String
            | Integer Int
+           | Negation
+           | BitwiseComplement
+           | LogicalNegation
            deriving (Show, Eq)
