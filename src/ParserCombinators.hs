@@ -12,6 +12,7 @@
 
 module ParserCombinators
   ( Parser (..)
+  , item
   , peek
   , empty
   , some

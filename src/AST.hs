@@ -1,11 +1,18 @@
-module AST ( Expression (Constant)
-           , Statement  (Return)
-           , Function   (Function)
-           , Program    (Program)) where
+module AST ( Expression    ( Constant
+                           , Negation
+                           , BitwiseComplement
+                           , LogicalNegation)
+           , Statement     ( Return)
+           , Function      ( Function)
+           , Program       ( Program)
+           ) where
 
 import Data.Tree ( Tree (Node), drawTree )
 
 data Expression = Constant Int
+                | Negation Expression
+                | BitwiseComplement Expression
+                | LogicalNegation Expression
                 deriving (Show, Eq)
 
 data Statement = Return Expression

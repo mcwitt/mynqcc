@@ -2,27 +2,40 @@ module Parser ( parseTokens
               ) where
 
 import ParserCombinators ( Parser (..)
+                         , item
                          , satisfy
                          , atom
+                         , (<|>)
                          )
 
-import Token (Token (..))
+import Token
+import AST
+import Error
 
-import AST ( Expression (Constant)
-           , Statement  (Return)
-           , Function   (Function)
-           , Program    (Program)
-           )
+constant :: Parser Token Expression
+constant = do Integer int <- satisfy $ \t ->
+                case t of Integer _ -> True
+                          _         -> False
+              return (Constant int)
 
-import Error (Error (ParserError))
+negation :: Parser Token Expression
+negation = do atom Token.Negation
+              expr <- expression
+              return (AST.Negation expr)
 
-integer :: Parser Token Token
-integer = satisfy $ \t -> case t of Integer _ -> True
-                                    _         -> False
+bitwiseComplement = do atom Token.BitwiseComplement
+                       expr <- expression
+                       return (AST.BitwiseComplement expr)
+
+logicalNegation = do atom Token.LogicalNegation
+                     expr <- expression
+                     return (AST.LogicalNegation expr)
 
 expression :: Parser Token Expression
-expression = do Integer int <- integer
-                return (Constant int)
+expression = constant
+         <|> negation
+         <|> bitwiseComplement
+         <|> logicalNegation
 
 statement :: Parser Token Statement
 statement = do atom KWReturn
@@ -30,14 +43,15 @@ statement = do atom KWReturn
                atom Semicolon
                return (Return expr)
 
-identifier :: Parser Token Token
-identifier = satisfy $ \t -> case t of
-                               Identifier _ -> True
-                               _            -> False
+identifier :: Parser Token String
+identifier = do Identifier name <- satisfy $ \t ->
+                  case t of Identifier _ -> True
+                            _            -> False
+                return name
 
 function :: Parser Token Function
 function = do atom KWInt
-              Identifier name <- identifier
+              name <- identifier
               atom OpenParen
               atom CloseParen
               atom OpenBrace
