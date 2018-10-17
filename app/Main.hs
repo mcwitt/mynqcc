@@ -1,6 +1,5 @@
 module Main where
 
-import Lib
 import Options.Applicative
 import System.IO ( IOMode (ReadMode)
                  , withFile
@@ -59,5 +58,3 @@ compile src = do
   tokens <- lexString src
   ast <- parseTokens tokens
   return (generate ast)
-
-
