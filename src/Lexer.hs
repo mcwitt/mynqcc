@@ -47,6 +47,9 @@ semicolon         = token (atom ';') >> return Semicolon
 negation          = token (atom '-') >> return Negation
 bitwiseComplement = token (atom '~') >> return BitwiseComplement
 logicalNegation   = token (atom '!') >> return LogicalNegation
+addition          = token (atom '+') >> return Addition
+multiplication    = token (atom '*') >> return Multiplication
+division          = token (atom '/') >> return Division
 
 
 keyword :: Parser Char a -> Parser Char a
@@ -78,6 +81,9 @@ lexer = many $  openBrace
             <|> negation
             <|> bitwiseComplement
             <|> logicalNegation
+            <|> addition
+            <|> multiplication
+            <|> division
 
 lexString :: String -> Either Error [Token]
 lexString st = case parse lexer st of

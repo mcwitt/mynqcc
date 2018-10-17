@@ -12,4 +12,7 @@ data Token = OpenBrace
            | Negation
            | BitwiseComplement
            | LogicalNegation
+           | Addition
+           | Multiplication
+           | Division
            deriving (Show, Eq)
