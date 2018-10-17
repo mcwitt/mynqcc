@@ -17,9 +17,10 @@ import AST ( Program (Program)
 
 spec :: Spec
 spec = do
-  it "should generate code for multi_digit.c" $ do
-    generate (Program (Function "main" (Return (Constant 100)))) `shouldBe`
-      ".globl main\n\
-      \main:\n\
-      \movl $100, %eax\n\
-      \ret"
+  describe "Stage 1" $ do
+    it "should generate code for multi_digit.c" $ do
+      generate (Program (Function "main" (Return (Constant 100)))) `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $100, %eax\n\
+        \ret"
