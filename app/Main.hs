@@ -9,9 +9,10 @@ import System.IO ( IOMode (ReadMode)
 
 import System.FilePath.Posix (dropExtension)
 
-import qualified Lexer (lex)
-import Parser (parse_)
-import Codegen (generate)
+import Lexer   ( lexString)
+import Parser  ( parseTokens)
+import Codegen ( generate)
+import Error   ( Error (LexerError, ParserError))
 
 data CmdOptions = CmdOptions { verbose    :: Bool
                              , outputFile :: Maybe String
@@ -44,10 +45,21 @@ main = run =<< execParser opts
 run :: CmdOptions -> IO ()
 run opts = do
   src <- readFile $ firstInputFile opts
-  code <- return $ (generate . parse_ . Lexer.lex) src
-  writeFile (outputFile' opts) code
+  case compile src of
+    Right code -> writeFile (outputFile' opts) code
+    Left (LexerError  msg) -> putStrLn $ "Lexer error: "  ++ msg
+    Left (ParserError msg) -> putStrLn $ "Parser error: " ++ msg
   where
     firstInputFile = head . inputFiles
     outputFile' = case outputFile opts of
                     Just xs -> \_ -> xs
                     Nothing -> (++".s") . dropExtension . firstInputFile
+
+
+compile :: String -> Either Error String
+compile src = do
+  tokens <- lexString src
+  ast <- parseTokens tokens
+  return (generate ast)
+
+

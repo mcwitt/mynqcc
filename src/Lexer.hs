@@ -1,4 +1,4 @@
-module Lexer ( Lexer.lex
+module Lexer ( lexString
              ) where
 
 import Data.Char
@@ -13,7 +13,8 @@ import ParserCombinators ( Parser (..)
                          , (<|>)
                          )
 
-import Token (Token (..))
+import Token ( Token (..) )
+import Error ( Error (LexerError) )
 
 number :: Parser Char Char
 number = satisfy isNumber
@@ -71,6 +72,7 @@ lexer = many $  openBrace
             <|> identifier
             <|> integer
 
-lex :: String -> [Token]
-lex st = res
-  where [(res, xs)] = parse lexer st
+lexString :: String -> Either Error [Token]
+lexString st = case parse lexer st of
+                 [(res, xs)] -> Right res
+                 [] -> Left $ LexerError "Failed to lex the program."

@@ -1,4 +1,4 @@
-module Parser ( parse_
+module Parser ( parseTokens
               ) where
 
 import ParserCombinators ( Parser (..)
@@ -13,6 +13,8 @@ import AST ( Expression (Constant)
            , Function   (Function)
            , Program    (Program)
            )
+
+import Error (Error (ParserError))
 
 integer :: Parser Token Token
 integer = satisfy $ \t -> case t of Integer _ -> True
@@ -47,7 +49,7 @@ program :: Parser Token Program
 program = do f <- function
              return (Program f)
 
-parse_ :: [Token] -> Program
-parse_ ts = case parse program ts of
-              [(res, xs)] -> res
-              [] -> error "Failed to parse the program."
+parseTokens :: [Token] -> Either Error Program
+parseTokens ts = case parse program ts of
+                   [(res, xs)] -> Right res
+                   [] -> Left $ ParserError "Failed to parse the program."

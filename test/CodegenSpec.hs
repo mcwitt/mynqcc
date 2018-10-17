@@ -7,7 +7,7 @@ import Test.Hspec        ( Spec
                          )
 
 import Codegen (generate)
-import Parser (parse_)
+import Parser (parseTokens)
 
 import AST ( Program (Program)
            , Function (Function)
