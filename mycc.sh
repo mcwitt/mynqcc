@@ -13,4 +13,4 @@ srcf="$2"
 outf="${srcf%.*}"
 asmf="${outf}.s"
 
-$cmd -o "$asmf" "$srcf" && gcc -w -o "$outf" "$asmf"
+$cmd -o "$asmf" "$srcf" && gcc -m32 -w -o "$outf" "$asmf"

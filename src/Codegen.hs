@@ -1,25 +1,50 @@
 module Codegen (generate) where
 
 import AST
-import Text.Printf
 
 factor :: Factor -> String
 factor fact = case fact of
-  Constant ival           -> printf "movl $%d, %%eax\n" ival
-  Negation fact'          -> factor fact' ++ "neg %eax\n"
-  BitwiseComplement fact' -> factor fact' ++ "not %eax\n"
-  LogicalNegation fact'   -> factor fact' ++
-                             "cmpl $0, %eax\n\
-                             \movl $0, %eax\n\
-                             \sete %al\n"
+  Factor e -> expression e
+  Constant i -> "movl $" ++ show i ++ ", %eax\n"
+  Negation f -> factor f ++ "neg %eax\n"
+  BitwiseComplement f -> factor f ++ "not %eax\n"
+  LogicalNegation f -> factor f ++
+                       "cmpl $0, %eax\n\
+                       \movl $0, %eax\n\
+                       \sete %al\n"
 
 term :: Term -> String
 term t = case t of
   Term fact -> factor fact
 
+  Multiplication l r -> term r ++
+                        "push %eax\n" ++
+                        term l ++
+                        "pop %ecx\n\
+                        \imul %ecx, %eax\n"
+
+  Division l r -> term r ++
+                  "push %eax\n" ++
+                  term l ++
+                  "pop %ecx\n\
+                  \movl $0, %edx\n\
+                  \idivl %ecx\n"
+
 expression :: Expression -> String
 expression expr = case expr of
   Expression t -> term t
+
+  Addition l r -> expression r ++
+                  "push %eax\n" ++
+                  expression l ++
+                  "pop %ecx\n\
+                  \addl %ecx, %eax\n"
+
+  Subtraction l r -> expression r ++
+                     "push %eax\n" ++
+                     expression l ++
+                     "pop %ecx\n\
+                     \subl %ecx, %eax\n"
 
 statement :: Statement -> String
 statement (Return expr) = expression expr ++ "ret"
