@@ -17,7 +17,10 @@ spec = do
     it "should generate code for multi_digit.c" $ do
       generate (Program (
                    Function "main" (
-                       Return (Constant 100))))
+                       Return (
+                           Expression (
+                               Term (
+                                   Constant 100))))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
@@ -30,7 +33,10 @@ spec = do
       generate (Program (
                    Function "main" (
                        Return (
-                           AST.LogicalNegation (Constant 12)))))
+                           Expression (
+                               Term (
+                                   AST.LogicalNegation (
+                                       Constant 12)))))))
         `shouldBe`
         ".globl main\n\
         \main:\n\

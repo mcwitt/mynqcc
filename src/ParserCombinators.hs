@@ -20,13 +20,14 @@ module ParserCombinators
   , satisfy
   , atom
   , string
+  , chainl1
   , (<|>)
   ) where
 
 import Control.Applicative
 
 -- | A parser is a function from a list of atoms (e.g. character strings) to
--- | zero or more possible (parsed, remainder) pairs.
+-- | zero or more possible (parsed, rest) pairs.
 newtype Parser a b = P { parse :: [a] -> [(b, [a])]}
 
 -- | Simplest parser. Just read a single atom from the input stream.
@@ -88,4 +89,13 @@ atom x = satisfy (==x)
 -- | Parser that consumes the specified string of atoms.
 string :: (Eq a) => [a] -> Parser a ()
 string [] = return ()
-string (x:xs) = do atom x; string xs; return ()
+string (x:xs) = do { atom x; string xs }
+
+-- | Parser that consumes a string of binary operations, combining
+-- | left-associatively
+chainl1 :: Parser a b -> Parser a (b -> b -> b) -> Parser a b
+p `chainl1` op = do { a <- p; rest a }
+  where rest a = (do f <- op
+                     b <- p
+                     rest (f a b))
+                 <|> return a

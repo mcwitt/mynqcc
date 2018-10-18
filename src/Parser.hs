@@ -5,6 +5,7 @@ import ParserCombinators ( Parser (..)
                          , item
                          , satisfy
                          , atom
+                         , chainl1
                          , (<|>)
                          )
 
@@ -12,30 +13,51 @@ import Token
 import AST
 import Error
 
-constant :: Parser Token Expression
+factorExpr = do atom OpenParen
+                expr <- expression
+                atom CloseParen
+                return (AST.Factor expr)
+
 constant = do Integer int <- satisfy $ \t ->
                 case t of Integer _ -> True
                           _         -> False
-              return (Constant int)
+              return (AST.Constant int)
 
-negation :: Parser Token Expression
 negation = do atom Token.Negation
-              expr <- expression
-              return (AST.Negation expr)
+              fact <- factor
+              return (AST.Negation fact)
 
 bitwiseComplement = do atom Token.BitwiseComplement
-                       expr <- expression
-                       return (AST.BitwiseComplement expr)
+                       fact <- factor
+                       return (AST.BitwiseComplement fact)
 
 logicalNegation = do atom Token.LogicalNegation
-                     expr <- expression
-                     return (AST.LogicalNegation expr)
+                     fact <- factor
+                     return (AST.LogicalNegation fact)
 
-expression :: Parser Token Expression
-expression = constant
-         <|> negation
-         <|> bitwiseComplement
-         <|> logicalNegation
+factor = factorExpr
+     <|> constant
+     <|> negation
+     <|> bitwiseComplement
+     <|> logicalNegation
+
+multiplication = do atom Token.Multiplication
+                    return AST.Multiplication
+
+division = do atom Token.Division
+              return AST.Division
+
+term = fmap AST.Term factor
+       `chainl1` (multiplication <|> division)
+
+addition = do atom Token.Addition
+              return AST.Addition
+
+subtraction = do atom Token.Negation
+                 return AST.Subtraction
+
+expression = fmap AST.Expression term
+             `chainl1` (addition <|> subtraction)
 
 statement :: Parser Token Statement
 statement = do atom KWReturn
