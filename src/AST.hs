@@ -1,14 +1,13 @@
-module AST ( Factor     ( Factor
-                        , Constant
-                        , Negation
+module AST ( Expression ( Constant
+                        , Unary
+                        , Binary)
+           , UnaryOp    ( Negation
                         , BitwiseComplement
                         , LogicalNegation)
-           , Term       ( Term
+           , BinaryOp   ( Addition
+                        , Subtraction
                         , Multiplication
                         , Division)
-           , Expression ( Expression
-                        , Addition
-                        , Subtraction)
            , Statement  ( Return)
            , Function   ( Function)
            , Program    ( Program)
@@ -17,24 +16,23 @@ module AST ( Factor     ( Factor
 
 import Data.Tree ( Tree (Node), drawTree )
 
-data Factor
-  = Factor Expression
-  | Constant Int
-  | Negation Factor
-  | BitwiseComplement Factor
-  | LogicalNegation Factor
-  deriving (Eq, Show)
-
-data Term
-  = Term Factor
-  | Multiplication Term Term
-  | Division Term Term
-  deriving (Eq, Show)
-
 data Expression
-  = Expression Term
-  | Addition Expression Expression
-  | Subtraction Expression Expression
+  = Constant Int
+  | Unary UnaryOp Expression
+  | Binary BinaryOp Expression Expression
+  deriving (Eq, Show)
+
+data UnaryOp
+  = Negation
+  | BitwiseComplement
+  | LogicalNegation
+  deriving (Eq, Show)
+
+data BinaryOp
+  = Addition
+  | Subtraction
+  | Multiplication
+  | Division
   deriving (Eq, Show)
 
 data Statement
@@ -53,40 +51,27 @@ data Program
 -- The (non-essential) definitions below allow the AST to be pretty-printed
 -- using Data.Tree (drawTree)
 
-class ASTNode a where
+class Treelike a where
   toDataTree :: a -> Tree String
 
   pprint :: a -> String
   pprint = drawTree . toDataTree
 
-instance ASTNode Factor where
-  toDataTree fact = case fact of
-    Factor expr -> Node "Factor" [toDataTree expr]
-    Constant ival -> Node ("Constant Int " ++ show ival) []
-    Negation fact -> Node "Negation" [toDataTree fact]
-    BitwiseComplement fact -> Node "Bitwise complement" [toDataTree fact]
-    LogicalNegation fact -> Node "Logical negation" [toDataTree fact]
-
-instance ASTNode Term where
+instance Treelike Expression where
   toDataTree term = case term of
-    Term fact -> Node "Term" [toDataTree fact]
-    Multiplication l r -> Node "Multiplication" [ toDataTree l
-                                                , toDataTree r]
+    Constant i -> Node ("Constant " ++ show i) [toDataTree term]
+    Unary op expr -> Node ("Unary " ++ show op) [toDataTree expr]
+    Binary op e1 e2 -> Node ("Binary " ++ show op) [ toDataTree e1
+                                                   , toDataTree e2]
 
-instance ASTNode Expression where
-  toDataTree term = case term of
-    Expression term -> Node "Expression" [toDataTree term]
-    Addition l r -> Node "Addition" [ toDataTree l
-                                    , toDataTree r]
-
-instance ASTNode Statement where
+instance Treelike Statement where
   toDataTree st = case st of
     Return expr -> Node "Return" [toDataTree expr]
 
-instance ASTNode Function where
+instance Treelike Function where
   toDataTree (Function name body)
     = Node ("Function " ++ name) [toDataTree body]
 
-instance ASTNode Program where
+instance Treelike Program where
   toDataTree (Program func)
     = Node "Program" [toDataTree func]

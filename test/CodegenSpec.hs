@@ -19,9 +19,7 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            Constant 100))))))
+                    Constant 100))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
@@ -35,16 +33,15 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.LogicalNegation (
-                                Constant 12)))))))
+                    Unary (
+                        AST.LogicalNegation)(
+                        Constant 12)))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
         \movl $12, %eax\n\
         \cmpl $0, %eax\n\
-        \movl $0, %eax\n\
+        \xorl %eax, %eax\n\
         \sete %al\n\
         \ret"
 
@@ -55,9 +52,10 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    AST.Addition (
-                        Expression (Term (Constant 1)))(
-                        Expression (Term (Constant 2)))))))
+                    Binary (
+                        AST.Addition)(
+                        Constant 1)(
+                        Constant 2)))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
@@ -73,11 +71,13 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    AST.Subtraction (
-                        AST.Subtraction (
-                            Expression (Term (Constant 1)))(
-                            Expression (Term (Constant 2))))(
-                        Expression (Term (Constant 3)))))))
+                    Binary (
+                        AST.Subtraction)(
+                        Binary (
+                            AST.Subtraction)(
+                            Constant 1)(
+                            Constant 2))(
+                        Constant 3)))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
@@ -93,15 +93,17 @@ spec = do
         \ret"
 
     it "should generate code for associativity_2.c" $ do
-      generate (Program (
-                   Function "main" (
-                       Return (
-                           Expression (
-                               AST.Division (
-                                   AST.Division (
-                                       Term (Constant 6))(
-                                       Term (Constant 3)))(
-                                   Term (Constant 2)))))))
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Division)(
+                        Binary (
+                            AST.Division)(
+                            Constant 6)(
+                            Constant 3))(
+                        Constant 2)))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
@@ -111,10 +113,10 @@ spec = do
         \push %eax\n\
         \movl $6, %eax\n\
         \pop %ecx\n\
-        \movl $0, %edx\n\
+        \xorl %edx, %edx\n\
         \idivl %ecx\n\
         \pop %ecx\n\
-        \movl $0, %edx\n\
+        \xorl %edx, %edx\n\
         \idivl %ecx\n\
         \ret"
 
@@ -123,10 +125,10 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        AST.Division (
-                            Term (Constant 4))(
-                            Term (Constant 2)))))))
+                    Binary (
+                        AST.Division)(
+                        Constant 4)(
+                        Constant 2)))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
@@ -134,7 +136,7 @@ spec = do
         \push %eax\n\
         \movl $4, %eax\n\
         \pop %ecx\n\
-        \movl $0, %edx\n\
+        \xorl %edx, %edx\n\
         \idivl %ecx\n\
         \ret"
 
@@ -143,10 +145,10 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        AST.Multiplication (
-                            Term (Constant 2))(
-                            Term (Constant 3)))))))
+                    Binary (
+                        AST.Multiplication)(
+                        Constant 2)(
+                        Constant 3)))))
         `shouldBe`
         ".globl main\n\
         \main:\n\
@@ -162,14 +164,13 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        AST.Multiplication (
-                            Term (Constant 2))(
-                            Term (
-                                Factor (
-                                    AST.Addition (
-                                        Expression (Term (Constant 3)))(
-                                        Expression (Term (Constant 4)))))))))))
+                    Binary (
+                        AST.Multiplication)(
+                        Constant 2)(
+                        Binary (
+                            AST.Addition)(
+                            Constant 3)(
+                            Constant 4))))))
         `shouldBe`
         ".globl main\n\
         \main:\n\

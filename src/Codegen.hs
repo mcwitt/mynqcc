@@ -2,60 +2,43 @@ module Codegen (generate) where
 
 import AST
 
-factor :: Factor -> String
-factor fact = case fact of
-  Factor e -> expression e
-  Constant i -> "movl $" ++ show i ++ ", %eax\n"
-  Negation f -> factor f ++ "neg %eax\n"
-  BitwiseComplement f -> factor f ++ "not %eax\n"
-  LogicalNegation f -> factor f ++
-                       "cmpl $0, %eax\n\
-                       \movl $0, %eax\n\
-                       \sete %al\n"
+class Generable a where
+  generate :: a -> String
 
-term :: Term -> String
-term t = case t of
-  Term fact -> factor fact
+instance Generable Program where
+  generate (Program func) = generate func
 
-  Multiplication l r -> term r ++
-                        "push %eax\n" ++
-                        term l ++
-                        "pop %ecx\n\
-                        \imul %ecx, %eax\n"
+instance Generable Function where
+  generate (Function name stat)
+    = ".globl " ++ name ++ "\n" ++
+      name ++ ":\n" ++
+      generate stat
 
-  Division l r -> term r ++
-                  "push %eax\n" ++
-                  term l ++
-                  "pop %ecx\n\
-                  \movl $0, %edx\n\
-                  \idivl %ecx\n"
-
-expression :: Expression -> String
-expression expr = case expr of
-  Expression t -> term t
-
-  Addition l r -> expression r ++
-                  "push %eax\n" ++
-                  expression l ++
-                  "pop %ecx\n\
-                  \addl %ecx, %eax\n"
-
-  Subtraction l r -> expression r ++
-                     "push %eax\n" ++
-                     expression l ++
-                     "pop %ecx\n\
-                     \subl %ecx, %eax\n"
-
-statement :: Statement -> String
-statement (Return expr) = expression expr ++ "ret"
-
-function :: Function -> String
-function (Function name body) =
-  ".globl " ++ name ++ "\n" ++
-  name ++ ":" ++ "\n" ++
-  (statement body)
+instance Generable Statement where
+  generate (Return expr) = generate expr ++ "ret"
 
 
--- | Generate assembly code from an AST.
-generate :: Program -> String
-generate (Program func) = function func
+instance Generable Expression where
+
+  generate (Constant i) = "movl $" ++ show i ++ ", %eax\n"
+
+  generate (Unary op expr)
+    = generate expr
+   ++ (case op of Negation -> "neg %eax"
+                  BitwiseComplement -> "not %eax"
+                  LogicalNegation -> "cmpl $0, %eax\n\
+                                     \xorl %eax, %eax\n\
+                                     \sete %al")
+   ++ "\n"
+
+  generate (Binary op e1 e2)
+    = generate e2
+   ++ "push %eax\n"
+   ++ generate e1
+   ++ "pop %ecx\n"
+   ++ (case op of Addition -> "addl %ecx, %eax"
+                  Subtraction -> "subl %ecx, %eax"
+                  Multiplication -> "imul %ecx, %eax"
+                  Division -> "xorl %edx, %edx\n\
+                              \idivl %ecx")
+   ++ "\n"

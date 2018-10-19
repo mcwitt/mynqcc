@@ -30,9 +30,7 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            Constant 100))))))
+                    Constant 100))))
 
     it "should fail to parse tokens from missing_paren.c" $ do
       parseTokens [ KWInt
@@ -64,10 +62,9 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.LogicalNegation (
-                                Constant 12)))))))
+                    Unary (
+                        AST.LogicalNegation)(
+                        Constant 12)))))
 
     it "should parse tokens from bitwise_zero.c" $ do
       parseTokens [ KWInt
@@ -85,10 +82,9 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.BitwiseComplement (
-                                Constant 0)))))))
+                    Unary (
+                        AST.BitwiseComplement)(
+                        Constant 0)))))
 
     it "should parse tokens from neg.c" $ do
       parseTokens [ KWInt
@@ -106,10 +102,9 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.Negation (
-                                Constant 5)))))))
+                    Unary (
+                        AST.Negation)(
+                        Constant 5)))))
 
     it "should parse tokens from nested_ops.c" $ do
       parseTokens [ KWInt
@@ -128,11 +123,11 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.LogicalNegation(
-                                AST.Negation (
-                                    Constant 3))))))))
+                    Unary (
+                        AST.LogicalNegation)(
+                        Unary (
+                            AST.Negation)(
+                            Constant 3))))))
 
     it "should parse tokens from nested_ops_2.c" $ do
       parseTokens [ KWInt
@@ -151,11 +146,11 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.Negation(
-                                AST.BitwiseComplement (
-                                    Constant 0))))))))
+                    Unary (
+                        AST.Negation)(
+                        Unary (
+                            AST.BitwiseComplement)(
+                            Constant 0))))))
 
     it "should parse tokens from not_5.c" $ do
       parseTokens [ KWInt
@@ -173,10 +168,9 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.LogicalNegation (
-                                Constant 5)))))))
+                    Unary (
+                        AST.LogicalNegation)(
+                        Constant 5)))))
 
     it "should parse tokens from not_0.c" $ do
       parseTokens [ KWInt
@@ -194,10 +188,9 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.LogicalNegation (
-                                Constant 0)))))))
+                    Unary (
+                        AST.LogicalNegation)(
+                        Constant 0)))))
 
     it "should fail to parse tokens from missing_const.c" $ do
       parseTokens [ KWInt
@@ -272,9 +265,10 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    AST.Addition (
-                        Expression (Term (Constant 1)))(
-                        Expression (Term (Constant 2)))))))
+                    Binary (
+                        AST.Addition)(
+                        Constant 1)(
+                        Constant 2)))))
 
     it "should parse tokens from associativity.c" $ do
       parseTokens [ KWInt
@@ -295,11 +289,13 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    AST.Subtraction (
-                        AST.Subtraction (
-                            Expression (Term (Constant 1)))(
-                            Expression (Term (Constant 2))))(
-                    Expression (Term (Constant 3)))))))
+                    Binary (
+                        AST.Subtraction)(
+                        Binary (
+                            AST.Subtraction)(
+                            Constant 1)(
+                            Constant 2))(
+                        Constant 3)))))
 
     it "should parse tokens from associativity_2.c" $ do
       parseTokens [ KWInt
@@ -320,12 +316,13 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        AST.Division (
-                            AST.Division (
-                                Term (Constant 6))(
-                                Term (Constant 3)))(
-                            Term (Constant 2)))))))
+                    Binary (
+                        AST.Division)(
+                        Binary (
+                            AST.Division)(
+                            Constant 6)(
+                            Constant 3))(
+                        Constant 2)))))
 
     it "should parse tokens from div.c" $ do
       parseTokens [ KWInt
@@ -344,10 +341,10 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        AST.Division (
-                            Term (Constant 4))(
-                            Term (Constant 2)))))))
+                    Binary (
+                        AST.Division)(
+                        Constant 4)(
+                        Constant 2)))))
 
     it "should parse tokens from mult.c" $ do
       parseTokens [ KWInt
@@ -366,10 +363,10 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        AST.Multiplication (
-                            Term (Constant 2))(
-                            Term (Constant 3)))))))
+                    Binary (
+                        AST.Multiplication)(
+                        Constant 2)(
+                        Constant 3)))))
 
     it "should parse tokens from parens.c" $ do
       parseTokens [ KWInt
@@ -392,14 +389,13 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        AST.Multiplication (
-                            Term (Constant 2))(
-                            Term (
-                                Factor (
-                                    AST.Addition (
-                                        Expression (Term (Constant 3)))(
-                                        Expression (Term (Constant 4)))))))))))
+                    Binary (
+                        AST.Multiplication)(
+                        Constant 2)(
+                        Binary (
+                            AST.Addition)(
+                            Constant 3)(
+                            Constant 4))))))
 
     it "should parse tokens from precedence.c" $ do
       parseTokens [ KWInt
@@ -420,12 +416,13 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    AST.Addition (
-                        Expression (Term (Constant 2)))(
-                        Expression (
-                            AST.Multiplication (
-                                Term (Constant 3))(
-                                Term (Constant 4))))))))
+                    Binary (
+                        AST.Addition)(
+                        Constant 2)(
+                        Binary (
+                            AST.Multiplication)(
+                            Constant 3)(
+                            Constant 4))))))
 
     it "should parse tokens from sub_neg.c" $ do
       parseTokens [ KWInt
@@ -445,9 +442,12 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    AST.Subtraction (
-                        Expression (Term (Constant 2)))(
-                        Expression (Term (AST.Negation (Constant 1))))))))
+                    Binary (
+                        AST.Subtraction)(
+                        Constant 2)(
+                        Unary (
+                            AST.Negation)(
+                            Constant 1))))))
 
     it "should parse tokens from unop_add.c" $ do
       parseTokens [ KWInt
@@ -467,9 +467,12 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    AST.Addition (
-                        Expression (Term (AST.BitwiseComplement (Constant 2))))(
-                        Expression (Term (Constant 3)))))))
+                    Binary (
+                        AST.Addition)(
+                        Unary (
+                            AST.BitwiseComplement)(
+                            Constant 2))(
+                        Constant 3)))))
 
     it "should parse tokens from unop_parens.c" $ do
       parseTokens [ KWInt
@@ -491,13 +494,12 @@ spec = do
         Program (
             Function "main" (
                 Return (
-                    Expression (
-                        Term (
-                            AST.BitwiseComplement (
-                                Factor (
-                                    AST.Addition (
-                                        Expression (Term (Constant 1)))(
-                                        Expression (Term (Constant 1)))))))))))
+                    Unary (
+                        AST.BitwiseComplement)(
+                        Binary (
+                            AST.Addition)(
+                            Constant 1)(
+                            Constant 1))))))
 
     it "should fail to parse tokens from malformed_parens.c" $ do
       parseTokens [ KWInt

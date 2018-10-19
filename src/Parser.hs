@@ -13,63 +13,14 @@ import Token
 import AST
 import Error
 
-factorExpr = do atom OpenParen
-                expr <- expression
-                atom CloseParen
-                return (AST.Factor expr)
+parseTokens :: [Token] -> Either Error Program
+parseTokens ts = case parse program ts of
+                   [(res, xs)] -> Right res
+                   [] -> Left $ ParserError "Failed to parse the program."
 
-constant = do Integer int <- satisfy $ \t ->
-                case t of Integer _ -> True
-                          _         -> False
-              return (AST.Constant int)
-
-negation = do atom Token.Negation
-              fact <- factor
-              return (AST.Negation fact)
-
-bitwiseComplement = do atom Token.BitwiseComplement
-                       fact <- factor
-                       return (AST.BitwiseComplement fact)
-
-logicalNegation = do atom Token.LogicalNegation
-                     fact <- factor
-                     return (AST.LogicalNegation fact)
-
-factor = factorExpr
-     <|> constant
-     <|> negation
-     <|> bitwiseComplement
-     <|> logicalNegation
-
-multiplication = do atom Token.Multiplication
-                    return AST.Multiplication
-
-division = do atom Token.Division
-              return AST.Division
-
-term = fmap AST.Term factor
-       `chainl1` (multiplication <|> division)
-
-addition = do atom Token.Addition
-              return AST.Addition
-
-subtraction = do atom Token.Negation
-                 return AST.Subtraction
-
-expression = fmap AST.Expression term
-             `chainl1` (addition <|> subtraction)
-
-statement :: Parser Token Statement
-statement = do atom KWReturn
-               expr <- expression
-               atom Semicolon
-               return (Return expr)
-
-identifier :: Parser Token String
-identifier = do Identifier name <- satisfy $ \t ->
-                  case t of Identifier _ -> True
-                            _            -> False
-                return name
+program :: Parser Token Program
+program = do f <- function
+             return (Program f)
 
 function :: Parser Token Function
 function = do atom KWInt
@@ -81,11 +32,68 @@ function = do atom KWInt
               atom CloseBrace
               return (Function name body)
 
-program :: Parser Token Program
-program = do f <- function
-             return (Program f)
+identifier :: Parser Token String
+identifier = do Identifier name <- satisfy $ \t ->
+                  case t of Identifier _ -> True
+                            _            -> False
+                return name
 
-parseTokens :: [Token] -> Either Error Program
-parseTokens ts = case parse program ts of
-                   [(res, xs)] -> Right res
-                   [] -> Left $ ParserError "Failed to parse the program."
+statement :: Parser Token Statement
+statement = do atom KWReturn
+               expr <- expression
+               atom Semicolon
+               return (Return expr)
+
+expression :: Parser Token Expression
+expression = term `chainl1` (addition <|> subtraction)
+
+addition :: Parser Token (Expression -> Expression -> Expression)
+addition = do atom Token.Addition; return (Binary AST.Addition)
+
+subtraction :: Parser Token (Expression -> Expression -> Expression)
+subtraction = do atom Token.Negation; return (Binary AST.Subtraction)
+
+term :: Parser Token Expression
+term = factor `chainl1` (multiplication <|> division)
+
+multiplication :: Parser Token (Expression -> Expression -> Expression)
+multiplication = do atom Token.Multiplication; return (Binary AST.Multiplication)
+
+division :: Parser Token (Expression -> Expression -> Expression)
+division = do atom Token.Division; return (Binary AST.Division)
+
+parenExpr :: Parser Token Expression
+parenExpr = do atom OpenParen
+               expr <- expression
+               atom CloseParen
+               return expr
+
+constant :: Parser Token Expression
+constant = do Integer i <- satisfy $ \t ->
+                case t of Integer _ -> True
+                          _         -> False
+              return $ AST.Constant i
+
+negation :: Parser Token Expression
+negation = do atom Token.Negation
+              fact <- factor
+              return $ Unary AST.Negation fact
+
+bitwiseComplement :: Parser Token Expression
+bitwiseComplement = do atom Token.BitwiseComplement
+                       fact <- factor
+                       return $ Unary AST.BitwiseComplement fact
+
+logicalNegation :: Parser Token Expression
+logicalNegation = do atom Token.LogicalNegation
+                     fact <- factor
+                     return $ Unary AST.LogicalNegation fact
+
+unaryOperation :: Parser Token Expression
+unaryOperation = negation
+             <|> constant
+             <|> bitwiseComplement
+             <|> logicalNegation
+
+factor :: Parser Token Expression
+factor = parenExpr <|> unaryOperation <|> constant
