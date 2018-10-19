@@ -15,6 +15,13 @@ lexer :: Parser Char [Token]
 lexer = many . token $ reservedWord "int" KWInt
                    <|> reservedWord "return" KWReturn
 
+                   <|> stringToken "&&" LogicalAnd
+                   <|> stringToken "||" LogicalOr
+                   <|> stringToken "==" Equality
+                   <|> stringToken "!=" Inequality
+                   <|> stringToken "<=" LessEqual
+                   <|> stringToken ">=" GreaterEqual
+
                    <|> charToken '{' OpenBrace
                    <|> charToken '}' CloseBrace
                    <|> charToken '(' OpenParen
@@ -26,6 +33,8 @@ lexer = many . token $ reservedWord "int" KWInt
                    <|> charToken '+' Addition
                    <|> charToken '*' Multiplication
                    <|> charToken '/' Division
+                   <|> charToken '<' LessThan
+                   <|> charToken '>' GreaterThan
 
                    <|> identifier
                    <|> integer

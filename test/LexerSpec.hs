@@ -614,3 +614,425 @@ spec = do
             , Multiplication
             , Integer 2
             , CloseBrace]
+
+  describe "Stage 4" $ do
+
+    it "should lex and_false.c" $ do
+      lexString "int main() {\n\
+                \    return 1 && 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LogicalAnd
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex and_true.c" $ do
+      lexString "int main() {\n\
+                \    return 1 && -1;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LogicalAnd
+            , Negation
+            , Integer 1
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex eq_false.c" $ do
+      lexString "int main() {\n\
+                \    return 1 == 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , Equality
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex eq_true.c" $ do
+      lexString "int main() {\n\
+                \    return 1 == 1;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , Equality
+            , Integer 1
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex ge_false.c" $ do
+      lexString "int main() {\n\
+                \    return 1 >= 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , GreaterEqual
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex ge_true.c" $ do
+      lexString "int main() {\n\
+                \    return 1 >= 1;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , GreaterEqual
+            , Integer 1
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex gt_false.c" $ do
+      lexString "int main() {\n\
+                \    return 1 > 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , GreaterThan
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex gt_true.c" $ do
+      lexString "int main() {\n\
+                \    return 1 > 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , GreaterThan
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex le_false.c" $ do
+      lexString "int main() {\n\
+                \    return 1 <= -1;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LessEqual
+            , Negation
+            , Integer 1
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex le_true.c" $ do
+      lexString "int main() {\n\
+                \    return 0 <= 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 0
+            , LessEqual
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex lt_false.c" $ do
+      lexString "int main() {\n\
+                \    return 2 < 1;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 2
+            , LessThan
+            , Integer 1
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex lt_true.c" $ do
+      lexString "int main() {\n\
+                \    return 1 < 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LessThan
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex ne_false.c" $ do
+      lexString "int main() {\n\
+                \    return 0 != 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 0
+            , Inequality
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex ne_true.c" $ do
+      lexString "int main() {\n\
+                \    return -1 != -2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Negation
+            , Integer 1
+            , Inequality
+            , Negation
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex or_false.c" $ do
+      lexString "int main() {\n\
+                \    return 0 || 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 0
+            , LogicalOr
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex or_false.c" $ do
+      lexString "int main() {\n\
+                \    return 1 || 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LogicalOr
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex precedence.c" $ do
+      lexString "int main() {\n\
+                \    return 1 || 0 && 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LogicalOr
+            , Integer 0
+            , LogicalAnd
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex precedence_2.c" $ do
+      lexString "int main() {\n\
+                \    return (1 || 0) && 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , OpenParen
+            , Integer 1
+            , LogicalOr
+            , Integer 0
+            , CloseParen
+            , LogicalAnd
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+
+    it "should lex precedence_3.c" $ do
+      lexString "int main() {\n\
+                \    return 2 == 2 > 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 2
+            , Equality
+            , Integer 2
+            , GreaterThan
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex precedence_4.c" $ do
+      lexString "int main() {\n\
+                \    return 2 == 2 || 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 2
+            , Equality
+            , Integer 2
+            , LogicalOr
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex missing_first_op.c" $ do
+      lexString "int main() {\n\
+                \    return <= 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , LessEqual
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex missing_mid_op.c" $ do
+      lexString "int main() {\n\
+                \    return 1 < > 3;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LessThan
+            , GreaterThan
+            , Integer 3
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex missing_second_op.c" $ do
+      lexString "int main() {\n\
+                \    return 2 &&\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 2
+            , LogicalAnd
+            , CloseBrace]
+
+    it "should lex missing_semicolon.c" $ do
+      lexString "int main() {\n\
+                \    return 1 || 2\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , LogicalOr
+            , Integer 2
+            , CloseBrace]

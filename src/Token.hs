@@ -15,4 +15,12 @@ data Token = OpenBrace
            | Addition
            | Multiplication
            | Division
+           | LogicalAnd
+           | LogicalOr
+           | Equality
+           | Inequality
+           | LessEqual
+           | GreaterEqual
+           | LessThan
+           | GreaterThan
            deriving (Show, Eq)
