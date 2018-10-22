@@ -41,7 +41,7 @@ spec = do
         \main:\n\
         \movl $12, %eax\n\
         \cmpl $0, %eax\n\
-        \xorl %eax, %eax\n\
+        \movl $0, %eax\n\
         \sete %al\n\
         \ret"
 
@@ -113,10 +113,10 @@ spec = do
         \push %eax\n\
         \movl $6, %eax\n\
         \pop %ecx\n\
-        \xorl %edx, %edx\n\
+        \movl $0, %edx\n\
         \idivl %ecx\n\
         \pop %ecx\n\
-        \xorl %edx, %edx\n\
+        \movl $0, %edx\n\
         \idivl %ecx\n\
         \ret"
 
@@ -136,7 +136,7 @@ spec = do
         \push %eax\n\
         \movl $4, %eax\n\
         \pop %ecx\n\
-        \xorl %edx, %edx\n\
+        \movl $0, %edx\n\
         \idivl %ecx\n\
         \ret"
 
@@ -183,4 +183,174 @@ spec = do
         \movl $2, %eax\n\
         \pop %ecx\n\
         \imul %ecx, %eax\n\
+        \ret"
+
+  describe "Stage 4" $ do
+
+    it "should generate code for and_false.c" $ do
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalAnd)(
+                        Constant 1)(
+                        Constant 0)))))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $0, %eax\n\
+        \push %eax\n\
+        \movl $1, %eax\n\
+        \pop %ecx\n\
+        \cmpl $0, %ecx\n\
+        \setne %cl\n\
+        \cmpl $0, %eax\n\
+        \movl $0, %eax\n\
+        \setne %al\n\
+        \andb %cl, %al\n\
+        \ret"
+
+    it "should generate code for and_true.c" $ do
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalAnd)(
+                        Constant 1)(
+                        Unary (
+                            AST.Negation)(
+                            Constant 1))))))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $1, %eax\n\
+        \neg %eax\n\
+        \push %eax\n\
+        \movl $1, %eax\n\
+        \pop %ecx\n\
+        \cmpl $0, %ecx\n\
+        \setne %cl\n\
+        \cmpl $0, %eax\n\
+        \movl $0, %eax\n\
+        \setne %al\n\
+        \andb %cl, %al\n\
+        \ret"
+
+    it "should generate code for eq_false.c" $ do
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Equality)(
+                        Constant 1)(
+                        Constant 2)))))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $2, %eax\n\
+        \push %eax\n\
+        \movl $1, %eax\n\
+        \pop %ecx\n\
+        \cmpl %ecx, %eax\n\
+        \movl $0, %eax\n\
+        \sete %al\n\
+        \ret"
+
+    it "should generate code for eq_true.c" $ do
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Equality)(
+                        Constant 1)(
+                        Constant 1)))))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $1, %eax\n\
+        \push %eax\n\
+        \movl $1, %eax\n\
+        \pop %ecx\n\
+        \cmpl %ecx, %eax\n\
+        \movl $0, %eax\n\
+        \sete %al\n\
+        \ret"
+
+    it "should generate code for ge_false.c" $ do
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.GreaterEqual)(
+                        Constant 1)(
+                        Constant 2)))))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $2, %eax\n\
+        \push %eax\n\
+        \movl $1, %eax\n\
+        \pop %ecx\n\
+        \cmpl %ecx, %eax\n\
+        \movl $0, %eax\n\
+        \setge %al\n\
+        \ret"
+
+    it "should generate code for ge_true.c" $ do
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.GreaterEqual)(
+                        Constant 1)(
+                        Constant 1)))))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $1, %eax\n\
+        \push %eax\n\
+        \movl $1, %eax\n\
+        \pop %ecx\n\
+        \cmpl %ecx, %eax\n\
+        \movl $0, %eax\n\
+        \setge %al\n\
+        \ret"
+
+    it "should generate code for precedence.c" $ do
+      generate (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalOr)(
+                        Constant 1)(
+                        Binary (
+                            AST.LogicalAnd)(
+                            Constant 0)(
+                            Constant 2))))))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \movl $2, %eax\n\
+        \push %eax\n\
+        \movl $0, %eax\n\
+        \pop %ecx\n\
+        \cmpl $0, %ecx\n\
+        \setne %cl\n\
+        \cmpl $0, %eax\n\
+        \movl $0, %eax\n\
+        \setne %al\n\
+        \andb %cl, %al\n\
+        \push %eax\n\
+        \movl $1, %eax\n\
+        \pop %ecx\n\
+        \orl %ecx, %eax\n\
+        \movl $0, %eax\n\
+        \setne %al\n\
         \ret"
