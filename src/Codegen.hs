@@ -9,10 +9,10 @@ instance Generable Program where
   generate (Program func) = generate func
 
 instance Generable Function where
-  generate (Function name stat)
+  generate (Function name body)
     = ".globl " ++ name ++ "\n" ++
       name ++ ":\n" ++
-      generate stat
+      generate (head body)
 
 instance Generable Statement where
   generate (Return expr) = generate expr ++ "ret"

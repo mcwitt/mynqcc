@@ -1,31 +1,25 @@
-module AST ( Expression ( Constant
-                        , Unary
-                        , Binary)
-           , UnaryOp    ( Negation
-                        , BitwiseComplement
-                        , LogicalNegation)
-           , BinaryOp   ( Addition
-                        , Subtraction
-                        , Multiplication
-                        , Division
-                        , LogicalAnd
-                        , LogicalOr
-                        , Equality
-                        , Inequality
-                        , LessThan
-                        , GreaterThan
-                        , LessEqual
-                        , GreaterEqual)
-           , Statement  ( Return)
-           , Function   ( Function)
-           , Program    ( Program)
-           , pprint
-           ) where
+module AST where
 
 import Data.Tree ( Tree (Node), drawTree )
 
+data Program
+  = Program Function
+  deriving (Eq, Show)
+
+data Function
+  = Function String [Statement]
+  deriving (Eq, Show)
+
+data Statement
+  = Declaration String (Maybe Expression)
+  | Expression Expression
+  | Return Expression
+  deriving (Eq, Show)
+
 data Expression
   = Constant Int
+  | Assignment String Expression
+  | Reference String
   | Unary UnaryOp Expression
   | Binary BinaryOp Expression Expression
   deriving (Eq, Show)
@@ -51,19 +45,6 @@ data BinaryOp
   | GreaterEqual
   deriving (Eq, Show)
 
-data Statement
-  = Return Expression
-  deriving (Eq, Show)
-
-data Function
-  = Function String Statement
-  deriving (Eq, Show)
-
-data Program
-  = Program Function
-  deriving (Eq, Show)
-
-
 -- The (non-essential) definitions below allow the AST to be pretty-printed
 -- using Data.Tree (drawTree)
 
@@ -86,7 +67,7 @@ instance Treelike Statement where
 
 instance Treelike Function where
   toDataTree (Function name body)
-    = Node ("Function " ++ name) [toDataTree body]
+    = Node ("Function " ++ name) $ map toDataTree body
 
 instance Treelike Program where
   toDataTree (Program func)
