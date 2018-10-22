@@ -35,6 +35,7 @@ lexer = many . token $ reservedWord "int" KWInt
                    <|> charToken '/' Division
                    <|> charToken '<' LessThan
                    <|> charToken '>' GreaterThan
+                   <|> charToken '=' Assignment
 
                    <|> identifier
                    <|> integer

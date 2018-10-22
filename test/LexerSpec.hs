@@ -1036,3 +1036,29 @@ spec = do
             , LogicalOr
             , Integer 2
             , CloseBrace]
+
+  describe "Stage 5" $ do
+
+    it "should lex assign.c" $ do
+      lexString "int main() {\n\
+                \    int a;\n\
+                \    a = 2;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Semicolon
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]

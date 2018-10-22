@@ -23,4 +23,5 @@ data Token = OpenBrace
            | GreaterEqual
            | LessThan
            | GreaterThan
+           | Assignment
            deriving (Show, Eq)
