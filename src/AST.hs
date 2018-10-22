@@ -7,7 +7,15 @@ module AST ( Expression ( Constant
            , BinaryOp   ( Addition
                         , Subtraction
                         , Multiplication
-                        , Division)
+                        , Division
+                        , LogicalAnd
+                        , LogicalOr
+                        , Equality
+                        , Inequality
+                        , LessThan
+                        , GreaterThan
+                        , LessEqual
+                        , GreaterEqual)
            , Statement  ( Return)
            , Function   ( Function)
            , Program    ( Program)
@@ -33,6 +41,14 @@ data BinaryOp
   | Subtraction
   | Multiplication
   | Division
+  | LogicalAnd
+  | LogicalOr
+  | Equality
+  | Inequality
+  | LessThan
+  | GreaterThan
+  | LessEqual
+  | GreaterEqual
   deriving (Eq, Show)
 
 data Statement

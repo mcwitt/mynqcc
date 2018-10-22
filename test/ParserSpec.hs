@@ -545,3 +545,523 @@ spec = do
                   , CloseBrace]
         `shouldBe`
         Left (ParserError "Failed to parse the program.")
+
+  describe "Stage 4" $ do
+
+    it "should parse tokens from and_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.LogicalAnd
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalAnd)(
+                        Constant 1)(
+                        Constant 0)))))
+
+    it "should parse tokens from and_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.LogicalAnd
+                  , Token.Negation
+                  , Integer 1
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalAnd)(
+                        Constant 1)(
+                        Unary (
+                            AST.Negation)(
+                            Constant 1))))))
+
+    it "should parse tokens from eq_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.Equality
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Equality)(
+                        Constant 1)(
+                        Constant 2)))))
+
+    it "should parse tokens from eq_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.Equality
+                  , Integer 1
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Equality)(
+                        Constant 1)(
+                        Constant 1)))))
+
+    it "should parse tokens from ge_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.GreaterEqual
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.GreaterEqual)(
+                        Constant 1)(
+                        Constant 2)))))
+
+    it "should parse tokens from ge_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.GreaterEqual
+                  , Integer 1
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.GreaterEqual)(
+                        Constant 1)(
+                        Constant 1)))))
+
+    it "should parse tokens from gt_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.GreaterThan
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.GreaterThan)(
+                        Constant 1)(
+                        Constant 2)))))
+
+    it "should parse tokens from gt_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.GreaterThan
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.GreaterThan)(
+                        Constant 1)(
+                        Constant 0)))))
+
+    it "should parse tokens from le_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.LessEqual
+                  , Token.Negation
+                  , Integer 1
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LessEqual)(
+                        Constant 1)(
+                        Unary (
+                            AST.Negation)(
+                            Constant 1))))))
+
+    it "should parse tokens from le_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 0
+                  , Token.LessEqual
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LessEqual)(
+                        Constant 0)(
+                        Constant 2)))))
+
+    it "should parse tokens from lt_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 2
+                  , Token.LessThan
+                  , Integer 1
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LessThan)(
+                        Constant 2)(
+                        Constant 1)))))
+
+    it "should parse tokens from lt_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.LessThan
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LessThan)(
+                        Constant 1)(
+                        Constant 2)))))
+
+    it "should parse tokens from ne_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 0
+                  , Token.Inequality
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Inequality)(
+                        Constant 0)(
+                        Constant 0)))))
+
+    it "should parse tokens from ne_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Token.Negation
+                  , Integer 1
+                  , Token.Inequality
+                  , Token.Negation
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Inequality)(
+                        Unary (
+                            AST.Negation)(
+                            Constant 1))(
+                        Unary (
+                            AST.Negation)(
+                            Constant 2))))))
+
+    it "should parse tokens from or_false.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 0
+                  , Token.LogicalOr
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalOr)(
+                        Constant 0)(
+                        Constant 0)))))
+
+    it "should parse tokens from or_true.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.LogicalOr
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalOr)(
+                        Constant 1)(
+                        Constant 0)))))
+
+    it "should parse tokens from precedence.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.LogicalOr
+                  , Integer 0
+                  , Token.LogicalAnd
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalOr)(
+                        Constant 1)(
+                        Binary (
+                            AST.LogicalAnd)(
+                            Constant 0)(
+                            Constant 2))))))
+
+
+    it "should parse tokens from precedence_2.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , OpenParen
+                  , Integer 1
+                  , Token.LogicalOr
+                  , Integer 0
+                  , CloseParen
+                  , Token.LogicalAnd
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalAnd)(
+                        Binary (
+                            AST.LogicalOr)(
+                            Constant 1)(
+                            Constant 0))(
+                        Constant 0)))))
+
+    it "should parse tokens from precedence_3.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 2
+                  , Token.Equality
+                  , Integer 2
+                  , Token.GreaterThan
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.Equality)(
+                        Constant 2)(
+                        Binary (
+                            AST.GreaterThan)(
+                            Constant 2)(
+                            Constant 0))))))
+
+    it "should parse tokens from precedence_4.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 2
+                  , Token.Equality
+                  , Integer 2
+                  , Token.LogicalOr
+                  , Integer 0
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" (
+                Return (
+                    Binary (
+                        AST.LogicalOr)(
+                        Binary (
+                            AST.Equality)(
+                            Constant 2)(
+                            Constant 2))(
+                        Constant 0)))))
+
+    it "should fail to parse tokens from missing_first_op.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Token.LessEqual
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Left (ParserError "Failed to parse the program.")
+
+    it "should fail to parse tokens from missing_mid_op.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , Token.LessThan
+                  , Token.GreaterThan
+                  , Integer 3
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Left (ParserError "Failed to parse the program.")
+
+    it "should fail to parse tokens from missing_second_op.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 2
+                  , Token.LogicalAnd
+                  , CloseBrace]
+        `shouldBe`
+        Left (ParserError "Failed to parse the program.")

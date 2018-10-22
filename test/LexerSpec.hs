@@ -876,7 +876,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex or_false.c" $ do
+    it "should lex or_true.c" $ do
       lexString "int main() {\n\
                 \    return 1 || 0;\n\
                 \}"

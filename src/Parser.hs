@@ -45,28 +45,39 @@ statement = do atom KWReturn
                return (Return expr)
 
 expression :: Parser Token Expression
-expression = term `chainl1` (addition <|> subtraction)
+expression = logicalAndExpr `chainl1` logicalOr
 
-addition :: Parser Token (Expression -> Expression -> Expression)
-addition = do atom Token.Addition; return (Binary AST.Addition)
+logicalAndExpr :: Parser Token Expression
+logicalAndExpr = equalityExpr `chainl1` logicalAnd
 
-subtraction :: Parser Token (Expression -> Expression -> Expression)
-subtraction = do atom Token.Negation; return (Binary AST.Subtraction)
+equalityExpr :: Parser Token Expression
+equalityExpr = relationalExpr `chainl1` (equality <|> inequality)
+
+relationalExpr :: Parser Token Expression
+relationalExpr = additiveExpr `chainl1` ( lessThan
+                                      <|> greaterThan
+                                      <|> lessEqual
+                                      <|> greaterEqual)
+
+additiveExpr :: Parser Token Expression
+additiveExpr = term `chainl1` (addition <|> subtraction)
 
 term :: Parser Token Expression
 term = factor `chainl1` (multiplication <|> division)
 
-multiplication :: Parser Token (Expression -> Expression -> Expression)
-multiplication = do atom Token.Multiplication; return (Binary AST.Multiplication)
-
-division :: Parser Token (Expression -> Expression -> Expression)
-division = do atom Token.Division; return (Binary AST.Division)
+factor :: Parser Token Expression
+factor = parenExpr <|> unaryOperation <|> constant
 
 parenExpr :: Parser Token Expression
 parenExpr = do atom OpenParen
                expr <- expression
                atom CloseParen
                return expr
+
+unaryOperation :: Parser Token Expression
+unaryOperation = negation
+             <|> bitwiseComplement
+             <|> logicalNegation
 
 constant :: Parser Token Expression
 constant = do Integer i <- satisfy $ \t ->
@@ -89,11 +100,38 @@ logicalNegation = do atom Token.LogicalNegation
                      fact <- factor
                      return $ Unary AST.LogicalNegation fact
 
-unaryOperation :: Parser Token Expression
-unaryOperation = negation
-             <|> constant
-             <|> bitwiseComplement
-             <|> logicalNegation
+multiplication :: Parser Token (Expression -> Expression -> Expression)
+multiplication = do atom Token.Multiplication; return (Binary AST.Multiplication)
 
-factor :: Parser Token Expression
-factor = parenExpr <|> unaryOperation <|> constant
+division :: Parser Token (Expression -> Expression -> Expression)
+division = do atom Token.Division; return (Binary AST.Division)
+
+addition :: Parser Token (Expression -> Expression -> Expression)
+addition = do atom Token.Addition; return (Binary AST.Addition)
+
+subtraction :: Parser Token (Expression -> Expression -> Expression)
+subtraction = do atom Token.Negation; return (Binary AST.Subtraction)
+
+lessThan :: Parser Token (Expression -> Expression -> Expression)
+lessThan = do atom Token.LessThan; return (Binary AST.LessThan)
+
+greaterThan :: Parser Token (Expression -> Expression -> Expression)
+greaterThan = do atom Token.GreaterThan; return (Binary AST.GreaterThan)
+
+lessEqual :: Parser Token (Expression -> Expression -> Expression)
+lessEqual = do atom Token.LessEqual; return (Binary AST.LessEqual)
+
+greaterEqual :: Parser Token (Expression -> Expression -> Expression)
+greaterEqual = do atom Token.GreaterEqual; return (Binary AST.GreaterEqual)
+
+equality :: Parser Token (Expression -> Expression -> Expression)
+equality = do atom Token.Equality; return (Binary AST.Equality)
+
+inequality :: Parser Token (Expression -> Expression -> Expression)
+inequality = do atom Token.Inequality; return (Binary AST.Inequality)
+
+logicalAnd :: Parser Token (Expression -> Expression -> Expression)
+logicalAnd = do atom Token.LogicalAnd; return (Binary AST.LogicalAnd)
+
+logicalOr :: Parser Token (Expression -> Expression -> Expression)
+logicalOr = do atom Token.LogicalOr; return (Binary AST.LogicalOr)
