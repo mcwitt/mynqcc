@@ -1037,6 +1037,7 @@ spec = do
             , Integer 2
             , CloseBrace]
 
+
   describe "Stage 5" $ do
 
     it "should lex assign.c" $ do
@@ -1057,6 +1058,380 @@ spec = do
             , Identifier "a"
             , Assignment
             , Integer 2
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex assign_val.c" $ do
+      lexString "int main() {\n\
+                \    int a;\n\
+                \    int b = a = 0;\n\
+                \    return b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWReturn
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex exp_return_val.c" $ do
+      lexString "int main() {\n\
+                \    int a;\n\
+                \    int b;\n\
+                \    a = b = 4;\n\
+                \    return a - b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Semicolon
+            , Identifier "a"
+            , Assignment
+            , Identifier "b"
+            , Assignment
+            , Integer 4
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Negation
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex initialize.c" $ do
+      lexString "int main() {\n\
+                \    int a = 2;\n\
+                \    return 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex missing_return.c" $ do
+      lexString "int main() {\n\
+                \\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , CloseBrace]
+
+    it "should lex multiple_vars.c" $ do
+      lexString "int main() {\n\
+                \    int a = 1;\n\
+                \    int b = 2;\n\
+                \    return a + b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Addition
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex no_initialize.c" $ do
+      lexString "int main() {\n\
+                \    int a;\n\
+                \    return 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Semicolon
+            , KWReturn
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex refer.c" $ do
+      lexString "int main() {\n\
+                \    int a = 2;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex unused_exp.c" $ do
+      lexString "int main() {\n\
+                \    2 + 2;\n\
+                \    return 0;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , Integer 2
+            , Addition
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Integer 0
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex redefine.c" $ do
+      lexString "int main() {\n\
+                \    int a = 1;\n\
+                \    int a = 2;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex syntax_err_bad_decl.c" $ do
+      lexString "int main() {\n\
+                \    ints a = 1;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , Identifier "ints"
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex syntax_err_bad_decl_2.c" $ do
+      lexString "int main() {\n\
+                \    int foo bar = 3;\n\
+                \    return bar;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "foo"
+            , Identifier "bar"
+            , Assignment
+            , Integer 3
+            , Semicolon
+            , KWReturn
+            , Identifier "bar"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex syntax_err_bad_lvalue.c" $ do
+      lexString "int main() {\n\
+                \    int a = 2;\n\
+                \    a + 3 = 4;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , Identifier "a"
+            , Addition
+            , Integer 3
+            , Assignment
+            , Integer 4
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex syntax_err_bad_lvalue2.c" $ do
+      lexString "int main() {\n\
+                \    int a = 2;\n\
+                \    !a = 3;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , LogicalNegation
+            , Identifier "a"
+            , Assignment
+            , Integer 3
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex syntax_err_no_semicolon.c" $ do
+      lexString "int main() {\n\
+                \    int a = 2\n\
+                \    a = a + 4;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Identifier "a"
+            , Assignment
+            , Identifier "a"
+            , Addition
+            , Integer 4
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex undeclared_var.c" $ do
+      lexString "int main() {\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex var_declared_late.c" $ do
+      lexString "int main() {\n\
+                \    a = 1 + 2;\n\
+                \    int a;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Addition
+            , Integer 2
+            , Semicolon
+            , KWInt
+            , Identifier "a"
             , Semicolon
             , KWReturn
             , Identifier "a"

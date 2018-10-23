@@ -15,6 +15,7 @@ module ParserCombinators
   , item
   , peek
   , empty
+  , optional
   , some
   , many
   , satisfy
