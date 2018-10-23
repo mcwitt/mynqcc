@@ -23,7 +23,11 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $100, %eax\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
   describe "Stage 2" $ do
@@ -39,10 +43,14 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $12, %eax\n\
         \cmpl $0, %eax\n\
         \movl $0, %eax\n\
         \sete %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
   describe "Stage 3" $ do
@@ -59,11 +67,15 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $2, %eax\n\
         \push %eax\n\
         \movl $1, %eax\n\
         \pop %ecx\n\
         \addl %ecx, %eax\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for associativity.c" $ do
@@ -81,6 +93,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $3, %eax\n\
         \push %eax\n\
         \movl $2, %eax\n\
@@ -90,6 +104,8 @@ spec = do
         \subl %ecx, %eax\n\
         \pop %ecx\n\
         \subl %ecx, %eax\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for associativity_2.c" $ do
@@ -107,6 +123,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $2, %eax\n\
         \push %eax\n\
         \movl $3, %eax\n\
@@ -118,6 +136,8 @@ spec = do
         \pop %ecx\n\
         \movl $0, %edx\n\
         \idivl %ecx\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for div.c" $ do
@@ -132,12 +152,16 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $2, %eax\n\
         \push %eax\n\
         \movl $4, %eax\n\
         \pop %ecx\n\
         \movl $0, %edx\n\
         \idivl %ecx\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for mult.c" $ do
@@ -152,11 +176,15 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $3, %eax\n\
         \push %eax\n\
         \movl $2, %eax\n\
         \pop %ecx\n\
         \imul %ecx, %eax\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for parens.c" $ do
@@ -174,6 +202,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $4, %eax\n\
         \push %eax\n\
         \movl $3, %eax\n\
@@ -183,6 +213,8 @@ spec = do
         \movl $2, %eax\n\
         \pop %ecx\n\
         \imul %ecx, %eax\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
   describe "Stage 4" $ do
@@ -199,6 +231,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $0, %eax\n\
         \push %eax\n\
         \movl $1, %eax\n\
@@ -209,6 +243,8 @@ spec = do
         \movl $0, %eax\n\
         \setne %al\n\
         \andb %cl, %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for and_true.c" $ do
@@ -225,6 +261,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $1, %eax\n\
         \neg %eax\n\
         \push %eax\n\
@@ -236,6 +274,8 @@ spec = do
         \movl $0, %eax\n\
         \setne %al\n\
         \andb %cl, %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for eq_false.c" $ do
@@ -250,6 +290,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $2, %eax\n\
         \push %eax\n\
         \movl $1, %eax\n\
@@ -257,6 +299,8 @@ spec = do
         \cmpl %ecx, %eax\n\
         \movl $0, %eax\n\
         \sete %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for eq_true.c" $ do
@@ -271,6 +315,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $1, %eax\n\
         \push %eax\n\
         \movl $1, %eax\n\
@@ -278,6 +324,8 @@ spec = do
         \cmpl %ecx, %eax\n\
         \movl $0, %eax\n\
         \sete %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for ge_false.c" $ do
@@ -292,6 +340,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $2, %eax\n\
         \push %eax\n\
         \movl $1, %eax\n\
@@ -299,6 +349,8 @@ spec = do
         \cmpl %ecx, %eax\n\
         \movl $0, %eax\n\
         \setge %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for ge_true.c" $ do
@@ -313,6 +365,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $1, %eax\n\
         \push %eax\n\
         \movl $1, %eax\n\
@@ -320,6 +374,8 @@ spec = do
         \cmpl %ecx, %eax\n\
         \movl $0, %eax\n\
         \setge %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
 
     it "should generate code for precedence.c" $ do
@@ -337,6 +393,8 @@ spec = do
         `shouldBe`
         ".globl main\n\
         \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
         \movl $2, %eax\n\
         \push %eax\n\
         \movl $0, %eax\n\

@@ -12,10 +12,15 @@ instance Generable Function where
   generate (Function name body)
     = ".globl " ++ name ++ "\n" ++
       name ++ ":\n" ++
-      generate (head body)
+      "push %ebp\n\
+      \movl %esp, %ebp\n" ++
+      generate (head body) ++
+      "movl %ebp, %esp\n\
+      \pop %ebp\n\
+      \ret"
 
 instance Generable Statement where
-  generate (Return expr) = generate expr ++ "ret"
+  generate (Return expr) = generate expr
 
 
 instance Generable Expression where
