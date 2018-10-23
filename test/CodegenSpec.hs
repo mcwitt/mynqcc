@@ -411,4 +411,27 @@ spec = do
         \orl %ecx, %eax\n\
         \movl $0, %eax\n\
         \setne %al\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
+        \ret"
+
+  describe "Stage 5" $ do
+
+    it "should generate code for assign.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" Nothing
+                , Expression (AST.Assignment "a" (Constant 2))
+                , Return (Reference "a")]))
+        `shouldBe`
+        ".globl main\n\
+        \main:\n\
+        \push %ebp\n\
+        \movl %esp, %ebp\n\
+        \movl $2, %eax\n\
+        \push %eax\n\
+        \movl %ebp, %eax\n\
+        \movl %ebp, %esp\n\
+        \pop %ebp\n\
         \ret"
