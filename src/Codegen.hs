@@ -10,12 +10,12 @@ instance Generable Program where
 
 instance Generable Function where
   generate (Function name body)
-    = ".globl " ++ name ++ "\n" ++
-      name ++ ":\n" ++
-      "push %ebp\n\
-      \movl %esp, %ebp\n" ++
-      generate (head body) ++
-      "movl %ebp, %esp\n\
+    = ".globl " ++ name ++ "\n"
+   ++ name ++ ":\n"
+   ++ "push %ebp\n\
+      \movl %esp, %ebp\n"
+   ++ generate (head body)
+   ++ "movl %ebp, %esp\n\
       \pop %ebp\n\
       \ret"
 

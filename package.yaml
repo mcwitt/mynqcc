@@ -24,7 +24,6 @@ dependencies:
   - containers
   - optparse-applicative
   - filepath
-  - process
 
 library:
   source-dirs: src
