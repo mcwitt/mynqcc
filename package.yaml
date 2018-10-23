@@ -24,6 +24,7 @@ dependencies:
   - containers
   - optparse-applicative
   - filepath
+  - mtl
 
 library:
   source-dirs: src

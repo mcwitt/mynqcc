@@ -1,5 +1,6 @@
 module Main where
 
+import Data.List ( intercalate)
 import Options.Applicative
 import System.IO ( IOMode (ReadMode)
                  , withFile
@@ -57,4 +58,4 @@ compile :: String -> Either Error String
 compile src = do
   tokens <- lexString src
   ast <- parseTokens tokens
-  return (generate ast)
+  return $ intercalate "\n" $ generate ast

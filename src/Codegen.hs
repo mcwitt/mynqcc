@@ -1,41 +1,50 @@
 module Codegen (generate) where
 
 import AST
-
-class Generable a where
-  generate :: a -> String
-
-instance Generable Program where
-  generate (Program func) = generate func
-
-instance Generable Function where
-  generate (Function name body)
-    = ".globl " ++ name ++ "\n"
-   ++ name ++ ":\n"
-   ++ "push %ebp\n\
-      \movl %esp, %ebp\n"
-   ++ generate (head body)
-   ++ "movl %ebp, %esp\n\
-      \pop %ebp\n\
-      \ret"
-
-instance Generable Statement where
-  generate (Return expr) = generate expr
+import Control.Monad.State
+import Control.Monad.Writer
+import Data.Map (Map, empty)
 
 
-instance Generable Expression where
+data Context = Context { stackIndex :: Int
+                       , varOffsets :: Map String Int} deriving Show
 
-  generate (Constant i) = "movl $" ++ show i ++ ", %eax\n"
+type Generator = StateT Context (Writer [String])
 
-  generate (Unary op expr)
-    = generate expr
-   ++ (case op of Negation -> "neg %eax"
-                  BitwiseComplement -> "not %eax"
-                  LogicalNegation ->
-                    "cmpl $0, %eax\n\
-                    \movl $0, %eax\n\
-                    \sete %al")
-   ++ "\n"
+
+generate :: Program -> [String]
+generate prog = lines
+  where lines = execWriter $ runStateT (program prog) emptyContext
+        emptyContext = Context { stackIndex = 0
+                               , varOffsets = empty}
+
+program :: Program -> Generator ()
+program (Program func) = function func
+
+function :: Function -> Generator ()
+function (Function name body) = do
+  emit $ ".globl " ++ name
+  emit $ name ++ ":"
+  emit "push %ebp"
+  emit "movl %esp, %ebp"
+  mapM statement body
+  emit "movl %ebp, %esp"
+  emit "pop %ebp"
+  emit "ret"
+
+statement :: Statement -> Generator ()
+statement (Return expr) = expression expr
+
+expression :: Expression -> Generator ()
+expression (Constant i) = emit $ "movl $" ++ show i ++ ", %eax"
+expression (Unary op expr) = do
+  expression expr
+  case op of Negation -> emit "neg %eax"
+             BitwiseComplement -> emit "not %eax"
+             LogicalNegation -> do
+               emit "cmpl $0, %eax"
+               emit "movl $0, %eax"
+               emit "sete %al"
 
   -- | General strategy for evaluating binary operators on
   --   sub-expressions e1, e2:
@@ -43,53 +52,56 @@ instance Generable Expression where
   --   2. Evaluate e2
   --   3. Pop the result of e1 back into a register
   --   4. Perform the binary operation on e1, e2
-  generate (Binary op e1 e2)
-    = generate e2
-   ++ "push %eax\n"
-   ++ generate e1
-   ++ "pop %ecx\n"
-   ++ (case op of Addition ->
-                    "addl %ecx, %eax"
-                  Subtraction ->
-                    "subl %ecx, %eax"
-                  Multiplication ->
-                    "imul %ecx, %eax"
-                  Division ->
-                    "movl $0, %edx\n\
-                    \idivl %ecx"
-                  Equality ->
-                    "cmpl %ecx, %eax\n\
-                    \movl $0, %eax\n\
-                    \sete %al"
-                  Inequality ->
-                    "cmpl %ecx, %eax\n\
-                    \movl $0, %eax\n\
-                    \setne %al"
-                  LessThan ->
-                    "cmpl %ecx, %eax\n\
-                    \movl $0, %eax\n\
-                    \setl %al"
-                  GreaterThan ->
-                    "cmpl %ecx, %eax\n\
-                    \movl $0, %eax\n\
-                    \setg %al"
-                  LessEqual ->
-                    "cmpl %ecx, %eax\n\
-                    \movl $0, %eax\n\
-                    \setle %al"
-                  GreaterEqual ->
-                    "cmpl %ecx, %eax\n\
-                    \movl $0, %eax\n\
-                    \setge %al"
-                  LogicalOr ->
-                    "orl %ecx, %eax\n\
-                    \movl $0, %eax\n\
-                    \setne %al"
-                  LogicalAnd ->
-                    "cmpl $0, %ecx\n\
-                    \setne %cl\n\
-                    \cmpl $0, %eax\n\
-                    \movl $0, %eax\n\
-                    \setne %al\n\
-                    \andb %cl, %al")
-   ++ "\n"
+expression (Binary op e1 e2) = do
+  expression e2
+  emit "push %eax"
+  expression e1
+  emit "pop %ecx"
+  case op of
+    Addition ->
+      emit "addl %ecx, %eax"
+    Subtraction ->
+      emit "subl %ecx, %eax"
+    Multiplication ->
+      emit "imul %ecx, %eax"
+    Division -> do
+      emit "movl $0, %edx"
+      emit "idivl %ecx"
+    Equality -> do
+      emit "cmpl %ecx, %eax"
+      emit "movl $0, %eax"
+      emit "sete %al"
+    Inequality -> do
+      emit "cmpl %ecx, %eax"
+      emit "movl $0, %eax"
+      emit "setne %al"
+    LessThan -> do
+      emit "cmpl %ecx, %eax"
+      emit "movl $0, %eax"
+      emit "setl %al"
+    GreaterThan -> do
+      emit "cmpl %ecx, %eax"
+      emit "movl $0, %eax"
+      emit "setg %al"
+    LessEqual -> do
+      emit "cmpl %ecx, %eax"
+      emit "movl $0, %eax"
+      emit "setle %al"
+    GreaterEqual -> do
+      emit "cmpl %ecx, %eax"
+      emit "movl $0, %eax"
+      emit "setge %al"
+    LogicalOr -> do
+      emit "orl %ecx, %eax"
+      emit "movl $0, %eax"
+      emit "setne %al"
+    LogicalAnd -> do
+      emit "cmpl $0, %ecx"
+      emit "setne %cl"
+      emit "cmpl $0, %eax"
+      emit "movl $0, %eax"
+      emit "setne %al"
+      emit "andb %cl, %al"
+
+emit :: String -> Generator ()
+emit s = lift $ writer ((), [s])
