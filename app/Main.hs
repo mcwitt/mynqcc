@@ -9,10 +9,12 @@ import System.IO ( IOMode (ReadMode)
 
 import System.FilePath.Posix (dropExtension)
 
+import Codegen ( generate)
+import Error   ( Error ( LexerError
+                       , ParserError
+                       , CodegenError))
 import Lexer   ( lexString)
 import Parser  ( parseTokens)
-import Codegen ( generate)
-import Error   ( Error (LexerError, ParserError))
 
 data CmdOptions = CmdOptions { verbose    :: Bool
                              , outputFile :: String
@@ -58,4 +60,5 @@ compile :: String -> Either Error String
 compile src = do
   tokens <- lexString src
   ast <- parseTokens tokens
-  return $ intercalate "\n" $ generate ast
+  code <- generate ast
+  return $ intercalate "\n" code

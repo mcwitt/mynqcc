@@ -21,14 +21,14 @@ spec = do
                 Return (
                     Constant 100)]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $100, %eax"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $100, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
   describe "Stage 2" $ do
 
@@ -41,17 +41,17 @@ spec = do
                         AST.LogicalNegation)(
                         Constant 12))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $12, %eax"
-        , "cmpl $0, %eax"
-        , "movl $0, %eax"
-        , "sete %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $12, %eax"
+              , "cmpl $0, %eax"
+              , "movl $0, %eax"
+              , "sete %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
   describe "Stage 3" $ do
 
@@ -65,18 +65,18 @@ spec = do
                         Constant 1)(
                         Constant 2))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "addl %ecx, %eax"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "addl %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for associativity.c" $ do
       generate (
@@ -91,22 +91,22 @@ spec = do
                             Constant 2))(
                         Constant 3))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $3, %eax"
-        , "push %eax"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "subl %ecx, %eax"
-        , "pop %ecx"
-        , "subl %ecx, %eax"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $3, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "subl %ecx, %eax"
+              , "pop %ecx"
+              , "subl %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for associativity_2.c" $ do
       generate (
@@ -121,24 +121,24 @@ spec = do
                             Constant 3))(
                         Constant 2))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl $3, %eax"
-        , "push %eax"
-        , "movl $6, %eax"
-        , "pop %ecx"
-        , "movl $0, %edx"
-        , "idivl %ecx"
-        , "pop %ecx"
-        , "movl $0, %edx"
-        , "idivl %ecx"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $3, %eax"
+              , "push %eax"
+              , "movl $6, %eax"
+              , "pop %ecx"
+              , "movl $0, %edx"
+              , "idivl %ecx"
+              , "pop %ecx"
+              , "movl $0, %edx"
+              , "idivl %ecx"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for div.c" $ do
       generate (
@@ -150,19 +150,19 @@ spec = do
                         Constant 4)(
                         Constant 2))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl $4, %eax"
-        , "pop %ecx"
-        , "movl $0, %edx"
-        , "idivl %ecx"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $4, %eax"
+              , "pop %ecx"
+              , "movl $0, %edx"
+              , "idivl %ecx"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for mult.c" $ do
       generate (
@@ -174,18 +174,18 @@ spec = do
                         Constant 2)(
                         Constant 3))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $3, %eax"
-        , "push %eax"
-        , "movl $2, %eax"
-        , "pop %ecx"
-        , "imul %ecx, %eax"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $3, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "pop %ecx"
+              , "imul %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for parens.c" $ do
       generate (
@@ -200,22 +200,22 @@ spec = do
                             Constant 3)(
                             Constant 4)))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $4, %eax"
-        , "push %eax"
-        , "movl $3, %eax"
-        , "pop %ecx"
-        , "addl %ecx, %eax"
-        , "push %eax"
-        , "movl $2, %eax"
-        , "pop %ecx"
-        , "imul %ecx, %eax"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $4, %eax"
+              , "push %eax"
+              , "movl $3, %eax"
+              , "pop %ecx"
+              , "addl %ecx, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "pop %ecx"
+              , "imul %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
   describe "Stage 4" $ do
 
@@ -229,23 +229,23 @@ spec = do
                         Constant 1)(
                         Constant 0))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $0, %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "cmpl $0, %ecx"
-        , "setne %cl"
-        , "cmpl $0, %eax"
-        , "movl $0, %eax"
-        , "setne %al"
-        , "andb %cl, %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl $0, %ecx"
+              , "setne %cl"
+              , "cmpl $0, %eax"
+              , "movl $0, %eax"
+              , "setne %al"
+              , "andb %cl, %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for and_true.c" $ do
       generate (
@@ -259,24 +259,24 @@ spec = do
                             AST.Negation)(
                             Constant 1)))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $1, %eax"
-        , "neg %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "cmpl $0, %ecx"
-        , "setne %cl"
-        , "cmpl $0, %eax"
-        , "movl $0, %eax"
-        , "setne %al"
-        , "andb %cl, %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "neg %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl $0, %ecx"
+              , "setne %cl"
+              , "cmpl $0, %eax"
+              , "movl $0, %eax"
+              , "setne %al"
+              , "andb %cl, %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for eq_false.c" $ do
       generate (
@@ -288,20 +288,20 @@ spec = do
                         Constant 1)(
                         Constant 2))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "cmpl %ecx, %eax"
-        , "movl $0, %eax"
-        , "sete %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "sete %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for eq_true.c" $ do
       generate (
@@ -313,20 +313,20 @@ spec = do
                         Constant 1)(
                         Constant 1))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $1, %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "cmpl %ecx, %eax"
-        , "movl $0, %eax"
-        , "sete %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "sete %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for ge_false.c" $ do
       generate (
@@ -338,20 +338,20 @@ spec = do
                         Constant 1)(
                         Constant 2))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "cmpl %ecx, %eax"
-        , "movl $0, %eax"
-        , "setge %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setge %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for ge_true.c" $ do
       generate (
@@ -363,20 +363,20 @@ spec = do
                         Constant 1)(
                         Constant 1))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $1, %eax"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "cmpl %ecx, %eax"
-        , "movl $0, %eax"
-        , "setge %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setge %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
     it "should generate code for precedence.c" $ do
       generate (
@@ -391,29 +391,29 @@ spec = do
                             Constant 0)(
                             Constant 2)))]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl $0, %eax"
-        , "pop %ecx"
-        , "cmpl $0, %ecx"
-        , "setne %cl"
-        , "cmpl $0, %eax"
-        , "movl $0, %eax"
-        , "setne %al"
-        , "andb %cl, %al"
-        , "push %eax"
-        , "movl $1, %eax"
-        , "pop %ecx"
-        , "orl %ecx, %eax"
-        , "movl $0, %eax"
-        , "setne %al"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "pop %ecx"
+              , "cmpl $0, %ecx"
+              , "setne %cl"
+              , "cmpl $0, %eax"
+              , "movl $0, %eax"
+              , "setne %al"
+              , "andb %cl, %al"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "orl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setne %al"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
 
   describe "Stage 5" $ do
 
@@ -425,13 +425,13 @@ spec = do
                 , Expression (AST.Assignment "a" (Constant 2))
                 , Return (Reference "a")]))
         `shouldBe`
-        [ ".globl main"
-        , "main:"
-        , "push %ebp"
-        , "movl %esp, %ebp"
-        , "movl $2, %eax"
-        , "push %eax"
-        , "movl %ebp, %eax"
-        , "movl %ebp, %esp"
-        , "pop %ebp"
-        , "ret"]
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl %ebp, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]

@@ -1,27 +1,28 @@
 module Codegen (generate) where
 
 import AST
+import Control.Monad.Except
 import Control.Monad.State
 import Control.Monad.Writer
 import Data.Map (Map, empty)
+import Error
 
 
 data Context = Context { stackIndex :: Int
                        , varOffsets :: Map String Int} deriving Show
 
-type Generator = StateT Context (Writer [String])
+type M = StateT Context (WriterT [String] (Except Error))
 
-
-generate :: Program -> [String]
+generate :: Program -> Either Error [String]
 generate prog = lines
-  where lines = execWriter $ runStateT (program prog) emptyContext
+  where lines =  runExcept . execWriterT $ runStateT (program prog) emptyContext
         emptyContext = Context { stackIndex = 0
                                , varOffsets = empty}
 
-program :: Program -> Generator ()
+program :: Program -> M ()
 program (Program func) = function func
 
-function :: Function -> Generator ()
+function :: Function -> M ()
 function (Function name body) = do
   emit $ ".globl " ++ name
   emit $ name ++ ":"
@@ -32,10 +33,10 @@ function (Function name body) = do
   emit "pop %ebp"
   emit "ret"
 
-statement :: Statement -> Generator ()
+statement :: Statement -> M ()
 statement (Return expr) = expression expr
 
-expression :: Expression -> Generator ()
+expression :: Expression -> M ()
 expression (Constant i) = emit $ "movl $" ++ show i ++ ", %eax"
 expression (Unary op expr) = do
   expression expr
@@ -103,5 +104,5 @@ expression (Binary op e1 e2) = do
       emit "setne %al"
       emit "andb %cl, %al"
 
-emit :: String -> Generator ()
+emit :: String -> M ()
 emit s = lift $ writer ((), [s])
