@@ -27,8 +27,7 @@ to handle the bookkeeping.
 type MS = StateT Context M
 
 generate :: Program -> Either Error [String]
-generate prog = lines
-  where lines =  runExcept . execWriterT $ program prog
+generate prog = runExcept . execWriterT $ program prog
 
 program :: Program -> M ()
 program (Program func) = function func
@@ -66,10 +65,8 @@ statement st = case st of
           Nothing -> return ()
         emitL "push %eax"
         sind <- gets stackIndex
-        let newStackIndex = sind - 4
-            newVarOffsets = Map.insert name sind vars
-          in put Context { stackIndex = newStackIndex
-                         , varOffsets = newVarOffsets}
+        put Context { stackIndex = sind - 4
+                    , varOffsets = Map.insert name sind vars}
 
 
 expression :: Expression -> MS ()
