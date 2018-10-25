@@ -1,40 +1,42 @@
 module Codegen (generate) where
 
-import AST
-import Control.Monad.Except
-import Control.Monad.State
-import Control.Monad.Writer
+import           AST
+import           Control.Monad.Except
+import           Control.Monad.State
+import           Control.Monad.Writer
 import qualified Data.Map as Map
-import Error
-import Text.Printf
+import           Error
+import           Text.Printf
 
 
 data Context = Context { stackIndex :: Int
                        , varOffsets :: Map.Map String Int} deriving Show
 
-type M = StateT Context (WriterT [String] (Except Error))
+type M = WriterT [String] (Except Error)
+type MS = StateT Context M
 
 generate :: Program -> Either Error [String]
 generate prog = lines
-  where lines =  runExcept . execWriterT $ runStateT (program prog) emptyContext
-        emptyContext = Context { stackIndex = -4
-                               , varOffsets = Map.empty}
+  where lines =  runExcept . execWriterT $ program prog
 
 program :: Program -> M ()
 program (Program func) = function func
 
 function :: Function -> M ()
-function (Function name body) = do
-  emit $ ".globl " ++ name
-  emit $ name ++ ":"
-  emit "push %ebp"
-  emit "movl %esp, %ebp"
-  mapM statement body
-  emit "movl %ebp, %esp"
-  emit "pop %ebp"
-  emit "ret"
+function (Function name body) =
+  let emptyContext = Context { stackIndex = -4
+                             , varOffsets = Map.empty}
+  in do
+    emit $ ".globl " ++ name
+    emit $ name ++ ":"
+    emit "push %ebp"
+    emit "movl %esp, %ebp"
+    execStateT (mapM statement body) emptyContext
+    emit "movl %ebp, %esp"
+    emit "pop %ebp"
+    emit "ret"
 
-statement :: Statement -> M ()
+statement :: Statement -> MS ()
 statement st = case st of
 
   Return expr -> expression expr
@@ -51,7 +53,7 @@ statement st = case st of
         case maybeExpr of
           Just expr -> expression expr
           Nothing -> return ()
-        emit "push %eax"
+        emitL "push %eax"
         sind <- gets stackIndex
         let newStackIndex = sind - 4
             newVarOffsets = Map.insert name sind vars
@@ -59,16 +61,16 @@ statement st = case st of
                          , varOffsets = newVarOffsets}
 
 
-expression :: Expression -> M ()
+expression :: Expression -> MS ()
 expression expr = case expr of
 
-  Constant i -> emit $ "movl $" ++ show i ++ ", %eax"
+  Constant i -> emitL $ "movl $" ++ show i ++ ", %eax"
 
   Assignment name expr -> do
     expression expr
     vars <- gets varOffsets
     case Map.lookup name vars of
-      Just offset -> emit $ "movl %eax, " ++ show offset ++ "(%ebp)"
+      Just offset -> emitL $ "movl %eax, " ++ show offset ++ "(%ebp)"
       Nothing -> throwError
                . CodegenError
                $ printf "Assignment to undeclared variable, `%s`." name
@@ -76,19 +78,19 @@ expression expr = case expr of
   Reference name -> do
     vars <- gets varOffsets
     case Map.lookup name vars of
-      Just offset -> emit $ "movl " ++ show offset ++ "(%ebp), %eax"
+      Just offset -> emitL $ "movl " ++ show offset ++ "(%ebp), %eax"
       Nothing -> throwError
                . CodegenError
                $ printf "Reference to undeclared variable, `%s`." name
 
   Unary op expr -> do
     expression expr
-    case op of Negation -> emit "neg %eax"
-               BitwiseComplement -> emit "not %eax"
+    case op of Negation -> emitL "neg %eax"
+               BitwiseComplement -> emitL "not %eax"
                LogicalNegation -> do
-                 emit "cmpl $0, %eax"
-                 emit "movl $0, %eax"
-                 emit "sete %al"
+                 emitL "cmpl $0, %eax"
+                 emitL "movl $0, %eax"
+                 emitL "sete %al"
 
   -- | General strategy for evaluating binary operators on
   --   sub-expressions e1, e2:
@@ -98,54 +100,57 @@ expression expr = case expr of
   --   4. Perform the binary operation on e1, e2
   Binary op e1 e2 -> do
     expression e2
-    emit "push %eax"
+    emitL "push %eax"
     expression e1
-    emit "pop %ecx"
+    emitL "pop %ecx"
     case op of
       Addition ->
-        emit "addl %ecx, %eax"
+        emitL "addl %ecx, %eax"
       Subtraction ->
-        emit "subl %ecx, %eax"
+        emitL "subl %ecx, %eax"
       Multiplication ->
-        emit "imul %ecx, %eax"
+        emitL "imul %ecx, %eax"
       Division -> do
-        emit "movl $0, %edx"
-        emit "idivl %ecx"
+        emitL "movl $0, %edx"
+        emitL "idivl %ecx"
       Equality -> do
-        emit "cmpl %ecx, %eax"
-        emit "movl $0, %eax"
-        emit "sete %al"
+        emitL "cmpl %ecx, %eax"
+        emitL "movl $0, %eax"
+        emitL "sete %al"
       Inequality -> do
-        emit "cmpl %ecx, %eax"
-        emit "movl $0, %eax"
-        emit "setne %al"
+        emitL "cmpl %ecx, %eax"
+        emitL "movl $0, %eax"
+        emitL "setne %al"
       LessThan -> do
-        emit "cmpl %ecx, %eax"
-        emit "movl $0, %eax"
-        emit "setl %al"
+        emitL "cmpl %ecx, %eax"
+        emitL "movl $0, %eax"
+        emitL "setl %al"
       GreaterThan -> do
-        emit "cmpl %ecx, %eax"
-        emit "movl $0, %eax"
-        emit "setg %al"
+        emitL "cmpl %ecx, %eax"
+        emitL "movl $0, %eax"
+        emitL "setg %al"
       LessEqual -> do
-        emit "cmpl %ecx, %eax"
-        emit "movl $0, %eax"
-        emit "setle %al"
+        emitL "cmpl %ecx, %eax"
+        emitL "movl $0, %eax"
+        emitL "setle %al"
       GreaterEqual -> do
-        emit "cmpl %ecx, %eax"
-        emit "movl $0, %eax"
-        emit "setge %al"
+        emitL "cmpl %ecx, %eax"
+        emitL "movl $0, %eax"
+        emitL "setge %al"
       LogicalOr -> do
-        emit "orl %ecx, %eax"
-        emit "movl $0, %eax"
-        emit "setne %al"
+        emitL "orl %ecx, %eax"
+        emitL "movl $0, %eax"
+        emitL "setne %al"
       LogicalAnd -> do
-        emit "cmpl $0, %ecx"
-        emit "setne %cl"
-        emit "cmpl $0, %eax"
-        emit "movl $0, %eax"
-        emit "setne %al"
-        emit "andb %cl, %al"
+        emitL "cmpl $0, %ecx"
+        emitL "setne %cl"
+        emitL "cmpl $0, %eax"
+        emitL "movl $0, %eax"
+        emitL "setne %al"
+        emitL "andb %cl, %al"
 
 emit :: String -> M ()
-emit s = lift $ writer ((), [s])
+emit s = writer ((), [s])
+
+emitL :: String -> MS ()
+emitL = lift . emit
