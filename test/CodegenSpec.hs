@@ -1,14 +1,13 @@
 module CodegenSpec (spec) where
 
-import Test.Hspec        ( Spec
-                         , describe
-                         , it
-                         , shouldBe
-                         )
-
-import Codegen
-import Parser
 import AST
+import Codegen
+import Error      ( Error ( CodegenError))
+import Parser
+import Test.Hspec ( Spec
+                  , describe
+                  , it
+                  , shouldBe)
 
 spec :: Spec
 spec = do
@@ -429,9 +428,216 @@ spec = do
               , "main:"
               , "push %ebp"
               , "movl %esp, %ebp"
-              , "movl $2, %eax"
               , "push %eax"
-              , "movl %ebp, %eax"
+              , "movl $2, %eax"
+              , "movl %eax, 0(%ebp)"
+              , "movl 0(%ebp), %eax"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
+
+    it "should generate code for assign_val.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" Nothing
+                , Declaration "b" (
+                    Just (AST.Assignment "a" (Constant 0)))
+                , Return (Reference "b")]))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "movl %eax, 0(%ebp)"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for exp_return_val.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" Nothing
+                , Declaration "b" Nothing
+                , Expression (
+                    AST.Assignment "a" (
+                        AST.Assignment "b" (Constant 4)))
+                , Return (
+                    Binary (
+                        AST.Subtraction)(
+                        Reference "a")(
+                        Reference "b"))]))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "push %eax"
+              , "push %eax"
+              , "movl $4, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "movl %eax, 0(%ebp)"
+              , "movl -4(%ebp), %eax"
+              , "push %eax"
+              , "movl 0(%ebp), %eax"
+              , "pop %ecx"
+              , "subl %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for initialize.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" (Just (Constant 2))
+                , Return (Constant 0)]))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for missing_return.c" $ do
+      generate (Program (Function "main" []))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for multiple_vars.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" (Just (Constant 1))
+                , Declaration "b" (Just (Constant 2))
+                , Return (
+                    Binary (
+                        AST.Addition)(
+                        Reference "a")(
+                        Reference "b"))]))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "push %eax"
+              , "movl 0(%ebp), %eax"
+              , "pop %ecx"
+              , "addl %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for no_initialize.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" Nothing
+                , Return (Constant 0)]))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for refer.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" (Just (Constant 2))
+                , Return (Reference "a")]))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl 0(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for unused_exp.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Expression (
+                      Binary (
+                          AST.Addition)(
+                          Constant 2)(
+                          Constant 2))
+                , Return (Constant 0)]))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "pop %ecx"
+              , "addl %ecx, %eax"
+              , "movl $0, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should fail to generate code for redefine.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Declaration "a" (Just (Constant 1))
+                , Declaration "a" (Just (Constant 2))
+                , Return (Reference "a")]))
+        `shouldBe`
+        Left (CodegenError "Variable `a` was declared more than once.")
+
+    it "should fail to generate code for undeclared_var.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                Return (Reference "a")]))
+        `shouldBe`
+        Left (CodegenError "Reference to undeclared variable, `a`.")
+
+    it "should fail to generate code for var_declared_late.c" $ do
+      generate (
+        Program (
+            Function "main" [
+                  Expression (
+                      AST.Assignment "a" (
+                          Binary (
+                              AST.Addition)(
+                              Constant 1)(
+                              Constant 2)))
+                , Declaration "a" Nothing
+                , Return (Reference "a")]))
+        `shouldBe`
+        Left (CodegenError "Assignment to undeclared variable, `a`.")
