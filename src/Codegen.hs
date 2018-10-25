@@ -12,7 +12,18 @@ import           Text.Printf
 data Context = Context { stackIndex :: Int
                        , varOffsets :: Map.Map String Int} deriving Show
 
+{- |
+Monad type in which all code generation actions are executed. The inner Except
+monad allows for exception handling, and the WriterT keeps track of the assembly
+code generated so far.
+-}
 type M = WriterT [String] (Except Error)
+
+{- |
+Inside of functions, we need to track the stack index and variable offsets
+relative to the base pointer (EBP). We wrap the base monad M in a StateT Context
+to handle the bookkeeping.
+-}
 type MS = StateT Context M
 
 generate :: Program -> Either Error [String]
