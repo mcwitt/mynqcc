@@ -1,10 +1,10 @@
 module Parser ( parseTokens
               ) where
 
-import ParserCombinators
-import Token
 import AST
 import Error
+import ParserCombinators
+import Token
 
 parseTokens :: [Token] -> Either Error Program
 parseTokens ts = case parse program ts of
