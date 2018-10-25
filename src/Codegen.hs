@@ -17,7 +17,7 @@ type M = StateT Context (WriterT [String] (Except Error))
 generate :: Program -> Either Error [String]
 generate prog = lines
   where lines =  runExcept . execWriterT $ runStateT (program prog) emptyContext
-        emptyContext = Context { stackIndex = 0
+        emptyContext = Context { stackIndex = -4
                                , varOffsets = Map.empty}
 
 program :: Program -> M ()
