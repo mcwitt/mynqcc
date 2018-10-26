@@ -12,33 +12,34 @@ lexString st = case parse lexer st of
                  [] -> Left $ LexerError "Failed to lex the program."
 
 lexer :: Parser Char [Token]
-lexer = many . token $ reservedWord "int" KWInt
-                   <|> reservedWord "return" KWReturn
+lexer = many . token $
+      reservedWord "int" KWInt
+  <|> reservedWord "return" KWReturn
 
-                   <|> stringToken "&&" LogicalAnd
-                   <|> stringToken "||" LogicalOr
-                   <|> stringToken "==" Equality
-                   <|> stringToken "!=" Inequality
-                   <|> stringToken "<=" LessEqual
-                   <|> stringToken ">=" GreaterEqual
+  <|> stringToken "&&" LogicalAnd
+  <|> stringToken "||" LogicalOr
+  <|> stringToken "==" Equality
+  <|> stringToken "!=" Inequality
+  <|> stringToken "<=" LessEqual
+  <|> stringToken ">=" GreaterEqual
 
-                   <|> charToken '{' OpenBrace
-                   <|> charToken '}' CloseBrace
-                   <|> charToken '(' OpenParen
-                   <|> charToken ')' CloseParen
-                   <|> charToken ';' Semicolon
-                   <|> charToken '-' Negation
-                   <|> charToken '~' BitwiseComplement
-                   <|> charToken '!' LogicalNegation
-                   <|> charToken '+' Addition
-                   <|> charToken '*' Multiplication
-                   <|> charToken '/' Division
-                   <|> charToken '<' LessThan
-                   <|> charToken '>' GreaterThan
-                   <|> charToken '=' Assignment
+  <|> charToken '{' OpenBrace
+  <|> charToken '}' CloseBrace
+  <|> charToken '(' OpenParen
+  <|> charToken ')' CloseParen
+  <|> charToken ';' Semicolon
+  <|> charToken '-' Negation
+  <|> charToken '~' BitwiseComplement
+  <|> charToken '!' LogicalNegation
+  <|> charToken '+' Addition
+  <|> charToken '*' Multiplication
+  <|> charToken '/' Division
+  <|> charToken '<' LessThan
+  <|> charToken '>' GreaterThan
+  <|> charToken '=' Assignment
 
-                   <|> identifier
-                   <|> integer
+  <|> identifier
+  <|> integer
 
 token :: Parser Char a -> Parser Char a
 token p = do space
