@@ -1437,3 +1437,232 @@ spec = do
             , Identifier "a"
             , Semicolon
             , CloseBrace]
+
+  describe "Stage 6" $ do
+
+    it "should lex var_declared_late.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    a = 1 ? 2 : 3;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , QuestionMark
+            , Integer 2
+            , Colon
+            , Integer 3
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex multiple_ternary.c" $ do
+      lexString "int main() {\n\
+                \    int a = 1 > 2 ? 3 : 4;\n\
+                \    int b = 1 > 2 ? 5 : 6;\n\
+                \    return a + b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , GreaterThan
+            , Integer 2
+            , QuestionMark
+            , Integer 3
+            , Colon
+            , Integer 4
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 1
+            , GreaterThan
+            , Integer 2
+            , QuestionMark
+            , Integer 5
+            , Colon
+            , Integer 6
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Addition
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex nested_ternary.c" $ do
+      lexString "int main() {\n\
+                \    int a = 1;\n\
+                \    int b = 2;\n\
+                \    int flag = 0;\n\
+                \    return a > b ? 5 : flag ? 6 : 7;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWInt
+            , Identifier "flag"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , GreaterThan
+            , Identifier "b"
+            , QuestionMark
+            , Integer 5
+            , Colon
+            , Identifier "flag"
+            , QuestionMark
+            , Integer 6
+            , Colon
+            , Integer 7
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex nested_ternary_2.c" $ do
+      lexString "int main() {\n\
+                \    int a = 1 ? 2 ? 3 : 4 : 5;\n\
+                \    int b = 0 ? 2 ? 3 : 4 : 5;\n\
+                \    return a * b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , QuestionMark
+            , Integer 2
+            , QuestionMark
+            , Integer 3
+            , Colon
+            , Integer 4
+            , Colon
+            , Integer 5
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 0
+            , QuestionMark
+            , Integer 2
+            , QuestionMark
+            , Integer 3
+            , Colon
+            , Integer 4
+            , Colon
+            , Integer 5
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Multiplication
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex rh_assignment.c" $ do
+      lexString "int main() {\n\
+                \    int flag = 1;\n\
+                \    int a = 0;\n\
+                \    flag ? a = 1 : (a = 0);\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "flag"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , Identifier "flag"
+            , QuestionMark
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Colon
+            , OpenParen
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , CloseParen
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex ternary.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    return a > -1 ? 4 : 5;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , GreaterThan
+            , Negation
+            , Integer 1
+            , QuestionMark
+            , Integer 4
+            , Colon
+            , Integer 5
+            , Semicolon
+            , CloseBrace]

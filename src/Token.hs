@@ -24,4 +24,8 @@ data Token = OpenBrace
            | LessThan
            | GreaterThan
            | Assignment
+           | KWIf
+           | KWElse
+           | Colon
+           | QuestionMark
            deriving (Show, Eq)
