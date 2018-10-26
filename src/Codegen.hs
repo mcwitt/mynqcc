@@ -9,9 +9,6 @@ import           Error
 import           Text.Printf
 
 
-data Context = Context { stackIndex :: Int
-                       , varOffsets :: Map.Map String Int} deriving Show
-
 {- |
 Monad type in which all code generation actions are executed. The inner Except
 monad allows for exception handling, and the WriterT keeps track of the assembly
@@ -26,25 +23,50 @@ to handle the bookkeeping.
 -}
 type MS = StateT Context M
 
+data Context =
+  Context { stackIndex :: Int
+          , varOffsets :: Map.Map String Int}
+  deriving Show
+
+
 generate :: Program -> Either Error [String]
-generate prog = runExcept . execWriterT $ program prog
+generate = runExcept . execWriterT . program
 
 program :: Program -> M ()
 program (Program func) = function func
 
 function :: Function -> M ()
-function (Function name body) =
-  let emptyContext = Context { stackIndex = -4
-                             , varOffsets = Map.empty}
-  in do
-    emit $ ".globl " ++ name
-    emit $ name ++ ":"
-    emit "push %ebp"
-    emit "movl %esp, %ebp"
+function func = case func of
+
+  -- | Handle special case of empty main function, in which case the standard
+  -- dictates we return 0.
+  Function "main" [] -> do
+    prologue "main"
+    execStateT (returnConstant 0) emptyContext
+    epilogue
+
+  Function name body -> do
+    prologue name
     execStateT (mapM statement body) emptyContext
-    emit "movl %ebp, %esp"
-    emit "pop %ebp"
-    emit "ret"
+    epilogue
+
+  where
+    returnConstant = statement . Return . Constant
+    emptyContext = Context { stackIndex = -4
+                           , varOffsets = Map.empty}
+
+prologue :: String -> M ()
+prologue name = do
+  emit $ ".globl " ++ name
+  emit $ name ++ ":"
+  emit "push %ebp"
+  emit "movl %esp, %ebp"
+
+epilogue :: M ()
+epilogue = do
+  emit "movl %ebp, %esp"
+  emit "pop %ebp"
+  emit "ret"
 
 statement :: Statement -> MS ()
 statement st = case st of
@@ -101,11 +123,11 @@ expression expr = case expr of
                  emitL "sete %al"
 
   -- | General strategy for evaluating binary operators on
-  --   sub-expressions e1, e2:
-  --   1. Evaluate e1, push result onto the stack
-  --   2. Evaluate e2
-  --   3. Pop the result of e1 back into a register
-  --   4. Perform the binary operation on e1, e2
+  -- sub-expressions e1, e2:
+  -- 1. Evaluate e1, push result onto the stack
+  -- 2. Evaluate e2
+  -- 3. Pop the result of e1 back into a register
+  -- 4. Perform the binary operation on e1, e2
   Binary op e1 e2 -> do
     expression e2
     emitL "push %eax"
