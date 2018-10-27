@@ -21,15 +21,42 @@ function = do atom KWInt
               atom OpenParen
               atom CloseParen
               atom OpenBrace
-              body <- many statement
+              body <- many blockItem
               atom CloseBrace
               return (Function name body)
+
+-- Block items
+
+blockItem :: Parser Token BlockItem
+blockItem = declaration <|> blockStatement
+
+declaration :: Parser Token BlockItem
+declaration = do atom KWInt
+                 name <- identifier
+                 initializer <- optional (atom Token.Assignment >> expression)
+                 atom Semicolon
+                 return (Declaration name initializer)
+
+blockStatement :: Parser Token BlockItem
+blockStatement = statement >>= \s -> return (Statement s)
 
 
 -- Statements
 
 statement :: Parser Token Statement
-statement = returnStatement <|> declaration <|> standaloneExpr
+statement =
+  ifStatement
+  <|> returnStatement
+  <|> standaloneExpr
+
+ifStatement :: Parser Token Statement
+ifStatement = do atom KWIf
+                 atom OpenParen
+                 expr <- expression
+                 atom CloseParen
+                 s1 <- statement
+                 s2 <- optional statement
+                 return $ If expr s1 s2
 
 returnStatement :: Parser Token Statement
 returnStatement = do atom KWReturn
@@ -37,28 +64,33 @@ returnStatement = do atom KWReturn
                      atom Semicolon
                      return (Return expr)
 
-declaration :: Parser Token Statement
-declaration = do atom KWInt
-                 name <- identifier
-                 initializer <- optional (do atom Token.Assignment; expression)
-                 atom Semicolon
-                 return (Declaration name initializer)
-
 standaloneExpr :: Parser Token Statement
 standaloneExpr = do expr <- expression
                     atom Semicolon
-                    return (Expression expr)
+                    return $ Expression expr
+
 
 -- Expressions
 
 expression :: Parser Token Expression
-expression = assignment <|> logicalOrExpr
+expression = assignment <|> conditionalExpr
 
 assignment :: Parser Token Expression
 assignment = do name <- identifier
                 atom Token.Assignment
                 expr <- expression
                 return (AST.Assignment name expr)
+
+conditionalExpr :: Parser Token Expression
+conditionalExpr = do e1 <- logicalOrExpr
+                     ee <- optional (do atom QuestionMark
+                                        e2 <- expression
+                                        atom Colon
+                                        e3 <- expression
+                                        return (e2, e3))
+                     return (case ee of
+                               Just (e2, e3) -> Conditional e1 e2 e3
+                               Nothing -> e1)
 
 logicalOrExpr :: Parser Token Expression
 logicalOrExpr = logicalAndExpr `chainl1` logicalOr
@@ -123,8 +155,6 @@ logicalNegation = do atom Token.LogicalNegation
                      fact <- factor
                      return $ Unary AST.LogicalNegation fact
 
-
--- Operators
 
 multiplication :: Parser Token (Expression -> Expression -> Expression)
 multiplication = do atom Token.Multiplication; return $ Binary AST.Multiplication

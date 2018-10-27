@@ -1440,7 +1440,7 @@ spec = do
 
   describe "Stage 6" $ do
 
-    it "should lex var_declared_late.c" $ do
+    it "should lex assign_ternary.c" $ do
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    a = 1 ? 2 : 3;\n\

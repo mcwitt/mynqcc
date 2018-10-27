@@ -47,7 +47,7 @@ function func = case func of
 
   Function name body -> do
     prologue name
-    execStateT (mapM statement body) emptyContext
+    execStateT (mapM blockItem body) emptyContext
     epilogue
 
   where
@@ -68,12 +68,10 @@ epilogue = do
   emit "pop %ebp"
   emit "ret"
 
-statement :: Statement -> MS ()
-statement st = case st of
+blockItem :: BlockItem -> MS ()
+blockItem item = case item of
 
-  Return expr -> expression expr
-
-  Expression expr -> expression expr
+  Statement stat -> statement stat
 
   Declaration name maybeExpr -> do
     vars <- gets varOffsets
@@ -89,6 +87,12 @@ statement st = case st of
         sind <- gets stackIndex
         put Context { stackIndex = sind - 4
                     , varOffsets = Map.insert name sind vars}
+
+
+statement :: Statement -> MS ()
+statement st = case st of
+  Return expr -> expression expr
+  Expression expr -> expression expr
 
 
 expression :: Expression -> MS ()
