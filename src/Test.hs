@@ -1,6 +1,6 @@
 module Test where
 
-import AST
+import           AST
 
 returnStatement = Statement . Return
 expressionStatement = Statement . Expression

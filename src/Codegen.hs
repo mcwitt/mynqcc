@@ -4,7 +4,7 @@ import           AST
 import           Control.Monad.Except
 import           Control.Monad.State
 import           Control.Monad.Writer
-import qualified Data.Map as Map
+import qualified Data.Map             as Map
 import           Error
 import           Text.Printf
 

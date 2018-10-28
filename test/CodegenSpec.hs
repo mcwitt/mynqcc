@@ -1,14 +1,11 @@
 module CodegenSpec (spec) where
 
-import AST
-import Codegen
-import Error ( Error ( CodegenError))
-import Parser
-import Test
-import Test.Hspec ( Spec
-                  , describe
-                  , it
-                  , shouldBe)
+import           AST
+import           Codegen
+import           Error      (Error (CodegenError))
+import           Parser
+import           Test
+import           Test.Hspec (Spec, describe, it, shouldBe)
 
 spec :: Spec
 spec = do

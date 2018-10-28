@@ -25,7 +25,7 @@ module ParserCombinators
   , (<|>)
   ) where
 
-import Control.Applicative
+import           Control.Applicative
 
 -- | A parser is a function from a list of atoms (e.g. character strings) to
 -- | zero or more possible (parsed, rest) pairs.

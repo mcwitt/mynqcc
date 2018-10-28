@@ -1,10 +1,10 @@
 module Lexer ( lexString
              ) where
 
-import Data.Char
-import Error
-import ParserCombinators
-import Token
+import           Data.Char
+import           Error
+import           ParserCombinators
+import           Token
 
 lexString :: String -> Either Error [Token]
 lexString st = case parse lexer st of

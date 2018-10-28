@@ -1,7 +1,7 @@
 module AST where
 
-import Data.Tree ( Tree (Node), drawTree )
-import Text.Printf
+import           Data.Tree   (Tree (Node), drawTree)
+import           Text.Printf
 
 data Program
   = Program Function

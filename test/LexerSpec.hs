@@ -1,12 +1,8 @@
 module LexerSpec (spec) where
 
-import Test.Hspec ( Spec
-                  , describe
-                  , it
-                  , shouldBe)
-
-import Lexer ( lexString)
-import Token ( Token (..))
+import           Lexer      (lexString)
+import           Test.Hspec (Spec, describe, it, shouldBe)
+import           Token      (Token (..))
 
 spec :: Spec
 spec = do

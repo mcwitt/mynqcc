@@ -1,14 +1,11 @@
 module ParserSpec (spec) where
 
-import AST
-import Error
-import Parser
-import Test
-import Test.Hspec ( Spec
-                  , describe
-                  , it
-                  , shouldBe)
-import Token
+import           AST
+import           Error
+import           Parser
+import           Test
+import           Test.Hspec (Spec, describe, it, shouldBe)
+import           Token
 
 spec :: Spec
 spec = do
