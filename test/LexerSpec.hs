@@ -1662,3 +1662,102 @@ spec = do
             , Integer 5
             , Semicolon
             , CloseBrace]
+
+    it "should lex incomplete_ternary.c" $ do
+      lexString "int main() {\n\
+                \    return 1 ? 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , QuestionMark
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex malformed_ternary.c" $ do
+      lexString "int main() {\n\
+                \    return 1 ? 2 : 3 : 4;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , QuestionMark
+            , Integer 2
+            , Colon
+            , Integer 3
+            , Colon
+            , Integer 4
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex malformed_ternary_2.c" $ do
+      lexString "int main() {\n\
+                \    return 1 ? 2 ? 3 : 4;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWReturn
+            , Integer 1
+            , QuestionMark
+            , Integer 2
+            , QuestionMark
+            , Integer 3
+            , Colon
+            , Integer 4
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex ternary_assign.c" $ do
+      lexString "int main() {\n\
+                \    int a = 2;\n\
+                \    int b = 1;\n\
+                \    a > b ? a = 1 : a = 0;\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , Identifier "a"
+            , GreaterThan
+            , Identifier "b"
+            , QuestionMark
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Colon
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]

@@ -640,3 +640,349 @@ spec = do
                 , returnStatement (Reference "a")]))
         `shouldBe`
         Left (CodegenError "Assignment to undeclared variable, `a`.")
+
+  describe "Stage 6" $ do
+    it "should generate code for assign_ternary.c" $ do
+      (generate
+        (Program
+          (Function "main"
+           [ Declaration "a" (Just (Constant 0))
+           , (Statement
+               (Expression
+                 (AST.Assignment "a"
+                   (Conditional
+                     (Constant 1)
+                     (Constant 2)
+                     (Constant 3)))))
+           , (Statement (Return (Reference "a")))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "cmpl $0, %eax"
+              , "je _e3_0"
+              , "movl $2, %eax"
+              , "jmp _post_conditional_1"
+              , "_e3_0:"
+              , "movl $3, %eax"
+              , "_post_conditional_1:"
+              , "movl %eax, -4(%ebp)"
+              , "movl -4(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for multiple_ternary.c" $ do
+      (generate
+        (Program
+          (Function "main"
+           [ Declaration "a"
+             (Just
+               (Conditional
+                 (Binary AST.GreaterThan (Constant 1) (Constant 2))
+                 (Constant 3)
+                 (Constant 4)))
+           , Declaration "b"
+             (Just
+               (Conditional
+                 (Binary AST.GreaterThan (Constant 1) (Constant 2))
+                 (Constant 5)
+                 (Constant 6)))
+           , (Statement
+               (Return
+                 (Binary AST.Addition
+                  (Reference "a")
+                  (Reference "b"))))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setg %al"
+              , "cmpl $0, %eax"
+              , "je _e3_0"
+              , "movl $3, %eax"
+              , "jmp _post_conditional_1"
+              , "_e3_0:"
+              , "movl $4, %eax"
+              , "_post_conditional_1:"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setg %al"
+              , "cmpl $0, %eax"
+              , "je _e3_2"
+              , "movl $5, %eax"
+              , "jmp _post_conditional_3"
+              , "_e3_2:"
+              , "movl $6, %eax"
+              , "_post_conditional_3:"
+              , "push %eax"
+              , "movl -8(%ebp), %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "pop %ecx"
+              , "addl %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for nested_ternary.c" $ do
+      (generate
+        (Program
+          (Function "main"
+           [ Declaration "a" (Just (Constant 1))
+           , Declaration "b" (Just (Constant 2))
+           , Declaration "flag" (Just (Constant 0))
+           , (Statement
+               (Return
+                 (Conditional
+                   (Binary
+                     AST.GreaterThan
+                     (Reference "a")
+                     (Reference "b"))
+                   (Constant 5)
+                   (Conditional
+                     (Reference "flag")
+                     (Constant 6)
+                     (Constant 7)))))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl -8(%ebp), %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setg %al"
+              , "cmpl $0, %eax"
+              , "je _e3_0"
+              , "movl $5, %eax"
+              , "jmp _post_conditional_1"
+              , "_e3_0:"
+              , "movl -12(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _e3_2"
+              , "movl $6, %eax"
+              , "jmp _post_conditional_3"
+              , "_e3_2:"
+              , "movl $7, %eax"
+              , "_post_conditional_3:"
+              , "_post_conditional_1:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for nested_ternary_2.c" $ do
+      (generate
+        (Program
+          (Function "main"
+           [Declaration "a"
+            (Just
+              (Conditional
+                (Constant 1)
+                (Conditional
+                  (Constant 2)
+                  (Constant 3)
+                  (Constant 4))
+                (Constant 5)))
+          , Declaration "b"
+            (Just
+              (Conditional
+                (Constant 0)
+                (Conditional
+                  (Constant 2)
+                  (Constant 3)
+                  (Constant 4))
+                (Constant 5)))
+          , (Statement
+              (Return
+                (Binary
+                 AST.Multiplication
+                 (Reference "a")
+                 (Reference "b"))))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "cmpl $0, %eax"
+              , "je _e3_0"
+              , "movl $2, %eax"
+              , "cmpl $0, %eax"
+              , "je _e3_1"
+              , "movl $3, %eax"
+              , "jmp _post_conditional_2"
+              , "_e3_1:"
+              , "movl $4, %eax"
+              , "_post_conditional_2:"
+              , "jmp _post_conditional_3"
+              , "_e3_0:"
+              , "movl $5, %eax"
+              , "_post_conditional_3:"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "cmpl $0, %eax"
+              , "je _e3_4"
+              , "movl $2, %eax"
+              , "cmpl $0, %eax"
+              , "je _e3_5"
+              , "movl $3, %eax"
+              , "jmp _post_conditional_6"
+              , "_e3_5:"
+              , "movl $4, %eax"
+              , "_post_conditional_6:"
+              , "jmp _post_conditional_7"
+              , "_e3_4:"
+              , "movl $5, %eax"
+              , "_post_conditional_7:"
+              , "push %eax"
+              , "movl -8(%ebp), %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "pop %ecx"
+              , "imul %ecx, %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for rh_assignment.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "flag" (Just (Constant 1))
+            , Declaration "a" (Just (Constant 0))
+            , (Statement
+                (Expression
+                  (Conditional
+                    (Reference "flag")
+                    (AST.Assignment "a" (Constant 1))
+                    (AST.Assignment "a" (Constant 0)))))
+            , Statement (Return (Reference "a"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _e3_0"
+              , "movl $1, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "jmp _post_conditional_1"
+              , "_e3_0:"
+              , "movl $0, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "_post_conditional_1:"
+              , "movl -8(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for ternary.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (Return
+                (Conditional
+                  (Binary
+                    AST.GreaterThan
+                    (Reference "a")
+                    (Unary AST.Negation (Constant 1)))
+                  (Constant 4)
+                  (Constant 5)))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "neg %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setg %al"
+              , "cmpl $0, %eax"
+              , "je _e3_0"
+              , "movl $4, %eax"
+              , "jmp _post_conditional_1"
+              , "_e3_0:"
+              , "movl $5, %eax"
+              , "_post_conditional_1:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for ternary.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (Return
+                (Conditional
+                  (Binary
+                    AST.GreaterThan
+                    (Reference "a")
+                    (Unary AST.Negation (Constant 1)))
+                  (Constant 4)
+                  (Constant 5)))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "neg %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setg %al"
+              , "cmpl $0, %eax"
+              , "je _e3_0"
+              , "movl $4, %eax"
+              , "jmp _post_conditional_1"
+              , "_e3_0:"
+              , "movl $5, %eax"
+              , "_post_conditional_1:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]

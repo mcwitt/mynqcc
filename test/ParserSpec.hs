@@ -1510,3 +1510,350 @@ spec = do
                             Constant 2)(
                             Constant 3)))
                 , returnStatement (Reference "a")]))
+
+    it "should parse tokens from multiple_ternary.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , Token.GreaterThan
+                  , Integer 2
+                  , QuestionMark
+                  , Integer 3
+                  , Colon
+                  , Integer 4
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 1
+                  , Token.GreaterThan
+                  , Integer 2
+                  , QuestionMark
+                  , Integer 5
+                  , Colon
+                  , Integer 6
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Token.Addition
+                  , Identifier "b"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right (
+        Program (
+            Function "main" [
+                Declaration "a" (
+                    Just (
+                        Conditional (
+                            Binary AST.GreaterThan (Constant 1) (Constant 2))(
+                              Constant 3)(
+                              Constant 4)))
+              , Declaration "b" (
+                    Just (
+                        Conditional (
+                            Binary AST.GreaterThan (Constant 1) (Constant 2))(
+                            Constant 5)(
+                            Constant 6)))
+              , returnStatement (
+                    Binary AST.Addition
+                    (Reference "a")
+                    (Reference "b"))]))
+
+    it "should parse tokens from nested_ternary.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 2
+                  , Semicolon
+                  , KWInt
+                  , Identifier "flag"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Token.GreaterThan
+                  , Identifier "b"
+                  , QuestionMark
+                  , Integer 5
+                  , Colon
+                  , Identifier "flag"
+                  , QuestionMark
+                  , Integer 6
+                  , Colon
+                  , Integer 7
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+           [Declaration "a" (Just (Constant 1))
+          , Declaration "b" (Just (Constant 2))
+          , Declaration "flag" (Just (Constant 0))
+          , returnStatement
+            (Conditional
+              (Binary
+                AST.GreaterThan
+                (Reference "a")
+                (Reference "b"))
+              (Constant 5)
+              (Conditional
+                (Reference "flag")
+                (Constant 6)
+                (Constant 7)))]))
+
+    it "should parse tokens from nested_ternary_2.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , QuestionMark
+                  , Integer 2
+                  , QuestionMark
+                  , Integer 3
+                  , Colon
+                  , Integer 4
+                  , Colon
+                  , Integer 5
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 0
+                  , QuestionMark
+                  , Integer 2
+                  , QuestionMark
+                  , Integer 3
+                  , Colon
+                  , Integer 4
+                  , Colon
+                  , Integer 5
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Token.Multiplication
+                  , Identifier "b"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+           [Declaration "a"
+            (Just
+              (Conditional
+                (Constant 1)
+                (Conditional
+                  (Constant 2)
+                  (Constant 3)
+                  (Constant 4))
+                (Constant 5)))
+          , Declaration "b"
+            (Just
+              (Conditional
+                (Constant 0)
+                (Conditional
+                  (Constant 2)
+                  (Constant 3)
+                  (Constant 4))
+                (Constant 5)))
+          , (Statement
+              (Return
+                (Binary
+                 AST.Multiplication
+                 (Reference "a")
+                 (Reference "b"))))]))
+
+    it "should parse tokens from rh_assignment.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "flag"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , Identifier "flag"
+                  , QuestionMark
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , Colon
+                  , OpenParen
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , CloseParen
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "flag" (Just (Constant 1))
+            , Declaration "a" (Just (Constant 0))
+            , (Statement
+                (Expression
+                  (Conditional
+                    (Reference "flag")
+                    (AST.Assignment "a" (Constant 1))
+                    (AST.Assignment "a" (Constant 0)))))
+            , Statement (Return (Reference "a"))]))
+
+    it "should parse tokens from ternary.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Token.GreaterThan
+                  , Token.Negation
+                  , Integer 1
+                  , QuestionMark
+                  , Integer 4
+                  , Colon
+                  , Integer 5
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (Return
+                (Conditional
+                  (Binary
+                    AST.GreaterThan
+                    (Reference "a")
+                    (Unary AST.Negation (Constant 1)))
+                  (Constant 4)
+                  (Constant 5)))]))
+
+    it "should fail to parse tokens from incomplete_ternary.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , QuestionMark
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Left (ParserError "Failed to parse the program.")
+
+    it "should fail to parse tokens from malformed_ternary.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , QuestionMark
+                  , Integer 2
+                  , Colon
+                  , Integer 3
+                  , Colon
+                  , Integer 4
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Left (ParserError "Failed to parse the program.")
+
+    it "should fail to parse tokens from malformed_ternary_2.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWReturn
+                  , Integer 1
+                  , QuestionMark
+                  , Integer 2
+                  , QuestionMark
+                  , Integer 3
+                  , Colon
+                  , Integer 4
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Left (ParserError "Failed to parse the program.")
+
+    it "should fail to parse tokens from ternary_assign.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 2
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , Identifier "a"
+                  , Token.GreaterThan
+                  , Identifier "b"
+                  , QuestionMark
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , Colon
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Left (ParserError "Failed to parse the program.")
