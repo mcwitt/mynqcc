@@ -25,7 +25,8 @@ type MS = StateT Context M
 
 data Context =
   Context { stackIndex :: Int
-          , varOffsets :: Map.Map String Int}
+          , varOffsets :: Map.Map String Int
+          , labelCount :: Int}
   deriving Show
 
 
@@ -53,7 +54,8 @@ function func = case func of
   where
     returnConstant = statement . Return . Constant
     emptyContext = Context { stackIndex = -4
-                           , varOffsets = Map.empty}
+                           , varOffsets = Map.empty
+                           , labelCount = 0}
 
 prologue :: String -> M ()
 prologue name = do
@@ -84,9 +86,9 @@ blockItem item = case item of
           Just expr -> expression expr
           Nothing -> return ()
         emitL "push %eax"
-        sind <- gets stackIndex
-        put Context { stackIndex = sind - 4
-                    , varOffsets = Map.insert name sind vars}
+        si <- gets stackIndex
+        modify $ \ctx -> ctx { stackIndex = (stackIndex ctx) - 4
+                             , varOffsets = Map.insert name si vars}
 
 
 statement :: Statement -> MS ()
@@ -182,6 +184,24 @@ expression expr = case expr of
         emitL "movl $0, %eax"
         emitL "setne %al"
         emitL "andb %cl, %al"
+
+  Conditional e1 e2 e3 -> do
+    expression e1
+    emitL "cmpl $0, %eax"
+    l3 <- label "_e3"
+    emitL $ printf "je %s" l3
+    expression e2
+    lpc <- label "_post_conditional"
+    emitL $ printf "jmp %s" lpc
+    emitL $ printf "%s:" l3
+    expression e3
+    emitL $ printf "%s:" lpc
+
+label :: String -> MS String
+label s = do
+  lc <- gets labelCount
+  modify $ \ctx -> ctx { labelCount = succ lc }
+  return (s ++ "_" ++ show lc)
 
 emit :: String -> M ()
 emit s = writer ((), [s])
