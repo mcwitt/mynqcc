@@ -93,8 +93,23 @@ blockItem item = case item of
 
 statement :: Statement -> MS ()
 statement st = case st of
+
   Return expr -> expression expr
   Expression expr -> expression expr
+
+  If expr s1 maybeStat -> do
+    expression expr
+    emitL "cmpl $0, %eax"
+    lelse <- label "_else"
+    emitL $ printf "je %s" lelse
+    statement s1
+    lendif <- label "_endif"
+    emitL $ printf "jmp %s" lendif
+    emitL $ printf "%s:" lelse
+    case maybeStat of
+      Just s2 -> statement s2
+      Nothing -> return ()
+    emitL $ printf "%s:" lendif
 
 
 expression :: Expression -> MS ()
