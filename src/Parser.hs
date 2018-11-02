@@ -44,10 +44,9 @@ blockStatement = statement >>= \s -> return (Statement s)
 -- Statements
 
 statement :: Parser Token Statement
-statement =
-  ifStatement
-  <|> returnStatement
-  <|> standaloneExpr
+statement = ifStatement
+            <|> returnStatement
+            <|> standaloneExpr
 
 ifStatement :: Parser Token Statement
 ifStatement = do atom KWIf
@@ -55,7 +54,9 @@ ifStatement = do atom KWIf
                  expr <- expression
                  atom CloseParen
                  s1 <- statement
-                 s2 <- optional statement
+                 s2 <- optional (do atom KWElse
+                                    st <- statement
+                                    return st)
                  return $ If expr s1 s2
 
 returnStatement :: Parser Token Statement
@@ -83,12 +84,12 @@ assignment = do name <- identifier
 
 conditionalExpr :: Parser Token Expression
 conditionalExpr = do e1 <- logicalOrExpr
-                     ee <- optional (do atom QuestionMark
-                                        e2 <- expression
-                                        atom Colon
-                                        e3 <- expression
-                                        return (e2, e3))
-                     return (case ee of
+                     e23 <- optional (do atom QuestionMark
+                                         e2 <- expression
+                                         atom Colon
+                                         e3 <- conditionalExpr
+                                         return (e2, e3))
+                     return (case e23 of
                                Just (e2, e3) -> Conditional e1 e2 e3
                                Nothing -> e1)
 
@@ -103,9 +104,9 @@ equalityExpr = relationalExpr `chainl1` (equality <|> inequality)
 
 relationalExpr :: Parser Token Expression
 relationalExpr = additiveExpr `chainl1` ( lessThan
-                                      <|> greaterThan
-                                      <|> lessEqual
-                                      <|> greaterEqual)
+                                          <|> greaterThan
+                                          <|> lessEqual
+                                          <|> greaterEqual)
 
 additiveExpr :: Parser Token Expression
 additiveExpr = term `chainl1` (addition <|> subtraction)
@@ -115,9 +116,9 @@ term = factor `chainl1` (multiplication <|> division)
 
 factor :: Parser Token Expression
 factor = parenExpr
-     <|> unaryOperation
-     <|> constant
-     <|> reference
+         <|> unaryOperation
+         <|> constant
+         <|> reference
 
 parenExpr :: Parser Token Expression
 parenExpr = do atom OpenParen
@@ -127,8 +128,8 @@ parenExpr = do atom OpenParen
 
 unaryOperation :: Parser Token Expression
 unaryOperation = negation
-             <|> bitwiseComplement
-             <|> logicalNegation
+                 <|> bitwiseComplement
+                 <|> logicalNegation
 
 constant :: Parser Token Expression
 constant = do Integer i <- satisfy $ \t ->
