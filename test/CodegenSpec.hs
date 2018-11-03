@@ -986,3 +986,320 @@ spec = do
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
+
+    it "should generate code for else.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Return (Constant 1))
+                (Just (Return (Constant 2))))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $1, %eax"
+              , "jmp _main__endif__1"
+              , "_main__else__0:"
+              , "movl $2, %eax"
+              , "_main__endif__1:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for if_nested.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 1))
+            , Declaration "b" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                (Just
+                  (If
+                    (Reference "b")
+                    (Expression (AST.Assignment "b" (Constant 2)))
+                    Nothing)))
+            , Statement (Return (Reference "b"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $1, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "jmp _main__endif__1"
+              , "_main__else__0:"
+              , "movl -8(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__2"
+              , "movl $2, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "jmp _main__endif__3"
+              , "_main__else__2:"
+              , "_main__endif__3:"
+              , "_main__endif__1:"
+              , "movl -8(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for if_nested_2.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Declaration "b" (Just (Constant 1))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                (Just
+                  (If
+                    (Reference "b")
+                    (Expression (AST.Assignment "b" (Constant 2)))
+                    Nothing)))
+            , Statement (Return (Reference "b"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $1, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "jmp _main__endif__1"
+              , "_main__else__0:"
+              , "movl -8(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__2"
+              , "movl $2, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "jmp _main__endif__3"
+              , "_main__else__2:"
+              , "_main__endif__3:"
+              , "_main__endif__1:"
+              , "movl -8(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for if_nested_3.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Constant 1)
+                (If
+                  (Constant 2)
+                  (Expression (AST.Assignment "a" (Constant 3)))
+                  (Just (Expression (AST.Assignment "a" (Constant 4)))))
+                Nothing)
+            , Statement (Return (Reference "a"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $2, %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__1"
+              , "movl $3, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "jmp _main__endif__2"
+              , "_main__else__1:"
+              , "movl $4, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "_main__endif__2:"
+              , "jmp _main__endif__3"
+              , "_main__else__0:"
+              , "_main__endif__3:"
+              , "movl -4(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for if_nested_4.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Constant 1)
+                (If
+                  (Constant 0)
+                  (Expression (AST.Assignment "a" (Constant 3)))
+                  (Just (Expression (AST.Assignment "a" (Constant 4)))))
+                Nothing)
+            , Statement (Return (Reference "a"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $0, %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__1"
+              , "movl $3, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "jmp _main__endif__2"
+              , "_main__else__1:"
+              , "movl $4, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "_main__endif__2:"
+              , "jmp _main__endif__3"
+              , "_main__else__0:"
+              , "_main__endif__3:"
+              , "movl -4(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for if_nested_5.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Constant 0)
+                (If
+                  (Constant 0)
+                  (Expression (AST.Assignment "a" (Constant 3)))
+                  (Just (Expression (AST.Assignment "a" (Constant 4)))))
+                (Just (Expression (AST.Assignment "a" (Constant 1)))))
+            , Statement (Return (Reference "a"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $0, %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__1"
+              , "movl $3, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "jmp _main__endif__2"
+              , "_main__else__1:"
+              , "movl $4, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "_main__endif__2:"
+              , "jmp _main__endif__3"
+              , "_main__else__0:"
+              , "movl $1, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "_main__endif__3:"
+              , "movl -4(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for if_not_taken.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Declaration "b" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                Nothing)
+            , Statement (Return (Reference "b"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $1, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "jmp _main__endif__1"
+              , "_main__else__0:"
+              , "_main__endif__1:"
+              , "movl -8(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for if_taken.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 1))
+            , Declaration "b" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                Nothing)
+            , Statement (Return (Reference "b"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $1, %eax"
+              , "movl %eax, -8(%ebp)"
+              , "jmp _main__endif__1"
+              , "_main__else__0:"
+              , "_main__endif__1:"
+              , "movl -8(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]

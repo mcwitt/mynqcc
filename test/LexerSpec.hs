@@ -1761,3 +1761,410 @@ spec = do
             , Identifier "a"
             , Semicolon
             , CloseBrace]
+
+    it "should lex else.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    if (a)\n\
+                \        return 1;\n\
+                \    else\n\
+                \        return 2;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Identifier "a"
+            , CloseParen
+            , KWReturn
+            , Integer 1
+            , Semicolon
+            , KWElse
+            , KWReturn
+            , Integer 2
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex if_nested.c" $ do
+      lexString "int main() {\n\
+                \    int a = 1;\n\
+                \    int b = 0;\n\
+                \    if (a)\n\
+                \        b = 1;\n\
+                \    else if (b)\n\
+                \        b = 2;\n\
+                \    return b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Identifier "a"
+            , CloseParen
+            , Identifier "b"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWElse
+            , KWIf
+            , OpenParen
+            , Identifier "b"
+            , CloseParen
+            , Identifier "b"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex if_nested_2.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    int b = 1;\n\
+                \    if (a)\n\
+                \        b = 1;\n\
+                \    else if (b)\n\
+                \        b = 2;\n\
+                \    return b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Identifier "a"
+            , CloseParen
+            , Identifier "b"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWElse
+            , KWIf
+            , OpenParen
+            , Identifier "b"
+            , CloseParen
+            , Identifier "b"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWReturn
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex if_nested_3.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    if (1)\n\
+                \        if (2)\n\
+                \            a = 3;\n\
+                \        else\n\
+                \            a = 4;\n\
+                \\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Integer 1
+            , CloseParen
+            , KWIf
+            , OpenParen
+            , Integer 2
+            , CloseParen
+            , Identifier "a"
+            , Assignment
+            , Integer 3
+            , Semicolon
+            , KWElse
+            , Identifier "a"
+            , Assignment
+            , Integer 4
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex if_nested_4.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    if (1)\n\
+                \        if (0)\n\
+                \            a = 3;\n\
+                \        else\n\
+                \            a = 4;\n\
+                \\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Integer 1
+            , CloseParen
+            , KWIf
+            , OpenParen
+            , Integer 0
+            , CloseParen
+            , Identifier "a"
+            , Assignment
+            , Integer 3
+            , Semicolon
+            , KWElse
+            , Identifier "a"
+            , Assignment
+            , Integer 4
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex if_nested_5.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    if (0)\n\
+                \        if (0)\n\
+                \            a = 3;\n\
+                \        else\n\
+                \            a = 4;\n\
+                \    else\n\
+                \        a = 1;\n\
+                \\n\
+                \    return a;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Integer 0
+            , CloseParen
+            , KWIf
+            , OpenParen
+            , Integer 0
+            , CloseParen
+            , Identifier "a"
+            , Assignment
+            , Integer 3
+            , Semicolon
+            , KWElse
+            , Identifier "a"
+            , Assignment
+            , Integer 4
+            , Semicolon
+            , KWElse
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex if_not_taken.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    int b = 0;\n\
+                \    if (a)\n\
+                \        b = 1;\n\
+                \    return b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Identifier "a"
+            , CloseParen
+            , Identifier "b"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWReturn
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex if_taken.c" $ do
+      lexString "int main() {\n\
+                \    int a = 1;\n\
+                \    int b = 0;\n\
+                \    if (a)\n\
+                \        b = 1;\n\
+                \    return b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Identifier "a"
+            , CloseParen
+            , Identifier "b"
+            , Assignment
+            , Integer 1
+            , Semicolon
+            , KWReturn
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]
+
+    it "should lex multiple_if.c" $ do
+      lexString "int main() {\n\
+                \    int a = 0;\n\
+                \    int b = 0;\n\
+                \\n\
+                \    if (a)\n\
+                \        a = 2;\n\
+                \    else\n\
+                \        a = 3;\n\
+                \\n\
+                \    if (b)\n\
+                \        b = 4;\n\
+                \    else\n\
+                \        b = 5;\n\
+                \\n\
+                \    return a + b;\n\
+                \}"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "main"
+            , OpenParen
+            , CloseParen
+            , OpenBrace
+            , KWInt
+            , Identifier "a"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWInt
+            , Identifier "b"
+            , Assignment
+            , Integer 0
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Identifier "a"
+            , CloseParen
+            , Identifier "a"
+            , Assignment
+            , Integer 2
+            , Semicolon
+            , KWElse
+            , Identifier "a"
+            , Assignment
+            , Integer 3
+            , Semicolon
+            , KWIf
+            , OpenParen
+            , Identifier "b"
+            , CloseParen
+            , Identifier "b"
+            , Assignment
+            , Integer 4
+            , Semicolon
+            , KWElse
+            , Identifier "b"
+            , Assignment
+            , Integer 5
+            , Semicolon
+            , KWReturn
+            , Identifier "a"
+            , Addition
+            , Identifier "b"
+            , Semicolon
+            , CloseBrace]

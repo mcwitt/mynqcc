@@ -1857,3 +1857,444 @@ spec = do
                   , CloseBrace]
         `shouldBe`
         Left (ParserError "Failed to parse the program.")
+
+    it "should parse tokens from else.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Identifier "a"
+                  , CloseParen
+                  , KWReturn
+                  , Integer 1
+                  , Semicolon
+                  , KWElse
+                  , KWReturn
+                  , Integer 2
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Return (Constant 1))
+                (Just (Return (Constant 2))))]))
+
+    it "should parse tokens from if_nested.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Identifier "a"
+                  , CloseParen
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWElse
+                  , KWIf
+                  , OpenParen
+                  , Identifier "b"
+                  , CloseParen
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 2
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "b"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 1))
+            , Declaration "b" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                (Just
+                  (If
+                    (Reference "b")
+                    (Expression (AST.Assignment "b" (Constant 2)))
+                    Nothing)))
+            , Statement (Return (Reference "b"))]))
+
+    it "should parse tokens from if_nested_2.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Identifier "a"
+                  , CloseParen
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWElse
+                  , KWIf
+                  , OpenParen
+                  , Identifier "b"
+                  , CloseParen
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 2
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "b"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Declaration "b" (Just (Constant 1))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                (Just
+                  (If
+                    (Reference "b")
+                    (Expression (AST.Assignment "b" (Constant 2)))
+                    Nothing)))
+            , Statement (Return (Reference "b"))]))
+
+    it "should parse tokens from if_nested_3.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Integer 1
+                  , CloseParen
+                  , KWIf
+                  , OpenParen
+                  , Integer 2
+                  , CloseParen
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 3
+                  , Semicolon
+                  , KWElse
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 4
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Constant 1)
+                (If
+                  (Constant 2)
+                  (Expression (AST.Assignment "a" (Constant 3)))
+                  (Just (Expression (AST.Assignment "a" (Constant 4)))))
+                Nothing)
+            , Statement (Return (Reference "a"))]))
+
+    it "should parse tokens from if_nested_4.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Integer 1
+                  , CloseParen
+                  , KWIf
+                  , OpenParen
+                  , Integer 0
+                  , CloseParen
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 3
+                  , Semicolon
+                  , KWElse
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 4
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Constant 1)
+                (If
+                  (Constant 0)
+                  (Expression (AST.Assignment "a" (Constant 3)))
+                  (Just (Expression (AST.Assignment "a" (Constant 4)))))
+                Nothing)
+            , Statement (Return (Reference "a"))]))
+
+    it "should parse tokens from if_nested_5.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Integer 0
+                  , CloseParen
+                  , KWIf
+                  , OpenParen
+                  , Integer 0
+                  , CloseParen
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 3
+                  , Semicolon
+                  , KWElse
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 4
+                  , Semicolon
+                  , KWElse
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (If
+                (Constant 0)
+                (If
+                  (Constant 0)
+                  (Expression (AST.Assignment "a" (Constant 3)))
+                  (Just (Expression (AST.Assignment "a" (Constant 4)))))
+                (Just (Expression (AST.Assignment "a" (Constant 1)))))
+            , Statement (Return (Reference "a"))]))
+
+    it "should parse tokens from if_not_taken.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Identifier "a"
+                  , CloseParen
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "b"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Declaration "b" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                Nothing)
+            , Statement (Return (Reference "b"))]))
+
+    it "should parse tokens from if_taken.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Identifier "a"
+                  , CloseParen
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 1
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "b"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 1))
+            , Declaration "b" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "b" (Constant 1)))
+                Nothing)
+            , Statement (Return (Reference "b"))]))
+
+    it "should parse tokens from multiple_if.c" $ do
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWInt
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Identifier "a"
+                  , CloseParen
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 2
+                  , Semicolon
+                  , KWElse
+                  , Identifier "a"
+                  , Token.Assignment
+                  , Integer 3
+                  , Semicolon
+                  , KWIf
+                  , OpenParen
+                  , Identifier "b"
+                  , CloseParen
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 4
+                  , Semicolon
+                  , KWElse
+                  , Identifier "b"
+                  , Token.Assignment
+                  , Integer 5
+                  , Semicolon
+                  , KWReturn
+                  , Identifier "a"
+                  , Token.Addition
+                  , Identifier "b"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Declaration "b" (Just (Constant 0))
+            , Statement
+              (If
+                (Reference "a")
+                (Expression (AST.Assignment "a" (Constant 2)))
+                (Just (Expression (AST.Assignment "a" (Constant 3)))))
+            , Statement
+              (If
+                (Reference "b")
+                (Expression (AST.Assignment "b" (Constant 4)))
+                (Just (Expression (AST.Assignment "b" (Constant 5)))))
+            , Statement
+              (Return
+                (Binary
+                  AST.Addition
+                  (Reference "a")
+                  (Reference "b")))]))
