@@ -54,9 +54,7 @@ ifStatement = do atom KWIf
                  expr <- expression
                  atom CloseParen
                  s1 <- statement
-                 s2 <- optional (do atom KWElse
-                                    st <- statement
-                                    return st)
+                 s2 <- optional (atom KWElse >> statement)
                  return $ If expr s1 s2
 
 returnStatement :: Parser Token Statement
