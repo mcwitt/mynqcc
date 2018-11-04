@@ -9,68 +9,66 @@ import           Error
 import           Text.Printf
 
 
-{- |
-Monad type in which all code generation actions are executed. The inner Except
-monad allows for exception handling, and the WriterT keeps track of the assembly
-code generated so far.
+{- | Inner monad type in which all code generation actions are executed. The
+inner Except monad allows for exception handling, and the WriterT keeps track of
+the assembly code generated so far.
 -}
-type M = WriterT [String] (Except Error)
+type Gen = WriterT [String] (Except Error)
 
-{- |
-Inside of functions, we need to track the stack index and variable offsets
-relative to the base pointer (EBP). We wrap the base monad M in a StateT Context
-to handle the bookkeeping.
+{- | Inside functions, we need to keep track of some additional state: for
+example, the stack index and variable offsets relative to the base pointer
+(EBP). We wrap the base monad in a `StateT FunctionContext` to handle the
+additional bookkeeping.
 -}
-type MS = StateT Context M
+type FuncGen = StateT Context Gen
 
 data Context =
-  Context { stackIndex :: Int
+  Context { funcName   :: String
+          , stackIndex :: Int
           , varOffsets :: Map.Map String Int
           , labelCount :: Int}
   deriving Show
 
-
 generate :: Program -> Either Error [String]
 generate = runExcept . execWriterT . program
 
-program :: Program -> M ()
+program :: Program -> Gen ()
 program (Program func) = function func
 
-function :: Function -> M ()
+function :: Function -> Gen ()
 function func = case func of
 
   -- | Handle special case of empty main function, in which case the standard
   -- dictates we return 0.
   Function "main" [] -> do
     prologue "main"
-    execStateT (returnConstant 0) emptyContext
+    execStateT (statement . Return . Constant $ 0) $ empty "main"
     epilogue
 
   Function name body -> do
     prologue name
-    execStateT (mapM blockItem body) emptyContext
+    execStateT (mapM blockItem body) $ empty name
     epilogue
 
-  where
-    returnConstant = statement . Return . Constant
-    emptyContext = Context { stackIndex = -4
-                           , varOffsets = Map.empty
-                           , labelCount = 0}
+  where empty name = Context { funcName = name
+                             , stackIndex = -4
+                             , varOffsets = Map.empty
+                             , labelCount = 0 }
 
-prologue :: String -> M ()
+prologue :: String -> Gen ()
 prologue name = do
   emit $ ".globl " ++ name
   emit $ name ++ ":"
   emit "push %ebp"
   emit "movl %esp, %ebp"
 
-epilogue :: M ()
+epilogue :: Gen ()
 epilogue = do
   emit "movl %ebp, %esp"
   emit "pop %ebp"
   emit "ret"
 
-blockItem :: BlockItem -> MS ()
+blockItem :: BlockItem -> FuncGen ()
 blockItem item = case item of
 
   Statement stat -> statement stat
@@ -91,7 +89,7 @@ blockItem item = case item of
                              , varOffsets = Map.insert name si vars}
 
 
-statement :: Statement -> MS ()
+statement :: Statement -> FuncGen ()
 statement st = case st of
 
   Return expr -> expression expr
@@ -100,10 +98,10 @@ statement st = case st of
   If expr s1 maybeStat -> do
     expression expr
     emitL "cmpl $0, %eax"
-    lelse <- label "_else"
+    lelse <- label "else"
     emitL $ printf "je %s" lelse
     statement s1
-    lendif <- label "_endif"
+    lendif <- label "endif"
     emitL $ printf "jmp %s" lendif
     emitL $ printf "%s:" lelse
     case maybeStat of
@@ -112,7 +110,7 @@ statement st = case st of
     emitL $ printf "%s:" lendif
 
 
-expression :: Expression -> MS ()
+expression :: Expression -> FuncGen ()
 expression expr = case expr of
 
   Constant i -> emitL $ "movl $" ++ show i ++ ", %eax"
@@ -203,23 +201,24 @@ expression expr = case expr of
   Conditional e1 e2 e3 -> do
     expression e1
     emitL "cmpl $0, %eax"
-    l3 <- label "_e3"
+    l3 <- label "e3"
     emitL $ printf "je %s" l3
     expression e2
-    lpc <- label "_post_conditional"
+    lpc <- label "post_conditional"
     emitL $ printf "jmp %s" lpc
     emitL $ printf "%s:" l3
     expression e3
     emitL $ printf "%s:" lpc
 
-label :: String -> MS String
+label :: String -> FuncGen String
 label s = do
+  prefix <- gets funcName
   lc <- gets labelCount
   modify $ \ctx -> ctx { labelCount = succ lc }
-  return (s ++ "_" ++ show lc)
+  return $ printf "_%s__%s__%s" prefix s (show lc)
 
-emit :: String -> M ()
+emit :: String -> Gen ()
 emit s = writer ((), [s])
 
-emitL :: String -> MS ()
+emitL :: String -> FuncGen ()
 emitL = lift . emit
