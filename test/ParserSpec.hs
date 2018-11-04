@@ -3,7 +3,6 @@ module ParserSpec (spec) where
 import           AST
 import           Error
 import           Parser
-import           Test
 import           Test.Hspec (Spec, describe, it, shouldBe)
 import           Token
 
@@ -25,7 +24,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Constant 100)]))
 
     it "should fail to parse tokens from missing_paren.c" $ do
@@ -57,7 +56,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.LogicalNegation)(
                         Constant 12))]))
@@ -77,7 +76,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.BitwiseComplement)(
                         Constant 0))]))
@@ -97,7 +96,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.Negation)(
                         Constant 5))]))
@@ -118,7 +117,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.LogicalNegation)(
                         Unary (
@@ -141,7 +140,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.Negation)(
                         Unary (
@@ -163,7 +162,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.LogicalNegation)(
                         Constant 5))]))
@@ -183,7 +182,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.LogicalNegation)(
                         Constant 0))]))
@@ -260,7 +259,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Addition)(
                         Constant 1)(
@@ -284,7 +283,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Subtraction)(
                         Binary (
@@ -311,7 +310,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Division)(
                         Binary (
@@ -336,7 +335,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Division)(
                         Constant 4)(
@@ -358,7 +357,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Multiplication)(
                         Constant 2)(
@@ -384,7 +383,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Multiplication)(
                         Constant 2)(
@@ -411,7 +410,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Addition)(
                         Constant 2)(
@@ -437,7 +436,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Subtraction)(
                         Constant 2)(
@@ -462,7 +461,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Addition)(
                         Unary (
@@ -489,7 +488,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.BitwiseComplement)(
                         Binary (
@@ -560,7 +559,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalAnd)(
                         Constant 1)(
@@ -583,7 +582,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalAnd)(
                         Constant 1)(
@@ -607,7 +606,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Equality)(
                         Constant 1)(
@@ -629,7 +628,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Equality)(
                         Constant 1)(
@@ -651,7 +650,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.GreaterEqual)(
                         Constant 1)(
@@ -673,7 +672,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.GreaterEqual)(
                         Constant 1)(
@@ -695,7 +694,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.GreaterThan)(
                         Constant 1)(
@@ -717,7 +716,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.GreaterThan)(
                         Constant 1)(
@@ -740,7 +739,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LessEqual)(
                         Constant 1)(
@@ -764,7 +763,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LessEqual)(
                         Constant 0)(
@@ -786,7 +785,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LessThan)(
                         Constant 2)(
@@ -808,7 +807,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LessThan)(
                         Constant 1)(
@@ -830,7 +829,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Inequality)(
                         Constant 0)(
@@ -854,7 +853,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Inequality)(
                         Unary (
@@ -880,7 +879,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalOr)(
                         Constant 0)(
@@ -902,7 +901,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalOr)(
                         Constant 1)(
@@ -926,7 +925,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalOr)(
                         Constant 1)(
@@ -956,7 +955,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalAnd)(
                         Binary (
@@ -983,7 +982,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Equality)(
                         Constant 2)(
@@ -1010,7 +1009,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalOr)(
                         Binary (
@@ -1086,8 +1085,8 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" Nothing
-                , expressionStatement (AST.Assignment "a" (Constant 2))
-                , returnStatement (Reference "a")]))
+                , Statement . Expression $ (AST.Assignment "a" (Constant 2))
+                , Statement . Return $ (Reference "a")]))
 
     it "should parse tokens from assign_val.c" $ do
       parseTokens [ KWInt
@@ -1116,7 +1115,7 @@ spec = do
                   Declaration "a" Nothing
                 , Declaration "b" (
                     Just (AST.Assignment "a" (Constant 0)))
-                , returnStatement (Reference "b")]))
+                , Statement . Return $ (Reference "b")]))
 
     it "should parse tokens from exp_return_val.c" $ do
       parseTokens [ KWInt
@@ -1148,10 +1147,10 @@ spec = do
             Function "main" [
                   Declaration "a" Nothing
                 , Declaration "b" Nothing
-                , expressionStatement (
+                , Statement . Expression $ (
                     AST.Assignment "a" (
                         AST.Assignment "b" (Constant 4)))
-                , returnStatement (
+                , Statement . Return $ (
                     Binary (
                         AST.Subtraction)(
                         Reference "a")(
@@ -1177,7 +1176,7 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" (Just (Constant 2))
-                , returnStatement (Constant 0)]))
+                , Statement . Return $ (Constant 0)]))
 
     it "should parse tokens from missing_return.c" $ do
       parseTokens [ KWInt
@@ -1217,7 +1216,7 @@ spec = do
             Function "main" [
                   Declaration "a" (Just (Constant 1))
                 , Declaration "b" (Just (Constant 2))
-                , returnStatement (
+                , Statement . Return $ (
                     Binary (
                         AST.Addition)(
                         Reference "a")(
@@ -1241,7 +1240,7 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" Nothing
-                , returnStatement (Constant 0)]))
+                , Statement . Return $ (Constant 0)]))
 
     it "should parse tokens from refer.c" $ do
       parseTokens [ KWInt
@@ -1263,7 +1262,7 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" (Just (Constant 2))
-                , returnStatement (Reference "a")]))
+                , Statement . Return $ (Reference "a")]))
 
     it "should parse tokens from unused_exp.c" $ do
       parseTokens [ KWInt
@@ -1283,12 +1282,12 @@ spec = do
         Right (
         Program (
             Function "main" [
-                  expressionStatement (
+                  Statement . Expression $ (
                       Binary (
                           AST.Addition)(
                           Constant 2)(
                           Constant 2))
-                , returnStatement (Constant 0)]))
+                , Statement . Return $ (Constant 0)]))
 
     it "should parse tokens from redefine.c" $ do
       parseTokens [ KWInt
@@ -1316,7 +1315,7 @@ spec = do
             Function "main" [
                   Declaration "a" (Just (Constant 1))
                 , Declaration "a" (Just (Constant 2))
-                , returnStatement (Reference "a")]))
+                , Statement . Return $ (Reference "a")]))
 
     it "should fail to parse tokens from syntax_err_bad_decl.c" $ do
       parseTokens [ KWInt
@@ -1439,7 +1438,7 @@ spec = do
         Right (
         Program (
             Function "main" [
-                returnStatement (Reference "a")]))
+                Statement . Return $ (Reference "a")]))
 
     it "should parse tokens from var_declared_late.c" $ do
       parseTokens [ KWInt
@@ -1464,14 +1463,14 @@ spec = do
         Right (
         Program (
             Function "main" [
-                  expressionStatement (
+                  Statement . Expression $ (
                       AST.Assignment "a" (
                           Binary (
                               AST.Addition)(
                               Constant 1)(
                               Constant 2)))
                 , Declaration "a" Nothing
-                , returnStatement (Reference "a")]))
+                , Statement . Return $ (Reference "a")]))
 
   describe "Stage 6" $ do
 
@@ -1503,13 +1502,13 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" (Just (Constant 0))
-                , expressionStatement (
+                , Statement . Expression $ (
                     AST.Assignment "a" (
                         Conditional (
                             Constant 1)(
                             Constant 2)(
                             Constant 3)))
-                , returnStatement (Reference "a")]))
+                , Statement . Return $ (Reference "a")]))
 
     it "should parse tokens from multiple_ternary.c" $ do
       parseTokens [ KWInt
@@ -1561,7 +1560,7 @@ spec = do
                             Binary AST.GreaterThan (Constant 1) (Constant 2))(
                             Constant 5)(
                             Constant 6)))
-              , returnStatement (
+              , Statement . Return $ (
                     Binary AST.Addition
                     (Reference "a")
                     (Reference "b"))]))
@@ -1608,7 +1607,7 @@ spec = do
            [Declaration "a" (Just (Constant 1))
           , Declaration "b" (Just (Constant 2))
           , Declaration "flag" (Just (Constant 0))
-          , returnStatement
+          , Statement . Return $
             (Conditional
               (Binary
                 AST.GreaterThan

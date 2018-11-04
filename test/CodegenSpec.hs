@@ -4,7 +4,6 @@ import           AST
 import           Codegen
 import           Error      (Error (CodegenError))
 import           Parser
-import           Test
 import           Test.Hspec (Spec, describe, it, shouldBe)
 
 spec :: Spec
@@ -15,7 +14,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Constant 100)]))
         `shouldBe`
         Right [ ".globl main"
@@ -33,7 +32,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Unary (
                         AST.LogicalNegation)(
                         Constant 12))]))
@@ -56,7 +55,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Addition)(
                         Constant 1)(
@@ -79,7 +78,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Subtraction)(
                         Binary (
@@ -109,7 +108,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Division)(
                         Binary (
@@ -141,7 +140,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Division)(
                         Constant 4)(
@@ -165,7 +164,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Multiplication)(
                         Constant 2)(
@@ -188,7 +187,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Multiplication)(
                         Constant 2)(
@@ -220,7 +219,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalAnd)(
                         Constant 1)(
@@ -248,7 +247,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalAnd)(
                         Constant 1)(
@@ -279,7 +278,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Equality)(
                         Constant 1)(
@@ -304,7 +303,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.Equality)(
                         Constant 1)(
@@ -329,7 +328,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.GreaterEqual)(
                         Constant 1)(
@@ -354,7 +353,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.GreaterEqual)(
                         Constant 1)(
@@ -379,7 +378,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (
+                Statement . Return $ (
                     Binary (
                         AST.LogicalOr)(
                         Constant 1)(
@@ -419,8 +418,8 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" Nothing
-                , expressionStatement (AST.Assignment "a" (Constant 2))
-                , returnStatement (Reference "a")]))
+                , Statement . Expression $ (AST.Assignment "a" (Constant 2))
+                , Statement . Return $ (Reference "a")]))
         `shouldBe`
         Right [ ".globl main"
               , "main:"
@@ -441,7 +440,7 @@ spec = do
                   Declaration "a" Nothing
                 , Declaration "b" (
                     Just (AST.Assignment "a" (Constant 0)))
-                , returnStatement (Reference "b")]))
+                , Statement . Return $ (Reference "b")]))
         `shouldBe`
         Right [ ".globl main"
               , "main:"
@@ -462,10 +461,10 @@ spec = do
             Function "main" [
                   Declaration "a" Nothing
                 , Declaration "b" Nothing
-                , expressionStatement (
+                , Statement . Expression $ (
                     AST.Assignment "a" (
                         AST.Assignment "b" (Constant 4)))
-                , returnStatement (
+                , Statement . Return $ (
                     Binary (
                         AST.Subtraction)(
                         Reference "a")(
@@ -494,7 +493,7 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" (Just (Constant 2))
-                , returnStatement (Constant 0)]))
+                , Statement . Return $ (Constant 0)]))
         `shouldBe`
         Right [ ".globl main"
               , "main:"
@@ -525,7 +524,7 @@ spec = do
             Function "main" [
                   Declaration "a" (Just (Constant 1))
                 , Declaration "b" (Just (Constant 2))
-                , returnStatement (
+                , Statement . Return $ (
                     Binary (
                         AST.Addition)(
                         Reference "a")(
@@ -553,7 +552,7 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" Nothing
-                , returnStatement (Constant 0)]))
+                , Statement . Return $ (Constant 0)]))
         `shouldBe`
         Right [ ".globl main"
               , "main:"
@@ -570,7 +569,7 @@ spec = do
         Program (
             Function "main" [
                   Declaration "a" (Just (Constant 2))
-                , returnStatement (Reference "a")]))
+                , Statement . Return $ (Reference "a")]))
         `shouldBe`
         Right [ ".globl main"
               , "main:"
@@ -587,12 +586,12 @@ spec = do
       generate (
         Program (
             Function "main" [
-                  expressionStatement (
+                  Statement . Expression $ (
                       Binary (
                           AST.Addition)(
                           Constant 2)(
                           Constant 2))
-                , returnStatement (Constant 0)]))
+                , Statement . Return $ (Constant 0)]))
         `shouldBe`
         Right [ ".globl main"
               , "main:"
@@ -614,7 +613,7 @@ spec = do
             Function "main" [
                   Declaration "a" (Just (Constant 1))
                 , Declaration "a" (Just (Constant 2))
-                , returnStatement (Reference "a")]))
+                , Statement . Return $ (Reference "a")]))
         `shouldBe`
         Left (CodegenError "Variable `a` was declared more than once.")
 
@@ -622,7 +621,7 @@ spec = do
       generate (
         Program (
             Function "main" [
-                returnStatement (Reference "a")]))
+                Statement . Return $ (Reference "a")]))
         `shouldBe`
         Left (CodegenError "Reference to undeclared variable, `a`.")
 
@@ -630,14 +629,14 @@ spec = do
       generate (
         Program (
             Function "main" [
-                  expressionStatement (
+                  Statement . Expression $ (
                       AST.Assignment "a" (
                           Binary (
                               AST.Addition)(
                               Constant 1)(
                               Constant 2)))
                 , Declaration "a" Nothing
-                , returnStatement (Reference "a")]))
+                , Statement . Return $ (Reference "a")]))
         `shouldBe`
         Left (CodegenError "Assignment to undeclared variable, `a`.")
 
