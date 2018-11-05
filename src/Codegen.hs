@@ -6,7 +6,6 @@ import           Control.Monad.State
 import           Control.Monad.Writer
 import qualified Data.Map             as Map
 import           Error
-import           Text.Printf
 
 
 {- | Inner monad type in which all code generation actions are executed. The
@@ -76,16 +75,15 @@ blockItem item = case item of
   Declaration name maybeExpr -> do
     vars <- gets varOffsets
     if Map.member name vars
-      then throwError
-         . CodegenError
-         $ printf "Variable `%s` was declared more than once." name
+      then throwError . CodegenError $
+           "Variable `" ++ name ++ "` was declared more than once."
       else do
         case maybeExpr of
           Just expr -> expression expr
           Nothing -> return ()
         emitL "push %eax"
         si <- gets stackIndex
-        modify $ \ctx -> ctx { stackIndex = (stackIndex ctx) - 4
+        modify $ \ctx -> ctx { stackIndex = stackIndex ctx - 4
                              , varOffsets = Map.insert name si vars}
 
 
@@ -99,15 +97,15 @@ statement st = case st of
     expression expr
     emitL "cmpl $0, %eax"
     lelse <- label "else"
-    emitL $ printf "je %s" lelse
+    emitL $ "je " ++ lelse
     statement s1
     lendif <- label "endif"
-    emitL $ printf "jmp %s" lendif
-    emitL $ printf "%s:" lelse
+    emitL $ "jmp " ++ lendif
+    emitL $ lelse ++ ":"
     case maybeStat of
       Just s2 -> statement s2
       Nothing -> return ()
-    emitL $ printf "%s:" lendif
+    emitL $ lendif ++ ":"
 
 
 expression :: Expression -> FuncGen ()
@@ -120,17 +118,15 @@ expression expr = case expr of
     vars <- gets varOffsets
     case Map.lookup name vars of
       Just offset -> emitL $ "movl %eax, " ++ show offset ++ "(%ebp)"
-      Nothing -> throwError
-               . CodegenError
-               $ printf "Assignment to undeclared variable, `%s`." name
+      Nothing -> throwError . CodegenError $
+                 "Assignment to undeclared variable, `" ++ name ++ "`."
 
   Reference name -> do
     vars <- gets varOffsets
     case Map.lookup name vars of
       Just offset -> emitL $ "movl " ++ show offset ++ "(%ebp), %eax"
-      Nothing -> throwError
-               . CodegenError
-               $ printf "Reference to undeclared variable, `%s`." name
+      Nothing -> throwError . CodegenError $
+                 "Reference to undeclared variable, `" ++ name ++ "`."
 
   Unary op expr -> do
     expression expr
@@ -202,20 +198,20 @@ expression expr = case expr of
     expression e1
     emitL "cmpl $0, %eax"
     l3 <- label "e3"
-    emitL $ printf "je %s" l3
+    emitL $ "je " ++ l3
     expression e2
     lpc <- label "post_conditional"
-    emitL $ printf "jmp %s" lpc
-    emitL $ printf "%s:" l3
+    emitL $ "jmp " ++ lpc
+    emitL $ l3 ++ ":"
     expression e3
-    emitL $ printf "%s:" lpc
+    emitL $ lpc ++ ":"
 
 label :: String -> FuncGen String
 label s = do
   prefix <- gets funcName
   lc <- gets labelCount
   modify $ \ctx -> ctx { labelCount = succ lc }
-  return $ printf "_%s__%s__%s" prefix s (show lc)
+  return $ "_" ++ prefix ++ "__" ++ s ++ "__" ++ show lc
 
 emit :: String -> Gen ()
 emit s = writer ((), [s])
