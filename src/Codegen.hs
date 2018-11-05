@@ -74,17 +74,17 @@ blockItem item = case item of
 
   Declaration name maybeExpr -> do
     vars <- gets varOffsets
-    if Map.member name vars
-      then throwError . CodegenError $
-           "Variable `" ++ name ++ "` was declared more than once."
-      else do
-        case maybeExpr of
-          Just expr -> expression expr
-          Nothing -> return ()
-        emitL "push %eax"
-        si <- gets stackIndex
-        modify $ \ctx -> ctx { stackIndex = stackIndex ctx - 4
-                             , varOffsets = Map.insert name si vars}
+    case Map.lookup name vars of
+      Just _ -> throwError . CodegenError $
+        "Variable `" ++ name ++ "` was declared more than once."
+      Nothing -> return ()
+    case maybeExpr of
+      Just expr -> expression expr
+      Nothing -> return ()
+    emitL "push %eax"
+    si <- gets stackIndex
+    modify $ \ctx -> ctx { stackIndex = stackIndex ctx - 4
+                         , varOffsets = Map.insert name si vars}
 
 
 statement :: Statement -> FuncGen ()
