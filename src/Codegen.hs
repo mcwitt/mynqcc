@@ -96,16 +96,16 @@ statement st = case st of
   If expr s1 maybeStat -> do
     expression expr
     emitL "cmpl $0, %eax"
-    lelse <- label "else"
-    emitL $ "je " ++ lelse
+    labelElse <- label "else"
+    emitL $ "je " ++ labelElse
     statement s1
-    lendif <- label "endif"
-    emitL $ "jmp " ++ lendif
-    emitL $ lelse ++ ":"
+    labelEndIf <- label "endif"
+    emitL $ "jmp " ++ labelEndIf
+    emitL $ labelElse ++ ":"
     case maybeStat of
       Just s2 -> statement s2
       Nothing -> return ()
-    emitL $ lendif ++ ":"
+    emitL $ labelEndIf ++ ":"
 
 
 expression :: Expression -> FuncGen ()
@@ -197,14 +197,14 @@ expression expr = case expr of
   Conditional e1 e2 e3 -> do
     expression e1
     emitL "cmpl $0, %eax"
-    l3 <- label "e3"
-    emitL $ "je " ++ l3
+    labelE3 <- label "e3"
+    emitL $ "je " ++ labelE3
     expression e2
-    lpc <- label "post_conditional"
-    emitL $ "jmp " ++ lpc
-    emitL $ l3 ++ ":"
+    labelPostCond <- label "post_conditional"
+    emitL $ "jmp " ++ labelPostCond
+    emitL $ labelE3 ++ ":"
     expression e3
-    emitL $ lpc ++ ":"
+    emitL $ labelPostCond ++ ":"
 
 label :: String -> FuncGen String
 label s = do
