@@ -47,6 +47,7 @@ statement :: Parser Token Statement
 statement = ifStatement
             <|> returnStatement
             <|> standaloneExpr
+            <|> compoundStatement
 
 ifStatement :: Parser Token Statement
 ifStatement = do atom KWIf
@@ -67,6 +68,12 @@ standaloneExpr :: Parser Token Statement
 standaloneExpr = do expr <- expression
                     atom Semicolon
                     return $ Expression expr
+
+compoundStatement :: Parser Token Statement
+compoundStatement = do atom OpenBrace
+                       items <- many blockItem
+                       atom CloseBrace
+                       return (Compound items)
 
 
 -- Expressions

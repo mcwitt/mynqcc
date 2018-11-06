@@ -20,6 +20,7 @@ data Statement
   = Expression Expression
   | Return Expression
   | If Expression Statement (Maybe Statement)
+  | Compound [BlockItem]
   deriving (Eq, Show)
 
 data Expression
