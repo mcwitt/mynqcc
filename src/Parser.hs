@@ -8,8 +8,8 @@ import           Token
 
 parseTokens :: [Token] -> Either Error Program
 parseTokens ts = case parse program ts of
-                   [(res, xs)] -> Right res
-                   [] -> Left $ ParserError "Failed to parse the program."
+  [(res, [])] -> Right res
+  otherwise   -> Left $ ParserError "Failed to parse the program."
 
 program :: Parser Token Program
 program = do f <- function
