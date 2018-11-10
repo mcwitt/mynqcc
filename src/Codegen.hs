@@ -123,12 +123,11 @@ expression expr = case expr of
                  emitL "movl $0, %eax"
                  emitL "sete %al"
 
-  -- | General strategy for evaluating binary operators on
-  -- sub-expressions e1, e2:
-  -- 1. Evaluate e1, push result onto the stack
-  -- 2. Evaluate e2
-  -- 3. Pop the result of e1 back into a register
-  -- 4. Perform the binary operation on e1, e2
+  {- General strategy for evaluating binary operators on sub-expressions e1, e2:
+     1. Evaluate e1, push result onto the stack
+     2. Evaluate e2
+     3. Pop the result of e1 back into a register
+     4. Perform the binary operation on e1, e2 -}
   Binary op e1 e2 -> do
     expression e2
     emitL "push %eax"
