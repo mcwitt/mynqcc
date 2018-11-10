@@ -35,34 +35,20 @@ program :: Program -> Gen ()
 program (Program func) = function func
 
 function :: Function -> Gen ()
-function func = case func of
-
-  -- | Handle special case of empty main function, in which case the standard
-  -- dictates we return 0.
-  Function "main" [] -> do
-    prologue "main"
-    execStateT (statement . Return . Constant $ 0) $ empty "main"
-    epilogue
-
-  Function name body -> do
-    prologue name
-    execStateT (mapM blockItem body) $ empty name
-    epilogue
-
-  where empty name = Context { funcName = name
-                             , stackIndex = -4
-                             , varOffsets = Map.empty
-                             , labelCount = 0 }
-
-prologue :: String -> Gen ()
-prologue name = do
+function (Function name body) = do
   emit $ ".globl " ++ name
   emit $ name ++ ":"
   emit "push %ebp"
   emit "movl %esp, %ebp"
-
-epilogue :: Gen ()
-epilogue = do
+  let inner = case (Function name body) of
+        -- Handle special case of empty main function
+        Function "main" [] -> statement . Return . Constant $ 0
+        Function _ body -> mapM_ blockItem body
+      empty = Context { funcName = name
+                      , stackIndex = -4
+                      , varOffsets = Map.empty
+                      , labelCount = 0}
+  execStateT inner empty
   emit "movl %ebp, %esp"
   emit "pop %ebp"
   emit "ret"
