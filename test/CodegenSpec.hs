@@ -1302,3 +1302,27 @@ spec = do
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
+
+  describe "Stage 7" $ do
+
+    it "should generate code for consecutive_blocks.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 1))
+            , Statement (Compound [Declaration "a" (Just (Constant 2))])
+            , Statement (Compound [Statement (Return (Reference "a"))])
+            ])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
