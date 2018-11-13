@@ -21,10 +21,10 @@ These steps are automated in the script `mycc.sh`.
 
 Nora Sandler's blog post series is accompanied by a
 [test suite](https://github.com/nlsandler/write_a_c_compiler), which is included
-as a submodule of this repo. To run the tests for stages 1 through 6, do
+as a submodule of this repo. To run the tests for stages 1 through 7, do
 
 ```shell
 git clone https://github.com/mcwitt/mynqcc --recurse-submodules
 cd mynqcc/write_a_c_compiler
-./test_compiler "../mycc.sh /path/to/mynqcc-exe" $(seq 1 6)
+./test_compiler "../mycc.sh /path/to/mynqcc-exe" $(seq 1 7)
 ```
