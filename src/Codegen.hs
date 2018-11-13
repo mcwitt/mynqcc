@@ -40,9 +40,9 @@ function (Function name body) = do
   emit $ name ++ ":"
   emit "push %ebp"
   emit "movl %esp, %ebp"
-  let inner = f name body
-      f "main" [] = statement . Return . Constant $ 0
-      f name items = block items
+  let inner = block $ f name body
+      f "main" [] = [Statement . Return . Constant $ 0]
+      f _ items = items
       empty = Context { funcName = name
                       , labelCount = 0
                       , scope = Scope { stackIndex = -4
@@ -54,13 +54,21 @@ function (Function name body) = do
   emit "ret"
 
 block :: (MState m, MWriter m, MError m) => [BlockItem] -> m ()
-block items = do initialScope <- gets scope
-                 resetScopeVars
+block items = do outerScope <- gets scope
+                 modify $ setScopeVars Set.empty
                  mapM_ blockItem items
-                 modify $ \c -> c { scope = initialScope }
-  where resetScopeVars = modify $ \c ->
+
+                 -- deallocate
+                 localVars <- gets $ vars . scope
+                 let bytes = 4 * Set.size localVars
+                 emit $ "addl $" ++ show bytes ++ ", %esp"
+
+                 modify $ setScope outerScope
+  -- NOTE lenses useful here?
+  where setScopeVars vars = \c ->
           let scope_ = scope c
-          in c { scope = scope_ { vars = Set.empty }}
+          in c { scope = scope_ { vars = vars }}
+        setScope scope = \c -> c { scope = scope }
 
 blockItem :: (MState m, MWriter m, MError m) => BlockItem -> m ()
 blockItem item = case item of

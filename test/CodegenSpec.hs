@@ -22,6 +22,7 @@ spec = do
               , "push %ebp"
               , "movl %esp, %ebp"
               , "movl $100, %eax"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -45,6 +46,7 @@ spec = do
               , "cmpl $0, %eax"
               , "movl $0, %eax"
               , "sete %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -70,6 +72,7 @@ spec = do
               , "movl $1, %eax"
               , "pop %ecx"
               , "addl %ecx, %eax"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -100,6 +103,7 @@ spec = do
               , "subl %ecx, %eax"
               , "pop %ecx"
               , "subl %ecx, %eax"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -132,6 +136,7 @@ spec = do
               , "pop %ecx"
               , "movl $0, %edx"
               , "idivl %ecx"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -156,6 +161,7 @@ spec = do
               , "pop %ecx"
               , "movl $0, %edx"
               , "idivl %ecx"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -179,6 +185,7 @@ spec = do
               , "movl $2, %eax"
               , "pop %ecx"
               , "imul %ecx, %eax"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -209,6 +216,7 @@ spec = do
               , "movl $2, %eax"
               , "pop %ecx"
               , "imul %ecx, %eax"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -239,6 +247,7 @@ spec = do
               , "movl $0, %eax"
               , "setne %al"
               , "andb %cl, %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -270,6 +279,7 @@ spec = do
               , "movl $0, %eax"
               , "setne %al"
               , "andb %cl, %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -295,6 +305,7 @@ spec = do
               , "cmpl %ecx, %eax"
               , "movl $0, %eax"
               , "sete %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -320,6 +331,7 @@ spec = do
               , "cmpl %ecx, %eax"
               , "movl $0, %eax"
               , "sete %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -345,6 +357,7 @@ spec = do
               , "cmpl %ecx, %eax"
               , "movl $0, %eax"
               , "setge %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -370,6 +383,7 @@ spec = do
               , "cmpl %ecx, %eax"
               , "movl $0, %eax"
               , "setge %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -407,6 +421,7 @@ spec = do
               , "orl %ecx, %eax"
               , "movl $0, %eax"
               , "setne %al"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -429,6 +444,7 @@ spec = do
               , "movl $2, %eax"
               , "movl %eax, -4(%ebp)"
               , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -451,6 +467,7 @@ spec = do
               , "movl %eax, -4(%ebp)"
               , "push %eax"
               , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -484,6 +501,7 @@ spec = do
               , "movl -4(%ebp), %eax"
               , "pop %ecx"
               , "subl %ecx, %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -502,6 +520,7 @@ spec = do
               , "movl $2, %eax"
               , "push %eax"
               , "movl $0, %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -514,6 +533,7 @@ spec = do
               , "push %ebp"
               , "movl %esp, %ebp"
               , "movl $0, %eax"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -543,6 +563,7 @@ spec = do
               , "movl -4(%ebp), %eax"
               , "pop %ecx"
               , "addl %ecx, %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -560,6 +581,7 @@ spec = do
               , "movl %esp, %ebp"
               , "push %eax"
               , "movl $0, %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -578,6 +600,7 @@ spec = do
               , "movl $2, %eax"
               , "push %eax"
               , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -603,6 +626,7 @@ spec = do
               , "pop %ecx"
               , "addl %ecx, %eax"
               , "movl $0, %eax"
+              , "addl $0, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -671,6 +695,7 @@ spec = do
               , "_main__post_conditional__1:"
               , "movl %eax, -4(%ebp)"
               , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -736,6 +761,7 @@ spec = do
               , "movl -4(%ebp), %eax"
               , "pop %ecx"
               , "addl %ecx, %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -791,6 +817,7 @@ spec = do
               , "movl $7, %eax"
               , "_main__post_conditional__3:"
               , "_main__post_conditional__1:"
+              , "addl $12, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -865,6 +892,7 @@ spec = do
               , "movl -4(%ebp), %eax"
               , "pop %ecx"
               , "imul %ecx, %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -902,6 +930,7 @@ spec = do
               , "movl %eax, -8(%ebp)"
               , "_main__post_conditional__1:"
               , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -942,6 +971,7 @@ spec = do
               , "_main__e3__0:"
               , "movl $5, %eax"
               , "_main__post_conditional__1:"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -982,6 +1012,7 @@ spec = do
               , "_main__e3__0:"
               , "movl $5, %eax"
               , "_main__post_conditional__1:"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1011,6 +1042,7 @@ spec = do
               , "_main__else__0:"
               , "movl $2, %eax"
               , "_main__endif__1:"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1057,6 +1089,7 @@ spec = do
               , "_main__endif__3:"
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1103,6 +1136,7 @@ spec = do
               , "_main__endif__3:"
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1145,6 +1179,7 @@ spec = do
               , "_main__else__0:"
               , "_main__endif__3:"
               , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1187,6 +1222,7 @@ spec = do
               , "_main__else__0:"
               , "_main__endif__3:"
               , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1231,6 +1267,7 @@ spec = do
               , "movl %eax, -4(%ebp)"
               , "_main__endif__3:"
               , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1265,6 +1302,7 @@ spec = do
               , "_main__else__0:"
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1299,6 +1337,7 @@ spec = do
               , "_main__else__0:"
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1322,7 +1361,10 @@ spec = do
               , "push %eax"
               , "movl $2, %eax"
               , "push %eax"
+              , "addl $4, %esp"
               , "movl -4(%ebp), %eax"
+              , "addl $0, %esp"
+              , "addl $4, %esp"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
