@@ -1,13 +1,15 @@
+{-# LANGUAGE ConstraintKinds  #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ConstraintKinds #-}
 
 module Codegen (generate) where
 
 import           AST
+import           Control.Monad        (when)
 import           Control.Monad.Except
 import           Control.Monad.State
 import           Control.Monad.Writer
 import qualified Data.Map             as Map
+import qualified Data.Set             as Set
 import           Error
 
 type MError  = MonadError Error
@@ -16,9 +18,14 @@ type MState  = MonadState Context
 
 data Context =
   Context { funcName   :: String
-          , stackIndex :: Int
-          , varOffsets :: Map.Map String Int
-          , labelCount :: Int}
+          , labelCount :: Int
+          , scope      :: Scope}
+  deriving Show
+
+data Scope =
+  Scope { stackIndex :: Int
+        , varMap     :: Map.Map String Int
+        , vars       :: Set.Set String}
   deriving Show
 
 generate :: Program -> Either Error [String]
@@ -33,18 +40,27 @@ function (Function name body) = do
   emit $ name ++ ":"
   emit "push %ebp"
   emit "movl %esp, %ebp"
-  let inner = case Function name body of
-        -- Handle special case of empty main function
-        Function "main" [] -> statement . Return . Constant $ 0
-        Function _ body -> mapM_ blockItem body
+  let inner = f name body
+      f "main" [] = statement . Return . Constant $ 0
+      f name items = block items
       empty = Context { funcName = name
-                      , stackIndex = -4
-                      , varOffsets = Map.empty
-                      , labelCount = 0}
+                      , labelCount = 0
+                      , scope = Scope { stackIndex = -4
+                                      , varMap = Map.empty
+                                      , vars = Set.empty}}
   execStateT inner empty
   emit "movl %ebp, %esp"
   emit "pop %ebp"
   emit "ret"
+
+block :: (MState m, MWriter m, MError m) => [BlockItem] -> m ()
+block items = do initialScope <- gets scope
+                 resetScopeVars
+                 mapM_ blockItem items
+                 modify $ \c -> c { scope = initialScope }
+  where resetScopeVars = modify $ \c ->
+          let scope_ = scope c
+          in c { scope = scope_ { vars = Set.empty }}
 
 blockItem :: (MState m, MWriter m, MError m) => BlockItem -> m ()
 blockItem item = case item of
@@ -52,18 +68,20 @@ blockItem item = case item of
   Statement stat -> statement stat
 
   Declaration name maybeExpr -> do
-    vars <- gets varOffsets
-    case Map.lookup name vars of
-      Just _ -> throwError . CodegenError $
+    vars <- gets $ vars . scope
+    when (Set.member name vars) $ throwError . CodegenError $
         "Variable `" ++ name ++ "` was declared more than once."
-      Nothing -> return ()
     case maybeExpr of
       Just expr -> expression expr
       Nothing -> return ()
     emit "push %eax"
-    si <- gets stackIndex
-    modify $ \ctx -> ctx { stackIndex = stackIndex ctx - 4
-                         , varOffsets = Map.insert name si vars}
+    sidx <- gets $ stackIndex . scope
+    vmap <- gets $ varMap . scope
+    modify $ \c ->
+      let scope_ = scope c
+      in c { scope = scope_ { stackIndex = stackIndex scope_ - 4
+                            , varMap = Map.insert name sidx vmap
+                            , vars = Set.insert name vars}}
 
 
 statement :: (MState m, MWriter m, MError m) => Statement -> m ()
@@ -86,6 +104,8 @@ statement st = case st of
       Nothing -> return ()
     emit $ labelEndIf ++ ":"
 
+  Compound items -> block items
+
 
 expression :: (MState m, MWriter m, MError m) => Expression -> m ()
 expression expr = case expr of
@@ -94,15 +114,15 @@ expression expr = case expr of
 
   Assignment name expr -> do
     expression expr
-    vars <- gets varOffsets
-    case Map.lookup name vars of
+    vmap <- gets $ varMap . scope
+    case Map.lookup name vmap of
       Just offset -> emit $ "movl %eax, " ++ show offset ++ "(%ebp)"
       Nothing -> throwError . CodegenError $
                  "Assignment to undeclared variable, `" ++ name ++ "`."
 
   Reference name -> do
-    vars <- gets varOffsets
-    case Map.lookup name vars of
+    vmap <- gets $ varMap . scope
+    case Map.lookup name vmap of
       Just offset -> emit $ "movl " ++ show offset ++ "(%ebp), %eax"
       Nothing -> throwError . CodegenError $
                  "Reference to undeclared variable, `" ++ name ++ "`."
