@@ -23,6 +23,9 @@ spec = do
               , "movl %esp, %ebp"
               , "movl $100, %eax"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -47,6 +50,9 @@ spec = do
               , "movl $0, %eax"
               , "sete %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -73,6 +79,9 @@ spec = do
               , "pop %ecx"
               , "addl %ecx, %eax"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -104,6 +113,9 @@ spec = do
               , "pop %ecx"
               , "subl %ecx, %eax"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -137,6 +149,9 @@ spec = do
               , "movl $0, %edx"
               , "idivl %ecx"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -162,6 +177,9 @@ spec = do
               , "movl $0, %edx"
               , "idivl %ecx"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -186,6 +204,9 @@ spec = do
               , "pop %ecx"
               , "imul %ecx, %eax"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -217,6 +238,9 @@ spec = do
               , "pop %ecx"
               , "imul %ecx, %eax"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -248,6 +272,9 @@ spec = do
               , "setne %al"
               , "andb %cl, %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -280,6 +307,9 @@ spec = do
               , "setne %al"
               , "andb %cl, %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -306,6 +336,9 @@ spec = do
               , "movl $0, %eax"
               , "sete %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -332,6 +365,9 @@ spec = do
               , "movl $0, %eax"
               , "sete %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -358,6 +394,9 @@ spec = do
               , "movl $0, %eax"
               , "setge %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -384,6 +423,9 @@ spec = do
               , "movl $0, %eax"
               , "setge %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -422,6 +464,9 @@ spec = do
               , "movl $0, %eax"
               , "setne %al"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -445,6 +490,9 @@ spec = do
               , "movl %eax, -4(%ebp)"
               , "movl -4(%ebp), %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -468,6 +516,9 @@ spec = do
               , "push %eax"
               , "movl -8(%ebp), %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -502,6 +553,9 @@ spec = do
               , "pop %ecx"
               , "subl %ecx, %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -521,6 +575,9 @@ spec = do
               , "push %eax"
               , "movl $0, %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -534,6 +591,9 @@ spec = do
               , "movl %esp, %ebp"
               , "movl $0, %eax"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -564,6 +624,9 @@ spec = do
               , "pop %ecx"
               , "addl %ecx, %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -582,6 +645,9 @@ spec = do
               , "push %eax"
               , "movl $0, %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -601,6 +667,9 @@ spec = do
               , "push %eax"
               , "movl -4(%ebp), %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -627,6 +696,9 @@ spec = do
               , "addl %ecx, %eax"
               , "movl $0, %eax"
               , "addl $0, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -696,6 +768,9 @@ spec = do
               , "movl %eax, -4(%ebp)"
               , "movl -4(%ebp), %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -762,6 +837,9 @@ spec = do
               , "pop %ecx"
               , "addl %ecx, %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -818,6 +896,9 @@ spec = do
               , "_main__post_conditional__3:"
               , "_main__post_conditional__1:"
               , "addl $12, %esp"
+              , "jmp _main__end"
+              , "addl $12, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -893,6 +974,9 @@ spec = do
               , "pop %ecx"
               , "imul %ecx, %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -931,6 +1015,9 @@ spec = do
               , "_main__post_conditional__1:"
               , "movl -8(%ebp), %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -972,6 +1059,9 @@ spec = do
               , "movl $5, %eax"
               , "_main__post_conditional__1:"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1013,6 +1103,9 @@ spec = do
               , "movl $5, %eax"
               , "_main__post_conditional__1:"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1038,11 +1131,16 @@ spec = do
               , "cmpl $0, %eax"
               , "je _main__else__0"
               , "movl $1, %eax"
+              , "addl $4, %esp"
+              , "jmp _main__end"
               , "jmp _main__endif__1"
               , "_main__else__0:"
               , "movl $2, %eax"
+              , "addl $4, %esp"
+              , "jmp _main__end"
               , "_main__endif__1:"
               , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1090,6 +1188,9 @@ spec = do
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1137,6 +1238,9 @@ spec = do
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1180,6 +1284,9 @@ spec = do
               , "_main__endif__3:"
               , "movl -4(%ebp), %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1223,6 +1330,9 @@ spec = do
               , "_main__endif__3:"
               , "movl -4(%ebp), %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1268,6 +1378,9 @@ spec = do
               , "_main__endif__3:"
               , "movl -4(%ebp), %eax"
               , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1303,6 +1416,9 @@ spec = do
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1338,6 +1454,9 @@ spec = do
               , "_main__endif__1:"
               , "movl -8(%ebp), %eax"
               , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]
@@ -1363,8 +1482,209 @@ spec = do
               , "push %eax"
               , "addl $4, %esp"
               , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
+              , "jmp _main__end"
               , "addl $0, %esp"
               , "addl $4, %esp"
+              , "_main__end:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for consecutive_declarations.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 0))
+            , Statement
+              (Compound
+                [ Declaration "b" (Just (Constant 1))
+                , Statement (Expression (AST.Assignment "a" (Reference "b")))])
+            , Statement
+              (Compound
+                [ Declaration "b" (Just (Constant 2))
+                , Statement
+                  (Expression
+                    (AST.Assignment "a"
+                      (Binary AST.Addition
+                        (Reference "a")
+                        (Reference "b"))))])
+            , Statement (Return (Reference "a"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $1, %eax"
+              , "push %eax"
+              , "movl -8(%ebp), %eax"
+              , "movl %eax, -4(%ebp)"
+              , "addl $4, %esp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl -8(%ebp), %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "pop %ecx"
+              , "addl %ecx, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "addl $4, %esp"
+              , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for declare_after_block.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "i" (Just (Constant 0))
+            , Statement
+              (Compound [Declaration "a" (Just (Constant 2))])
+            , Declaration "b" (Just (Constant 3))
+            , Statement (Return (Reference "b"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "addl $4, %esp"
+              , "movl $3, %eax"
+              , "push %eax"
+              , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $8, %esp"
+              , "_main__end:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for declare_block.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Statement
+              (If
+                (Constant 5)
+                (Compound
+                  [ Declaration "i" (Just (Constant 0))
+                  , Statement (Return (Reference "i"))])
+                Nothing)])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $5, %eax"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "jmp _main__endif__1"
+              , "_main__else__0:"
+              , "_main__endif__1:"
+              , "addl $0, %esp"
+              , "_main__end:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for declare_late.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 2))
+            , Statement
+              (Compound
+                [ Statement
+                  (Expression
+                    (AST.Assignment "a" (Constant 3)))
+                , Declaration "a" (Just (Constant 0))])
+            , Statement (Return (Reference "a"))])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $3, %eax"
+              , "movl %eax, -4(%ebp)"
+              , "movl $0, %eax"
+              , "push %eax"
+              , "addl $4, %esp"
+              , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "_main__end:"
+              , "movl %ebp, %esp"
+              , "pop %ebp"
+              , "ret"]
+
+    it "should generate code for multi_nesting.c" $ do
+      (generate
+        (Program
+          (Function "main"
+            [ Declaration "a" (Just (Constant 2))
+            , Statement
+              (If
+                (Binary AST.LessThan
+                  (Reference "a")
+                  (Constant 3))
+                (Compound
+                 [ Statement
+                   (Compound
+                     [ Declaration "a" (Just (Constant 3))
+                     , Statement (Return (Reference "a"))])
+                 , Statement (Return (Reference "a"))])
+              Nothing)])))
+        `shouldBe`
+        Right [ ".globl main"
+              , "main:"
+              , "push %ebp"
+              , "movl %esp, %ebp"
+              , "movl $2, %eax"
+              , "push %eax"
+              , "movl $3, %eax"
+              , "push %eax"
+              , "movl -4(%ebp), %eax"
+              , "pop %ecx"
+              , "cmpl %ecx, %eax"
+              , "movl $0, %eax"
+              , "setl %al"
+              , "cmpl $0, %eax"
+              , "je _main__else__0"
+              , "movl $3, %eax"
+              , "push %eax"
+              , "movl -8(%ebp), %eax"
+              , "addl $8, %esp"
+              , "jmp _main__end"
+              , "addl $4, %esp"
+              , "movl -4(%ebp), %eax"
+              , "addl $4, %esp"
+              , "jmp _main__end"
+              , "addl $0, %esp"
+              , "jmp _main__endif__1"
+              , "_main__else__0:"
+              , "_main__endif__1:"
+              , "addl $4, %esp"
+              , "_main__end:"
               , "movl %ebp, %esp"
               , "pop %ebp"
               , "ret"]

@@ -49,6 +49,7 @@ function (Function name body) = do
                                       , varMap = Map.empty
                                       , vars = Set.empty}}
   execStateT inner empty
+  emit $ "_" ++ name ++ "__end:"
   emit "movl %ebp, %esp"
   emit "pop %ebp"
   emit "ret"
@@ -95,7 +96,14 @@ blockItem item = case item of
 statement :: (MState m, MWriter m, MError m) => Statement -> m ()
 statement st = case st of
 
-  Return expr -> expression expr
+  Return expr -> do
+    expression expr
+    name <- gets funcName
+    sidx <- gets $ stackIndex . scope
+    let bytes = -(4 + sidx)
+    emit $ "addl $" ++ show bytes ++ ", %esp"
+    emit $ "jmp _" ++ name ++ "__end"
+
   Expression expr -> expression expr
 
   If expr s1 maybeStat -> do
