@@ -55,17 +55,14 @@ function (Function name body) = do
   emit "ret"
 
 block :: (MState m, MWriter m, MError m) => [BlockItem] -> m ()
-block items = do outerScope <- gets scope
-                 modify $ setScopeVars Set.empty
-                 mapM_ blockItem items
-
-                 -- deallocate
-                 localVars <- gets $ vars . scope
-                 let bytes = 4 * Set.size localVars
-                 emit $ "addl $" ++ show bytes ++ ", %esp"
-
-                 modify $ setScope outerScope
-  -- NOTE lenses useful here?
+block items = do
+  outerScope <- gets scope
+  modify $ setScopeVars Set.empty
+  mapM_ blockItem items
+  localVars <- gets $ vars . scope
+  let bytes = 4 * Set.size localVars
+  emit $ "addl $" ++ show bytes ++ ", %esp"
+  modify $ setScope outerScope
   where setScopeVars vars = \c ->
           let scope_ = scope c
           in c { scope = scope_ { vars = vars }}
@@ -79,7 +76,7 @@ blockItem item = case item of
   Declaration name maybeExpr -> do
     vars <- gets $ vars . scope
     when (Set.member name vars) $ throwError . CodegenError $
-        "Variable `" ++ name ++ "` was declared more than once."
+        "Multiple declarations of `" ++ name ++ "` in the same block."
     case maybeExpr of
       Just expr -> expression expr
       Nothing -> return ()

@@ -711,7 +711,7 @@ spec = do
                 , Declaration "a" (Just (Constant 2))
                 , Statement . Return $ (Reference "a")]))
         `shouldBe`
-        Left (CodegenError "Variable `a` was declared more than once.")
+        Left (CodegenError "Multiple declarations of `a` in the same block.")
 
     it "should fail to generate code for undeclared_var.c" $ do
       generate (
