@@ -28,17 +28,23 @@ function = do atom KWInt
 -- Block items
 
 blockItem :: Parser Token BlockItem
-blockItem = declaration <|> blockStatement
+blockItem = blockDeclaration <|> blockStatement
 
-declaration :: Parser Token BlockItem
-declaration = do atom KWInt
-                 name <- identifier
-                 initializer <- optional (atom Token.Assignment >> expression)
-                 atom Semicolon
-                 return (Declaration name initializer)
+blockDeclaration :: Parser Token BlockItem
+blockDeclaration = pure Declaration <*> declaration
 
 blockStatement :: Parser Token BlockItem
-blockStatement = statement >>= \s -> return (Statement s)
+blockStatement = pure Statement <*> statement
+
+-- Declarations
+
+declaration :: Parser Token Declaration
+declaration = do
+  atom KWInt
+  name <- identifier
+  initializer <- optional (atom Token.Assignment >> expression)
+  atom Semicolon
+  return $ Decl name initializer
 
 
 -- Statements
@@ -48,6 +54,12 @@ statement = ifStatement
             <|> returnStatement
             <|> standaloneExpr
             <|> compoundStatement
+            <|> forStatement
+            <|> forDeclStatement
+            <|> whileStatement
+            <|> doStatement
+            <|> breakStatement
+            <|> continueStatement
 
 ifStatement :: Parser Token Statement
 ifStatement = do atom KWIf
@@ -65,7 +77,7 @@ returnStatement = do atom KWReturn
                      return (Return expr)
 
 standaloneExpr :: Parser Token Statement
-standaloneExpr = do expr <- expression
+standaloneExpr = do expr <- optional expression
                     atom Semicolon
                     return $ Expression expr
 
@@ -75,6 +87,53 @@ compoundStatement = do atom OpenBrace
                        atom CloseBrace
                        return (Compound items)
 
+forStatement :: Parser Token Statement
+forStatement = do atom KWFor
+                  atom OpenParen
+                  init <- optional expression
+                  atom Semicolon
+                  cond <- expression <|> return (Constant 1)
+                  atom Semicolon
+                  post <- optional expression
+                  atom CloseParen
+                  body <- statement
+                  return $ For init cond post body
+
+forDeclStatement :: Parser Token Statement
+forDeclStatement = do atom KWFor
+                      atom OpenParen
+                      init <- declaration
+                      atom Semicolon
+                      cond <- expression <|> return (Constant 1)
+                      atom Semicolon
+                      post <- optional expression
+                      atom CloseParen
+                      body <- statement
+                      return $ ForDecl init cond post body
+
+whileStatement :: Parser Token Statement
+whileStatement = do atom KWWhile
+                    atom OpenParen
+                    cond <- expression
+                    atom CloseParen
+                    body <- statement
+                    return $ While cond body
+
+doStatement :: Parser Token Statement
+doStatement = do atom KWDo
+                 body <- statement
+                 atom KWWhile
+                 atom OpenParen
+                 cond <- expression
+                 atom CloseParen
+                 atom Semicolon
+                 return $ Do body cond
+
+breakStatement :: Parser Token Statement
+breakStatement = atom KWBreak >> atom Semicolon >> return Break
+
+continueStatement :: Parser Token Statement
+continueStatement = atom KWContinue >> atom Semicolon >> return Continue
 
 -- Expressions
 

@@ -10,14 +10,24 @@ data Function
 
 data BlockItem
   = Statement Statement
-  | Declaration String (Maybe Expression)
+  | Declaration Declaration
+  deriving (Eq, Show)
+
+data Declaration
+  = Decl String (Maybe Expression)
   deriving (Eq, Show)
 
 data Statement
-  = Expression Expression
+  = Expression (Maybe Expression)
   | Return Expression
   | If Expression Statement (Maybe Statement)
   | Compound [BlockItem]
+  | For (Maybe Expression) Expression (Maybe Expression) Statement
+  | ForDecl Declaration Expression (Maybe Expression) Statement
+  | While Expression Statement
+  | Do Statement Expression
+  | Break
+  | Continue
   deriving (Eq, Show)
 
 data Expression

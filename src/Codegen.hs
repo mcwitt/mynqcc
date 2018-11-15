@@ -70,25 +70,25 @@ block items = do
 
 blockItem :: (MState m, MWriter m, MError m) => BlockItem -> m ()
 blockItem item = case item of
-
   Statement stat -> statement stat
+  Declaration decl -> declaration decl
 
-  Declaration name maybeExpr -> do
-    vars <- gets $ vars . scope
-    when (Set.member name vars) $ throwError . CodegenError $
-        "Multiple declarations of `" ++ name ++ "` in the same block."
-    case maybeExpr of
-      Just expr -> expression expr
-      Nothing -> return ()
-    emit "push %eax"
-    sidx <- gets $ stackIndex . scope
-    vmap <- gets $ varMap . scope
-    modify $ \c ->
-      let scope_ = scope c
-      in c { scope = scope_ { stackIndex = stackIndex scope_ - 4
-                            , varMap = Map.insert name sidx vmap
-                            , vars = Set.insert name vars}}
-
+declaration :: (MState m, MWriter m, MError m) => Declaration -> m ()
+declaration (Decl name maybeExpr) = do
+  vars <- gets $ vars . scope
+  when (Set.member name vars) $ throwError . CodegenError $
+    "Multiple declarations of `" ++ name ++ "` in the same block."
+  case maybeExpr of
+    Just expr -> expression expr
+    Nothing -> return ()
+  emit "push %eax"
+  sidx <- gets $ stackIndex . scope
+  vmap <- gets $ varMap . scope
+  modify $ \c ->
+    let scope_ = scope c
+    in c { scope = scope_ { stackIndex = stackIndex scope_ - 4
+                          , varMap = Map.insert name sidx vmap
+                          , vars = Set.insert name vars}}
 
 statement :: (MState m, MWriter m, MError m) => Statement -> m ()
 statement st = case st of
@@ -101,7 +101,9 @@ statement st = case st of
     emit $ "addl $" ++ show bytes ++ ", %esp"
     emit $ "jmp _" ++ name ++ "__end"
 
-  Expression expr -> expression expr
+  Expression expr -> case expr of
+    Just expr -> expression expr
+    Nothing -> return ()
 
   If expr s1 maybeStat -> do
     expression expr
