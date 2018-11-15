@@ -13,10 +13,15 @@ lexString st = case parse lexer st of
 
 lexer :: Parser Char [Token]
 lexer = many . token $
-      reservedWord "int"    KWInt
-  <|> reservedWord "return" KWReturn
-  <|> reservedWord "if"     KWIf
-  <|> reservedWord "else"   KWElse
+      reservedWord "int"      KWInt
+  <|> reservedWord "return"   KWReturn
+  <|> reservedWord "if"       KWIf
+  <|> reservedWord "else"     KWElse
+  <|> reservedWord "for"      KWFor
+  <|> reservedWord "while"    KWWhile
+  <|> reservedWord "do"       KWDo
+  <|> reservedWord "break"    KWBreak
+  <|> reservedWord "continue" KWContinue
 
   <|> stringToken "&&" LogicalAnd
   <|> stringToken "||" LogicalOr

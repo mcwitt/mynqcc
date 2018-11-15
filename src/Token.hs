@@ -28,4 +28,9 @@ data Token = OpenBrace
            | KWElse
            | Colon
            | QuestionMark
+           | KWFor
+           | KWWhile
+           | KWDo
+           | KWBreak
+           | KWContinue
            deriving (Show, Eq)
