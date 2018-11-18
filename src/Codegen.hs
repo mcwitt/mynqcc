@@ -121,6 +121,59 @@ statement st = case st of
 
   Compound items -> block items
 
+  While expr stat -> do
+    labelBegin <- label "while_begin"
+    emit $ labelBegin ++ ":"
+    expression expr
+    emit "cmpl $0, %eax"
+    labelEnd <- label "while_end"
+    emit $ "je " ++ labelEnd
+    statement stat
+    emit $ "jmp " ++ labelBegin
+    emit $ labelEnd ++ ":"
+
+  Do stat expr -> do
+    labelBegin <- label "do_begin"
+    emit $ labelBegin ++ ":"
+    statement stat
+    expression expr
+    emit "cmpl $0, %eax"
+    labelEnd <- label "do_end"
+    emit $ "je " ++ labelEnd
+    emit $ "jmp" ++ labelBegin
+    emit $ labelEnd ++ ":"
+
+  For maybeInit cond maybePost stat -> do
+    case maybeInit of
+      Just expr -> expression expr
+      Nothing   -> return ()
+    labelBegin <- label "for_begin"
+    emit $ labelBegin ++ ":"
+    expression cond
+    emit "cmpl $0, %eax"
+    labelEnd <- label "for_end"
+    emit $ "je " ++ labelEnd
+    statement stat
+    case maybePost of
+      Just expr -> expression expr
+      Nothing   -> return ()
+    emit $ "jmp " ++ labelBegin
+    emit $ labelEnd ++ ":"
+
+  ForDecl decl cond maybePost stat -> do
+    declaration decl
+    labelBegin <- label "for_begin"
+    emit $ labelBegin ++ ":"
+    expression cond
+    emit "cmpl $0, %eax"
+    labelEnd <- label "for_end"
+    emit $ "je " ++ labelEnd
+    statement stat
+    case maybePost of
+      Just expr -> expression expr
+      Nothing   -> return ()
+    emit $ "jmp " ++ labelBegin
+    emit $ labelEnd ++ ":"
 
 expression :: (MState m, MWriter m, MError m) => Expression -> m ()
 expression expr = case expr of
