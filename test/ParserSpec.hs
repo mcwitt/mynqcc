@@ -2947,3 +2947,84 @@ spec = do
                       Break
                       Nothing)]))
               , Statement (Return (Reference "sum"))]))
+
+    it "should parse tokens from continue.c" $
+      parseTokens [ KWInt
+                  , Identifier "main"
+                  , OpenParen
+                  , CloseParen
+                  , OpenBrace
+                  , KWInt
+                  , Identifier "sum"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , KWFor
+                  , OpenParen
+                  , KWInt
+                  , Identifier "i"
+                  , Token.Assignment
+                  , Integer 0
+                  , Semicolon
+                  , Identifier "i"
+                  , Token.LessThan
+                  , Integer 10
+                  , Semicolon
+                  , Identifier "i"
+                  , Token.Assignment
+                  , Identifier "i"
+                  , Token.Addition
+                  , Integer 1
+                  , CloseParen
+                  , OpenBrace
+                  , KWIf
+                  , OpenParen
+                  , Identifier "sum"
+                  , PercentSign
+                  , Integer 2
+                  , CloseParen
+                  , KWContinue
+                  , Semicolon
+                  , Identifier "sum"
+                  , Token.Assignment
+                  , Identifier "sum"
+                  , Token.Addition
+                  , Identifier "i"
+                  , Semicolon
+                  , CloseBrace
+                  , KWReturn
+                  , Identifier "sum"
+                  , Semicolon
+                  , CloseBrace]
+        `shouldBe`
+        Right
+        (Program
+          (Function "main"
+            [ Declaration (Decl "sum" (Just (Constant 0)))
+            , Statement
+              (ForDecl
+                (Decl "i" (Just (Constant 0)))
+                (Binary AST.LessThan
+                  (Reference "i")
+                  (Constant 10))
+                (Just
+                  (AST.Assignment "i"
+                    (Binary AST.Addition
+                      (Reference "i")
+                      (Constant 1))))
+                (Compound
+                  [ Statement
+                    (If
+                      (Binary Modulo
+                        (Reference "sum")
+                        (Constant 2))
+                      Continue
+                      Nothing)
+                  , Statement
+                    (Expression
+                      (Just
+                        (AST.Assignment "sum"
+                          (Binary AST.Addition
+                            (Reference "sum")
+                            (Reference "i")))))]))
+            , Statement (Return (Reference "sum"))]))

@@ -58,4 +58,5 @@ data BinaryOp
   | GreaterThan
   | LessEqual
   | GreaterEqual
+  | Modulo
   deriving (Eq, Show)

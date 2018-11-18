@@ -33,4 +33,5 @@ data Token = OpenBrace
            | KWDo
            | KWBreak
            | KWContinue
+           | PercentSign
            deriving (Show, Eq)

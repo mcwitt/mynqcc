@@ -175,7 +175,7 @@ additiveExpr :: Parser Token Expression
 additiveExpr = term `chainl1` (addition <|> subtraction)
 
 term :: Parser Token Expression
-term = factor `chainl1` (multiplication <|> division)
+term = factor `chainl1` (multiplication <|> division <|> modulo)
 
 factor :: Parser Token Expression
 factor = parenExpr
@@ -225,6 +225,9 @@ multiplication = do atom Token.Multiplication; return $ Binary AST.Multiplicatio
 
 division :: Parser Token (Expression -> Expression -> Expression)
 division = do atom Token.Division; return $ Binary AST.Division
+
+modulo :: Parser Token (Expression -> Expression -> Expression)
+modulo = do atom PercentSign; return $ Binary Modulo
 
 addition :: Parser Token (Expression -> Expression -> Expression)
 addition = do atom Token.Addition; return $ Binary AST.Addition
