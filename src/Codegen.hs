@@ -171,6 +171,10 @@ expression expr = case expr of
       Division -> do
         emit "movl $0, %edx"
         emit "idivl %ecx"
+      Modulo -> do
+        emit "movl $0, %edx"
+        emit "idivl %ecx"
+        emit "movl %edx, %eax"
       Equality -> do
         emit "cmpl %ecx, %eax"
         emit "movl $0, %eax"
