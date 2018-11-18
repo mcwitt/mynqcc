@@ -103,7 +103,6 @@ forDeclStatement :: Parser Token Statement
 forDeclStatement = do atom KWFor
                       atom OpenParen
                       init <- declaration
-                      atom Semicolon
                       cond <- expression <|> return (Constant 1)
                       atom Semicolon
                       post <- optional expression
