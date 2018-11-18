@@ -8,8 +8,8 @@ import           Token
 
 lexString :: String -> Either Error [Token]
 lexString st = case parse lexer st of
-                 [(res, xs)] -> Right res
-                 [] -> Left $ LexerError "Failed to lex the program."
+                 [(res, [])] -> Right res
+                 otherwise -> Left $ LexerError "Failed to lex the program."
 
 lexer :: Parser Char [Token]
 lexer = many . token $
