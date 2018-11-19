@@ -19,13 +19,9 @@ type MState  = MonadState Context
 data Context =
   Context { funcName   :: String
           , labelCount :: Int
-          , scope      :: Scope}
-  deriving Show
-
-data Scope =
-  Scope { stackIndex :: Int
-        , varMap     :: Map.Map String Int
-        , vars       :: Set.Set String}
+          , stackIndex :: Int
+          , varMap     :: Map.Map String Int
+          , localVars  :: Set.Set String}
   deriving Show
 
 generate :: Program -> Either Error [String]
@@ -43,11 +39,11 @@ function (Function name body) = do
   let inner = block $ f name body
       f "main" [] = [Statement . Return . Constant $ 0]
       f _ items = items
-      empty = Context { funcName = name
+      empty = Context { funcName   = name
                       , labelCount = 0
-                      , scope = Scope { stackIndex = -4
-                                      , varMap = Map.empty
-                                      , vars = Set.empty}}
+                      , stackIndex = -4
+                      , varMap     = Map.empty
+                      , localVars  = Set.empty}
   execStateT inner empty
   emit $ "_" ++ name ++ "__end:"
   emit "movl %ebp, %esp"
@@ -56,17 +52,13 @@ function (Function name body) = do
 
 block :: (MState m, MWriter m, MError m) => [BlockItem] -> m ()
 block items = do
-  outerScope <- gets scope
-  modify $ setScopeVars Set.empty
+  outerContext <- get
+  modify $ \c -> c { localVars = Set.empty }
   mapM_ blockItem items
-  localVars <- gets $ vars . scope
-  let bytes = 4 * Set.size localVars
+  vars <- gets localVars
+  let bytes = 4 * Set.size vars
   emit $ "addl $" ++ show bytes ++ ", %esp"
-  modify $ setScope outerScope
-  where setScopeVars vars = \c ->
-          let scope_ = scope c
-          in c { scope = scope_ { vars = vars }}
-        setScope scope = \c -> c { scope = scope }
+  put outerContext
 
 blockItem :: (MState m, MWriter m, MError m) => BlockItem -> m ()
 blockItem item = case item of
@@ -75,20 +67,18 @@ blockItem item = case item of
 
 declaration :: (MState m, MWriter m, MError m) => Declaration -> m ()
 declaration (Decl name maybeExpr) = do
-  vars <- gets $ vars . scope
+  vars <- gets localVars
   when (Set.member name vars) $ throwError . CodegenError $
     "Multiple declarations of `" ++ name ++ "` in the same block."
   case maybeExpr of
     Just expr -> expression expr
     Nothing -> return ()
   emit "push %eax"
-  sidx <- gets $ stackIndex . scope
-  vmap <- gets $ varMap . scope
-  modify $ \c ->
-    let scope_ = scope c
-    in c { scope = scope_ { stackIndex = stackIndex scope_ - 4
-                          , varMap = Map.insert name sidx vmap
-                          , vars = Set.insert name vars}}
+  sidx <- gets stackIndex
+  vmap <- gets varMap
+  modify $ \c -> c { stackIndex = stackIndex c - 4
+                   , varMap = Map.insert name sidx vmap
+                   , localVars = Set.insert name vars}
 
 statement :: (MState m, MWriter m, MError m) => Statement -> m ()
 statement st = case st of
@@ -96,7 +86,7 @@ statement st = case st of
   Return expr -> do
     expression expr
     name <- gets funcName
-    sidx <- gets $ stackIndex . scope
+    sidx <- gets stackIndex
     let bytes = -(4 + sidx)
     emit $ "addl $" ++ show bytes ++ ", %esp"
     emit $ "jmp _" ++ name ++ "__end"
@@ -182,14 +172,14 @@ expression expr = case expr of
 
   Assignment name expr -> do
     expression expr
-    vmap <- gets $ varMap . scope
+    vmap <- gets varMap
     case Map.lookup name vmap of
       Just offset -> emit $ "movl %eax, " ++ show offset ++ "(%ebp)"
       Nothing -> throwError . CodegenError $
                  "Assignment to undeclared variable, `" ++ name ++ "`."
 
   Reference name -> do
-    vmap <- gets $ varMap . scope
+    vmap <- gets varMap
     case Map.lookup name vmap of
       Just offset -> emit $ "movl " ++ show offset ++ "(%ebp), %eax"
       Nothing -> throwError . CodegenError $
