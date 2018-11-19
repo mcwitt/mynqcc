@@ -46,10 +46,9 @@ main = run =<< execParser opts
 
 
 -- | Parse a C source file, generate code, and write to an output file.
--- | TODO: Shouldn't generate empty output file if parsing fails.
 run :: CmdOptions -> IO ()
 run opts = do
-  src <- readFile $ (head . inputFiles) opts
+  src <- readFile $ head . inputFiles $ opts
   case compile src of
     Right code -> writeFile (outputFile opts) code
     Left (LexerError  msg) -> putStrLn $ "Lexer error: "  ++ msg
