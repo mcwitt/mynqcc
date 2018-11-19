@@ -21,7 +21,9 @@ data Context =
           , labelCount :: Int
           , stackIndex :: Int
           , varMap     :: Map.Map String Int
-          , localVars  :: Set.Set String}
+          , localVars  :: Set.Set String
+          , loopBegin  :: Maybe String
+          , loopEnd    :: Maybe String}
   deriving Show
 
 generate :: Program -> Either Error [String]
@@ -43,7 +45,9 @@ function (Function name body) = do
                       , labelCount = 0
                       , stackIndex = -4
                       , varMap     = Map.empty
-                      , localVars  = Set.empty}
+                      , localVars  = Set.empty
+                      , loopBegin  = Nothing
+                      , loopEnd    = Nothing}
   execStateT inner empty
   emit $ "_" ++ name ++ "__end:"
   emit "movl %ebp, %esp"
@@ -118,6 +122,10 @@ statement st = case st of
     emit "cmpl $0, %eax"
     labelEnd <- label "while_end"
     emit $ "je " ++ labelEnd
+    outerContext <- get
+    modify $ \c -> c { loopBegin = Just labelBegin
+                     , loopEnd = Just labelEnd}
+    put outerContext
     statement stat
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
@@ -125,10 +133,14 @@ statement st = case st of
   Do stat expr -> do
     labelBegin <- label "do_begin"
     emit $ labelBegin ++ ":"
+    labelEnd <- label "do_end"
+    outerContext <- get
+    modify $ \c -> c { loopBegin = Just labelBegin
+                     , loopEnd = Just labelEnd}
     statement stat
+    put outerContext
     expression expr
     emit "cmpl $0, %eax"
-    labelEnd <- label "do_end"
     emit $ "je " ++ labelEnd
     emit $ "jmp" ++ labelBegin
     emit $ labelEnd ++ ":"
@@ -143,7 +155,11 @@ statement st = case st of
     emit "cmpl $0, %eax"
     labelEnd <- label "for_end"
     emit $ "je " ++ labelEnd
+    outerContext <- get
+    modify $ \c -> c { loopBegin = Just labelBegin
+                     , loopEnd = Just labelEnd}
     statement stat
+    put outerContext
     case maybePost of
       Just expr -> expression expr
       Nothing   -> return ()
@@ -151,6 +167,7 @@ statement st = case st of
     emit $ labelEnd ++ ":"
 
   ForDecl decl cond maybePost stat -> do
+    outerContext <- get
     declaration decl
     labelBegin <- label "for_begin"
     emit $ labelBegin ++ ":"
@@ -158,12 +175,30 @@ statement st = case st of
     emit "cmpl $0, %eax"
     labelEnd <- label "for_end"
     emit $ "je " ++ labelEnd
+    modify $ \c -> c { loopBegin = Just labelBegin
+                     , loopEnd = Just labelEnd}
     statement stat
     case maybePost of
       Just expr -> expression expr
       Nothing   -> return ()
+    put outerContext
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
+    emit $ "addl $4, %esp"
+
+  Break -> do
+    maybeLabelEnd <- gets loopEnd
+    case maybeLabelEnd of
+      Just labelEnd -> emit $ "jmp " ++ labelEnd
+      Nothing -> throwError $ CodegenError
+        "Found `break` outside of a loop."
+
+  Continue -> do
+    maybeLabelBegin <- gets loopBegin
+    case maybeLabelBegin of
+      Just labelBegin -> emit $ "jmp " ++ labelBegin
+      Nothing -> throwError $ CodegenError
+        "Found `continue` outside of a loop."
 
 expression :: (MState m, MWriter m, MError m) => Expression -> m ()
 expression expr = case expr of
