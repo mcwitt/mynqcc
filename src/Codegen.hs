@@ -55,14 +55,12 @@ function (Function name body) = do
   emit "ret"
 
 block :: (MState m, MWriter m, MError m) => [BlockItem] -> m ()
-block items = do
-  outerContext <- get
+block items = withNestedContext $ do
   modify $ \c -> c { localVars = Set.empty }
   mapM_ blockItem items
   vars <- gets localVars
   let bytes = 4 * Set.size vars
   emit $ "addl $" ++ show bytes ++ ", %esp"
-  put outerContext
 
 blockItem :: (MState m, MWriter m, MError m) => BlockItem -> m ()
 blockItem item = case item of
@@ -122,11 +120,10 @@ statement st = case st of
     emit "cmpl $0, %eax"
     labelEnd <- label "while_end"
     emit $ "je " ++ labelEnd
-    outerContext <- get
-    modify $ \c -> c { loopBegin = Just labelBegin
-                     , loopEnd = Just labelEnd}
-    put outerContext
-    statement stat
+    withNestedContext $ do
+      modify $ \c -> c { loopBegin = Just labelBegin
+                       , loopEnd   = Just labelEnd}
+      statement stat
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
 
@@ -134,11 +131,10 @@ statement st = case st of
     labelBegin <- label "do_begin"
     emit $ labelBegin ++ ":"
     labelEnd <- label "do_end"
-    outerContext <- get
-    modify $ \c -> c { loopBegin = Just labelBegin
-                     , loopEnd = Just labelEnd}
-    statement stat
-    put outerContext
+    withNestedContext $ do
+      modify $ \c -> c { loopBegin = Just labelBegin
+                       , loopEnd   = Just labelEnd}
+      statement stat
     expression expr
     emit "cmpl $0, %eax"
     emit $ "je " ++ labelEnd
@@ -155,19 +151,17 @@ statement st = case st of
     emit "cmpl $0, %eax"
     labelEnd <- label "for_end"
     emit $ "je " ++ labelEnd
-    outerContext <- get
-    modify $ \c -> c { loopBegin = Just labelBegin
-                     , loopEnd = Just labelEnd}
-    statement stat
-    put outerContext
+    withNestedContext $ do
+      modify $ \c -> c { loopBegin = Just labelBegin
+                       , loopEnd   = Just labelEnd}
+      statement stat
     case maybePost of
       Just expr -> expression expr
       Nothing   -> return ()
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
 
-  ForDecl decl cond maybePost stat -> do
-    outerContext <- get
+  ForDecl decl cond maybePost stat -> withNestedContext $ do
     declaration decl
     labelBegin <- label "for_begin"
     emit $ labelBegin ++ ":"
@@ -176,12 +170,11 @@ statement st = case st of
     labelEnd <- label "for_end"
     emit $ "je " ++ labelEnd
     modify $ \c -> c { loopBegin = Just labelBegin
-                     , loopEnd = Just labelEnd}
+                     , loopEnd   = Just labelEnd}
     statement stat
     case maybePost of
       Just expr -> expression expr
       Nothing   -> return ()
-    put outerContext
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
     emit $ "addl $4, %esp"
@@ -310,3 +303,10 @@ label s = do
 
 emit :: MWriter m => String -> m ()
 emit = tell . pure
+
+withNestedContext :: MState m => m a -> m a
+withNestedContext inner = do
+  outerContext <- get
+  result <- inner
+  put outerContext
+  return (result)
