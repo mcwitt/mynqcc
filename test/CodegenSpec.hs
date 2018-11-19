@@ -1740,36 +1740,36 @@ spec = do
     it "should generate code for break.c" $
       generate
       (Program
-          (Function "main"
-            [ Declaration
-              (Decl "sum" (Just (Constant 0)))
-            , Statement
-              (ForDecl
-                (Decl "i" (Just (Constant 0)))
-                (Binary AST.LessThan
-                  (Reference "i")
-                  (Constant 10))
-                (Just
-                  (AST.Assignment "i"
-                    (Binary AST.Addition
-                      (Reference "i")
-                      (Constant 1))))
-                (Compound
-                  [ Statement
-                    (Expression
-                      (Just
-                        (AST.Assignment "sum"
-                          (Binary AST.Addition
-                            (Reference "sum")
-                            (Reference "i")))))
-                  , Statement
-                    (If
-                      (Binary AST.GreaterThan
-                        (Reference "sum")
-                        (Constant 10))
-                      Break
-                      Nothing)]))
-              , Statement (Return (Reference "sum"))]))
+        (Function "main"
+          [ Declaration
+            (Decl "sum" (Just (Constant 0)))
+          , Statement
+            (ForDecl
+              (Decl "i" (Just (Constant 0)))
+              (Binary AST.LessThan
+                (Reference "i")
+                (Constant 10))
+              (Just
+                (AST.Assignment "i"
+                  (Binary AST.Addition
+                    (Reference "i")
+                    (Constant 1))))
+              (Compound
+                [ Statement
+                  (Expression
+                    (Just
+                      (AST.Assignment "sum"
+                        (Binary AST.Addition
+                          (Reference "sum")
+                          (Reference "i")))))
+                , Statement
+                  (If
+                    (Binary AST.GreaterThan
+                      (Reference "sum")
+                      (Constant 10))
+                    Break
+                    Nothing)]))
+          , Statement (Return (Reference "sum"))]))
       `shouldBe`
       Right [ ".globl main"
             , "main:"
@@ -1808,6 +1808,95 @@ spec = do
             , "jmp _main__endif__3"
             , "_main__else__2:"
             , "_main__endif__3:"
+            , "addl $0, %esp"
+            , "movl $1, %eax"
+            , "push %eax"
+            , "movl -8(%ebp), %eax"
+            , "pop %ecx"
+            , "addl %ecx, %eax"
+            , "movl %eax, -8(%ebp)"
+            , "jmp _main__for_begin__0"
+            , "_main__for_end__1:"
+            , "addl $4, %esp"
+            , "movl -4(%ebp), %eax"
+            , "addl $4, %esp"
+            , "jmp _main__end"
+            , "addl $4, %esp"
+            , "_main__end:"
+            , "movl %ebp, %esp"
+            , "pop %ebp"
+            , "ret"]
+
+    it "should generate code for continue.c" $
+      generate
+      (Program
+        (Function "main"
+          [ Declaration (Decl "sum" (Just (Constant 0)))
+          , Statement
+            (ForDecl
+              (Decl "i" (Just (Constant 0)))
+              (Binary AST.LessThan
+                (Reference "i")
+                (Constant 10))
+              (Just
+                (AST.Assignment "i"
+                  (Binary AST.Addition
+                    (Reference "i")
+                    (Constant 1))))
+              (Compound
+                [ Statement
+                  (If
+                    (Binary Modulo
+                      (Reference "sum")
+                      (Constant 2))
+                    Continue
+                    Nothing)
+                , Statement
+                  (Expression
+                    (Just
+                      (AST.Assignment "sum"
+                        (Binary AST.Addition
+                          (Reference "sum")
+                          (Reference "i")))))]))
+          , Statement (Return (Reference "sum"))]))
+      `shouldBe`
+      Right [ ".globl main"
+            , "main:"
+            , "push %ebp"
+            , "movl %esp, %ebp"
+            , "movl $0, %eax"
+            , "push %eax"
+            , "movl $0, %eax"
+            , "push %eax"
+            , "_main__for_begin__0:"
+            , "movl $10, %eax"
+            , "push %eax"
+            , "movl -8(%ebp), %eax"
+            , "pop %ecx"
+            , "cmpl %ecx, %eax"
+            , "movl $0, %eax"
+            , "setl %al"
+            , "cmpl $0, %eax"
+            , "je _main__for_end__1"
+            , "movl $2, %eax"
+            , "push %eax"
+            , "movl -4(%ebp), %eax"
+            , "pop %ecx"
+            , "movl $0, %edx"
+            , "idivl %ecx"
+            , "movl %edx, %eax"
+            , "cmpl $0, %eax"
+            , "je _main__else__2"
+            , "jmp _main__for_begin__0"
+            , "jmp _main__endif__3"
+            , "_main__else__2:"
+            , "_main__endif__3:"
+            , "movl -8(%ebp), %eax"
+            , "push %eax"
+            , "movl -4(%ebp), %eax"
+            , "pop %ecx"
+            , "addl %ecx, %eax"
+            , "movl %eax, -4(%ebp)"
             , "addl $0, %esp"
             , "movl $1, %eax"
             , "push %eax"
