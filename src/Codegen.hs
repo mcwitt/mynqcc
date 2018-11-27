@@ -22,8 +22,8 @@ data Context =
           , stackIndex :: Int
           , varMap     :: Map.Map String Int
           , localVars  :: Set.Set String
-          , loopBegin  :: Maybe String
-          , loopEnd    :: Maybe String}
+          , breakTo    :: Maybe String
+          , continueTo :: Maybe String}
   deriving Show
 
 generate :: Program -> Either Error [String]
@@ -46,8 +46,8 @@ function (Function name body) = do
                       , stackIndex = -4
                       , varMap     = Map.empty
                       , localVars  = Set.empty
-                      , loopBegin  = Nothing
-                      , loopEnd    = Nothing}
+                      , breakTo    = Nothing
+                      , continueTo = Nothing}
   execStateT inner empty
   emit $ "_" ++ name ++ "__end:"
   emit "movl %ebp, %esp"
@@ -121,8 +121,8 @@ statement st = case st of
     labelEnd <- label "while_end"
     emit $ "je " ++ labelEnd
     withNestedContext $ do
-      modify $ \c -> c { loopBegin = Just labelBegin
-                       , loopEnd   = Just labelEnd}
+      modify $ \c -> c { breakTo    = Just labelEnd
+                       , continueTo = Just labelBegin}
       statement stat
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
@@ -132,13 +132,13 @@ statement st = case st of
     emit $ labelBegin ++ ":"
     labelEnd <- label "do_end"
     withNestedContext $ do
-      modify $ \c -> c { loopBegin = Just labelBegin
-                       , loopEnd   = Just labelEnd}
+      modify $ \c -> c { breakTo    = Just labelEnd
+                       , continueTo = Just labelBegin}
       statement stat
     expression expr
     emit "cmpl $0, %eax"
     emit $ "je " ++ labelEnd
-    emit $ "jmp" ++ labelBegin
+    emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
 
   For maybeInit cond maybePost stat -> do
@@ -151,10 +151,12 @@ statement st = case st of
     emit "cmpl $0, %eax"
     labelEnd <- label "for_end"
     emit $ "je " ++ labelEnd
+    labelPost <- label "for_post"
     withNestedContext $ do
-      modify $ \c -> c { loopBegin = Just labelBegin
-                       , loopEnd   = Just labelEnd}
+      modify $ \c -> c { breakTo    = Just labelEnd
+                       , continueTo = Just labelPost}
       statement stat
+    emit $ labelPost ++ ":"
     case maybePost of
       Just expr -> expression expr
       Nothing   -> return ()
@@ -169,9 +171,11 @@ statement st = case st of
     emit "cmpl $0, %eax"
     labelEnd <- label "for_end"
     emit $ "je " ++ labelEnd
-    modify $ \c -> c { loopBegin = Just labelBegin
-                     , loopEnd   = Just labelEnd}
+    labelPost <- label "for_post"
+    modify $ \c -> c { breakTo    = Just labelEnd
+                     , continueTo = Just labelPost}
     statement stat
+    emit $ labelPost ++ ":"
     case maybePost of
       Just expr -> expression expr
       Nothing   -> return ()
@@ -180,16 +184,16 @@ statement st = case st of
     emit $ "addl $4, %esp"
 
   Break -> do
-    maybeLabelEnd <- gets loopEnd
-    case maybeLabelEnd of
-      Just labelEnd -> emit $ "jmp " ++ labelEnd
+    maybeLabel <- gets breakTo
+    case maybeLabel of
+      Just l -> emit $ "jmp " ++ l
       Nothing -> throwError $ CodegenError
         "Found `break` outside of a loop."
 
   Continue -> do
-    maybeLabelBegin <- gets loopBegin
-    case maybeLabelBegin of
-      Just labelBegin -> emit $ "jmp " ++ labelBegin
+    maybeLabel <- gets continueTo
+    case maybeLabel of
+      Just l -> emit $ "jmp " ++ l
       Nothing -> throwError $ CodegenError
         "Found `continue` outside of a loop."
 
