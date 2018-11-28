@@ -164,6 +164,7 @@ statement st = case st of
     emit $ labelEnd ++ ":"
 
   ForDecl decl cond maybePost stat -> withNestedContext $ do
+    modify $ \c -> c { localVars = Set.empty }
     declaration decl
     labelBegin <- label "for_begin"
     emit $ labelBegin ++ ":"
