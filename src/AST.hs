@@ -5,7 +5,7 @@ data Program
   deriving (Eq, Show)
 
 data Function
-  = Function String [BlockItem]
+  = Function String [String] (Maybe [BlockItem])
   deriving (Eq, Show)
 
 data BlockItem

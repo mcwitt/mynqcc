@@ -18,11 +18,16 @@ function :: Parser Token Function
 function = do atom KWInt
               name <- identifier
               atom OpenParen
+              params <- many (do atom KWInt
+                                 name <- identifier
+                                 atom Comma
+                                 return name)
               atom CloseParen
-              atom OpenBrace
-              body <- many blockItem
-              atom CloseBrace
-              return (Function name body)
+              maybeBody <- optional (do atom OpenBrace
+                                        body <- many blockItem
+                                        atom CloseBrace
+                                        return body)
+              return (Function name params maybeBody)
 
 -- Block items
 

@@ -33,14 +33,15 @@ program :: (MWriter m, MError m) => Program -> m ()
 program (Program func) = function func
 
 function :: (MWriter m, MError m) => Function -> m ()
-function (Function name body) = do
+function (Function name params maybeBody) = do
   emit $ ".globl " ++ name
   emit $ name ++ ":"
   emit "push %ebp"
   emit "movl %esp, %ebp"
-  let inner = block $ f name body
-      f "main" [] = [Statement . Return . Constant $ 0]
-      f _ items = items
+  let inner = block $ f name maybeBody
+      f "main" (Just []) = [Statement . Return . Constant $ 0]
+      f _ Nothing = []
+      f _ (Just items) = items
       empty = Context { funcName   = name
                       , labelCount = 0
                       , stackIndex = -4

@@ -1,10 +1,10 @@
 module ParserSpec (spec) where
 
-import           AST
-import           Error
-import           Parser
-import           Test.Hspec (Spec, describe, it, shouldBe)
-import           Token
+import AST
+import Error
+import Parser
+import Test.Hspec (Spec, describe, it, shouldBe)
+import Token
 
 spec :: Spec
 spec = do
@@ -23,10 +23,11 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
-                (Constant 100))]))
+                (Constant 100))])))
 
     it "should fail to parse tokens from missing_paren.c" $
       parseTokens [ KWInt
@@ -56,11 +57,12 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary AST.LogicalNegation
-                  (Constant 12)))]))
+                  (Constant 12)))])))
 
     it "should parse tokens from bitwise_zero.c" $
       parseTokens [ KWInt
@@ -76,11 +78,12 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary AST.BitwiseComplement
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should parse tokens from neg.c" $
       parseTokens [ KWInt
@@ -96,11 +99,12 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary AST.Negation
-                  (Constant 5)))]))
+                  (Constant 5)))])))
 
     it "should parse tokens from nested_ops.c" $
       parseTokens [ KWInt
@@ -117,13 +121,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary
                   AST.LogicalNegation
                   (Unary AST.Negation
-                    (Constant 3))))]))
+                    (Constant 3))))])))
 
     it "should parse tokens from nested_ops_2.c" $
       parseTokens [ KWInt
@@ -140,12 +145,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary AST.Negation
                   (Unary AST.BitwiseComplement
-                    (Constant 0))))]))
+                    (Constant 0))))])))
 
     it "should parse tokens from not_5.c" $
       parseTokens [ KWInt
@@ -161,11 +167,12 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary AST.LogicalNegation
-                  (Constant 5)))]))
+                  (Constant 5)))])))
 
     it "should parse tokens from not_0.c" $
       parseTokens [ KWInt
@@ -181,12 +188,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary
                   AST.LogicalNegation
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should fail to parse tokens from missing_const.c" $
       parseTokens [ KWInt
@@ -259,12 +267,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Addition
                   (Constant 1)
-                  (Constant 2)))]))
+                  (Constant 2)))])))
 
     it "should parse tokens from associativity.c" $
       parseTokens [ KWInt
@@ -283,7 +292,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary
@@ -291,7 +301,7 @@ spec = do
                   (Binary AST.Subtraction
                     (Constant 1)
                     (Constant 2))
-                  (Constant 3)))]))
+                  (Constant 3)))])))
 
     it "should parse tokens from associativity_2.c" $
       parseTokens [ KWInt
@@ -310,14 +320,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Division
                   (Binary AST.Division
                     (Constant 6)
                     (Constant 3))
-                  (Constant 2)))]))
+                  (Constant 2)))])))
 
     it "should parse tokens from div.c" $
       parseTokens [ KWInt
@@ -334,12 +345,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Division
                  (Constant 4)
-                 (Constant 2)))]))
+                 (Constant 2)))])))
 
     it "should parse tokens from mult.c" $
       parseTokens [ KWInt
@@ -356,12 +368,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Multiplication
                   (Constant 2)
-                  (Constant 3)))]))
+                  (Constant 3)))])))
 
     it "should parse tokens from parens.c" $
       parseTokens [ KWInt
@@ -382,14 +395,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Multiplication
                   (Constant 2)
                   (Binary AST.Addition
                     (Constant 3)
-                    (Constant 4))))]))
+                    (Constant 4))))])))
 
     it "should parse tokens from precedence.c" $
       parseTokens [ KWInt
@@ -408,14 +422,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Addition
                   (Constant 2)
                   (Binary AST.Multiplication
                     (Constant 3)
-                    (Constant 4))))]))
+                    (Constant 4))))])))
 
     it "should parse tokens from sub_neg.c" $
       parseTokens [ KWInt
@@ -433,13 +448,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [Statement
               (Return
                 (Binary AST.Subtraction
                   (Constant 2)
                   (Unary AST.Negation
-                    (Constant 1))))]))
+                    (Constant 1))))])))
 
     it "should parse tokens from unop_add.c" $
       parseTokens [ KWInt
@@ -457,13 +473,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Addition
                   (Unary AST.BitwiseComplement
                     (Constant 2))
-                  (Constant 3)))]))
+                  (Constant 3)))])))
 
     it "should parse tokens from unop_parens.c" $
       parseTokens [ KWInt
@@ -483,13 +500,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Unary AST.BitwiseComplement
                   (Binary AST.Addition
                     (Constant 1)
-                    (Constant 1))))]))
+                    (Constant 1))))])))
 
     it "should fail to parse tokens from malformed_parens.c" $
       parseTokens [ KWInt
@@ -553,12 +571,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LogicalAnd
                   (Constant 1)
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should parse tokens from and_true.c" $
       parseTokens [ KWInt
@@ -576,13 +595,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LogicalAnd
                   (Constant 1)
                   (Unary AST.Negation
-                    (Constant 1))))]))
+                    (Constant 1))))])))
 
     it "should parse tokens from eq_false.c" $
       parseTokens [ KWInt
@@ -599,12 +619,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Equality
                   (Constant 1)
-                  (Constant 2)))]))
+                  (Constant 2)))])))
 
     it "should parse tokens from eq_true.c" $
       parseTokens [ KWInt
@@ -621,12 +642,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Equality
                   (Constant 1)
-                  (Constant 1)))]))
+                  (Constant 1)))])))
 
     it "should parse tokens from ge_false.c" $
       parseTokens [ KWInt
@@ -643,12 +665,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.GreaterEqual
                   (Constant 1)
-                  (Constant 2)))]))
+                  (Constant 2)))])))
 
     it "should parse tokens from ge_true.c" $
       parseTokens [ KWInt
@@ -665,12 +688,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.GreaterEqual
                   (Constant 1)
-                  (Constant 1)))]))
+                  (Constant 1)))])))
 
     it "should parse tokens from gt_false.c" $
       parseTokens [ KWInt
@@ -687,12 +711,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.GreaterThan
                   (Constant 1)
-                  (Constant 2)))]))
+                  (Constant 2)))])))
 
     it "should parse tokens from gt_true.c" $
       parseTokens [ KWInt
@@ -709,12 +734,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.GreaterThan
                   (Constant 1)
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should parse tokens from le_false.c" $
       parseTokens [ KWInt
@@ -732,13 +758,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LessEqual
                   (Constant 1)
                   (Unary AST.Negation
-                    (Constant 1))))]))
+                    (Constant 1))))])))
 
     it "should parse tokens from le_true.c" $
       parseTokens [ KWInt
@@ -755,12 +782,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LessEqual
                   (Constant 0)
-                  (Constant 2)))]))
+                  (Constant 2)))])))
 
     it "should parse tokens from lt_false.c" $
       parseTokens [ KWInt
@@ -777,12 +805,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LessThan
                   (Constant 2)
-                  (Constant 1)))]))
+                  (Constant 1)))])))
 
     it "should parse tokens from lt_true.c" $
       parseTokens [ KWInt
@@ -799,12 +828,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LessThan
                   (Constant 1)
-                  (Constant 2)))]))
+                  (Constant 2)))])))
 
     it "should parse tokens from ne_false.c" $
       parseTokens [ KWInt
@@ -821,12 +851,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Inequality
                   (Constant 0)
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should parse tokens from ne_true.c" $
       parseTokens [ KWInt
@@ -845,14 +876,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Inequality
                   (Unary AST.Negation
                     (Constant 1))
                   (Unary AST.Negation
-                    (Constant 2))))]))
+                    (Constant 2))))])))
 
     it "should parse tokens from or_false.c" $
       parseTokens [ KWInt
@@ -869,12 +901,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LogicalOr
                   (Constant 0)
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should parse tokens from or_true.c" $
       parseTokens [ KWInt
@@ -891,12 +924,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LogicalOr
                   (Constant 1)
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should parse tokens from precedence.c" $
       parseTokens [ KWInt
@@ -915,14 +949,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LogicalOr
                   (Constant 1)
                   (Binary AST.LogicalAnd
                     (Constant 0)
-                    (Constant 2))))]))
+                    (Constant 2))))])))
 
 
     it "should parse tokens from precedence_2.c" $
@@ -944,14 +979,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LogicalAnd
                   (Binary AST.LogicalOr
                     (Constant 1)
                     (Constant 0))
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should parse tokens from precedence_3.c" $
       parseTokens [ KWInt
@@ -970,14 +1006,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.Equality
                   (Constant 2)
                   (Binary AST.GreaterThan
                     (Constant 2)
-                    (Constant 0))))]))
+                    (Constant 0))))])))
 
     it "should parse tokens from precedence_4.c" $
       parseTokens [ KWInt
@@ -996,14 +1033,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
                 (Binary AST.LogicalOr
                   (Binary AST.Equality
                     (Constant 2)
                     (Constant 2))
-                  (Constant 0)))]))
+                  (Constant 0)))])))
 
     it "should fail to parse tokens from missing_first_op.c" $
       parseTokens [ KWInt
@@ -1070,7 +1108,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" Nothing)
             , Statement
               (Expression
@@ -1079,7 +1118,7 @@ spec = do
                     (Constant 2))))
             , Statement
               (Return
-                (Reference "a"))]))
+                (Reference "a"))])))
 
     it "should parse tokens from assign_val.c" $
       parseTokens [ KWInt
@@ -1104,13 +1143,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" Nothing)
             , Declaration
               (Decl "b"
                 (Just
                   (AST.Assignment "a" (Constant 0))))
-            , Statement (Return (Reference "b"))]))
+            , Statement (Return (Reference "b"))])))
 
     it "should parse tokens from exp_return_val.c" $
       parseTokens [ KWInt
@@ -1139,7 +1179,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" Nothing)
             , Declaration (Decl "b" Nothing)
             , Statement
@@ -1152,7 +1193,7 @@ spec = do
                 (Return
                   (Binary AST.Subtraction
                     (Reference "a")
-                    (Reference "b")))]))
+                    (Reference "b")))])))
 
     it "should parse tokens from initialize.c" $
       parseTokens [ KWInt
@@ -1172,14 +1213,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration
               (Decl "a"
                 (Just
                   (Constant 2)))
               , Statement
                 (Return
-                  (Constant 0))]))
+                  (Constant 0))])))
 
     it "should parse tokens from missing_return.c" $
       parseTokens [ KWInt
@@ -1189,7 +1231,7 @@ spec = do
                   , OpenBrace
                   , CloseBrace]
         `shouldBe`
-        Right (Program (Function "main" []))
+        Right (Program (Function "main" [] (Just [])))
 
     it "should parse tokens from multiple_vars.c" $
       parseTokens [ KWInt
@@ -1216,14 +1258,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 1)))
             , Declaration (Decl "b" (Just (Constant 2)))
             , Statement
               (Return
                 (Binary AST.Addition
                   (Reference "a")
-                  (Reference "b")))]))
+                  (Reference "b")))])))
 
     it "should parse tokens from no_initialize.c" $
       parseTokens [ KWInt
@@ -1241,9 +1284,10 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" Nothing)
-            , Statement (Return  (Constant 0))]))
+            , Statement (Return  (Constant 0))])))
 
     it "should parse tokens from refer.c" $
       parseTokens [ KWInt
@@ -1263,9 +1307,10 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 2)))
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from unused_exp.c" $
       parseTokens [ KWInt
@@ -1284,14 +1329,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Expression
                 (Just
                   (Binary AST.Addition
                     (Constant 2)
                     (Constant 2))))
-                , Statement (Return (Constant 0))]))
+                , Statement (Return (Constant 0))])))
 
     it "should parse tokens from redefine.c" $
       parseTokens [ KWInt
@@ -1316,14 +1362,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration
               (Decl "a"
                 (Just (Constant 1)))
             , Declaration
               (Decl "a"
                 (Just (Constant 2)))
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should fail to parse tokens from syntax_err_bad_decl.c" $
       parseTokens [ KWInt
@@ -1445,10 +1492,11 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Return
-                (Reference "a"))]))
+                (Reference "a"))])))
 
     it "should parse tokens from var_declared_late.c" $
       parseTokens [ KWInt
@@ -1472,7 +1520,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Expression
                 (Just
@@ -1481,7 +1530,7 @@ spec = do
                       (Constant 1)
                       (Constant 2)))))
             , Declaration (Decl "a" Nothing)
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
   describe "Stage 6" $ do
 
@@ -1511,7 +1560,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration
               (Decl "a"
                 (Just (Constant 0)))
@@ -1523,7 +1573,7 @@ spec = do
                       (Constant 1)
                       (Constant 2)
                       (Constant 3)))))
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from multiple_ternary.c" $
       parseTokens [ KWInt
@@ -1562,7 +1612,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration
               (Decl "a"
                 (Just
@@ -1586,7 +1637,7 @@ spec = do
               (Return
                 (Binary AST.Addition
                   (Reference "a")
-                  (Reference "b")))]))
+                  (Reference "b")))])))
 
     it "should parse tokens from nested_ternary.c" $
       parseTokens [ KWInt
@@ -1626,7 +1677,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 1)))
             , Declaration (Decl "b" (Just (Constant 2)))
             , Declaration (Decl "flag" (Just (Constant 0)))
@@ -1640,7 +1692,7 @@ spec = do
                   (Conditional
                     (Reference "flag")
                     (Constant 6)
-                    (Constant 7))))]))
+                    (Constant 7))))])))
 
     it "should parse tokens from nested_ternary_2.c" $
       parseTokens [ KWInt
@@ -1683,7 +1735,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
            [ Declaration
              (Decl "a"
                (Just
@@ -1708,7 +1761,7 @@ spec = do
               (Return
                 (Binary AST.Multiplication
                   (Reference "a")
-                  (Reference "b")))]))
+                  (Reference "b")))])))
 
     it "should parse tokens from rh_assignment.c" $
       parseTokens [ KWInt
@@ -1745,7 +1798,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "flag" (Just (Constant 1)))
             , Declaration (Decl "a" (Just (Constant 0)))
             , Statement
@@ -1755,7 +1809,7 @@ spec = do
                       (Reference "flag")
                       (AST.Assignment "a" (Constant 1))
                       (AST.Assignment "a" (Constant 0)))))
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from ternary.c" $
       parseTokens [ KWInt
@@ -1782,7 +1836,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Statement
               (Return
@@ -1792,7 +1847,7 @@ spec = do
                     (Reference "a")
                     (Unary AST.Negation (Constant 1)))
                   (Constant 4)
-                  (Constant 5)))]))
+                  (Constant 5)))])))
 
     it "should fail to parse tokens from incomplete_ternary.c" $
       parseTokens [ KWInt
@@ -1908,13 +1963,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Statement
               (If
                 (Reference "a")
                 (Return (Constant 1))
-                (Just (Return (Constant 2))))]))
+                (Just (Return (Constant 2))))])))
 
     it "should parse tokens from if_nested.c" $
       parseTokens [ KWInt
@@ -1956,7 +2012,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 1)))
             , Declaration (Decl "b" (Just (Constant 0)))
             , Statement
@@ -1974,7 +2031,7 @@ spec = do
                         (AST.Assignment "b"
                           (Constant 2))))
                     Nothing)))
-            , Statement (Return (Reference "b"))]))
+            , Statement (Return (Reference "b"))])))
 
     it "should parse tokens from if_nested_2.c" $
       parseTokens [ KWInt
@@ -2016,7 +2073,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Declaration (Decl "b" (Just (Constant 1)))
             , Statement
@@ -2034,7 +2092,7 @@ spec = do
                         (AST.Assignment "b"
                           (Constant 2))))
                     Nothing)))
-            , Statement (Return (Reference "b"))]))
+            , Statement (Return (Reference "b"))])))
 
     it "should parse tokens from if_nested_3.c" $
       parseTokens [ KWInt
@@ -2071,7 +2129,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Statement
               (If
@@ -2087,7 +2146,7 @@ spec = do
                       (Just
                         (AST.Assignment "a" (Constant 4))))))
                 Nothing)
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from if_nested_4.c" $
       parseTokens [ KWInt
@@ -2124,7 +2183,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Statement
               (If
@@ -2141,7 +2201,7 @@ spec = do
                         (AST.Assignment "a"
                           (Constant 4))))))
                 Nothing)
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from if_nested_5.c" $
       parseTokens [ KWInt
@@ -2183,7 +2243,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Statement
               (If
@@ -2206,7 +2267,7 @@ spec = do
                         (Constant 1))))))
             , Statement
               (Return
-                (Reference "a"))]))
+                (Reference "a"))])))
 
     it "should parse tokens from if_not_taken.c" $
       parseTokens [ KWInt
@@ -2239,7 +2300,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Declaration (Decl "b" (Just (Constant 0)))
             , Statement
@@ -2250,7 +2312,7 @@ spec = do
                     (AST.Assignment "b"
                       (Constant 1))))
                 Nothing)
-            , Statement (Return (Reference "b"))]))
+            , Statement (Return (Reference "b"))])))
 
     it "should parse tokens from if_taken.c" $
       parseTokens [ KWInt
@@ -2283,7 +2345,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 1)))
             , Declaration (Decl "b" (Just (Constant 0)))
             , Statement
@@ -2294,7 +2357,7 @@ spec = do
                     (AST.Assignment "b"
                       (Constant 1))))
                 Nothing)
-            , Statement (Return (Reference "b"))]))
+            , Statement (Return (Reference "b"))])))
 
     it "should parse tokens from multiple_if.c" $
       parseTokens [ KWInt
@@ -2347,7 +2410,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Declaration (Decl "b" (Just (Constant 0)))
             , Statement
@@ -2377,7 +2441,7 @@ spec = do
                 (Binary
                   AST.Addition
                   (Reference "a")
-                  (Reference "b")))]))
+                  (Reference "b")))])))
 
   describe "Stage 7" $ do
 
@@ -2408,13 +2472,14 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 1)))
             , Statement
               (Compound
                 [ Declaration
                   (Decl "a" (Just (Constant 2)))])
-            , Statement (Compound [Statement (Return (Reference "a"))])]))
+            , Statement (Compound [Statement (Return (Reference "a"))])])))
 
     it "should parse tokens from consecutive_declarations.c" $
       parseTokens [ KWInt
@@ -2458,7 +2523,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Statement
               (Compound
@@ -2478,7 +2544,7 @@ spec = do
                         (Binary AST.Addition
                           (Reference "a")
                           (Reference "b")))))])
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from declare_after_block.c" $
       parseTokens [ KWInt
@@ -2510,12 +2576,13 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "i" (Just (Constant 0)))
             , Statement
               (Compound [Declaration (Decl "a" (Just (Constant 2)))])
             , Declaration (Decl "b" (Just (Constant 3)))
-            , Statement (Return (Reference "b"))]))
+            , Statement (Return (Reference "b"))])))
 
     it "should parse tokens from declare_block.c" $
       parseTokens [KWInt
@@ -2541,14 +2608,15 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (If
                 (Constant 5)
                 (Compound
                   [ Declaration (Decl "i" (Just (Constant 0)))
                   , Statement (Return (Reference "i"))])
-                Nothing)]))
+                Nothing)])))
 
     it "should parse tokens from declare_late.c" $
       parseTokens [ KWInt
@@ -2579,7 +2647,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 2)))
             , Statement
               (Compound
@@ -2589,7 +2658,7 @@ spec = do
                       (AST.Assignment "a"
                         (Constant 3))))
                 , Declaration (Decl "a" (Just (Constant 0)))])
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from multi_nesting.c" $
       parseTokens [ KWInt
@@ -2627,7 +2696,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 2)))
             , Statement
               (If
@@ -2640,7 +2710,7 @@ spec = do
                      [ Declaration (Decl "a" (Just (Constant 3)))
                      , Statement (Return (Reference "a"))])
                  , Statement (Return (Reference "a"))])
-              Nothing)]))
+              Nothing)])))
 
     it "should parse tokens from nested_if.c" $
       parseTokens [ KWInt
@@ -2699,7 +2769,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 0)))
             , Statement
               (If
@@ -2717,7 +2788,7 @@ spec = do
                           (Reference "c"))
                         (Compound [Statement (Return (Constant 4))])
                         (Just (Compound [Statement (Return (Constant 5))])))])))
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should parse tokens from nested_scope.c" $
       parseTokens [ KWInt
@@ -2755,7 +2826,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "a" (Just (Constant 2)))
             , Declaration (Decl "b" (Just (Constant 3)))
             , Statement
@@ -2768,7 +2840,7 @@ spec = do
                         (Binary AST.Addition
                           (Reference "b")
                           (Reference "a")))))])
-            , Statement (Return (Reference "b"))]))
+            , Statement (Return (Reference "b"))])))
 
     it "should parse tokens from double_define.c" $
       parseTokens [ KWInt
@@ -2788,11 +2860,12 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [Statement
               (Compound
                 [ Declaration (Decl "a" Nothing)
-                , Declaration (Decl "a" Nothing)])]))
+                , Declaration (Decl "a" Nothing)])])))
 
     it "should parse tokens from out_of_scope.c" $
       parseTokens [KWInt
@@ -2814,11 +2887,12 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Statement
               (Compound
                 [ Declaration (Decl "a" (Just (Constant 2)))])
-            , Statement (Return (Reference "a"))]))
+            , Statement (Return (Reference "a"))])))
 
     it "should fail to parse tokens from syntax_err_extra_brace.c" $
       parseTokens [ KWInt
@@ -2917,7 +2991,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration
               (Decl "sum" (Just (Constant 0)))
             , Statement
@@ -2946,7 +3021,7 @@ spec = do
                         (Constant 10))
                       Break
                       Nothing)]))
-              , Statement (Return (Reference "sum"))]))
+              , Statement (Return (Reference "sum"))])))
 
     it "should parse tokens from continue.c" $
       parseTokens [ KWInt
@@ -2999,7 +3074,8 @@ spec = do
         `shouldBe`
         Right
         (Program
-          (Function "main"
+          (Function "main" []
+            (Just
             [ Declaration (Decl "sum" (Just (Constant 0)))
             , Statement
               (ForDecl
@@ -3027,4 +3103,4 @@ spec = do
                           (Binary AST.Addition
                             (Reference "sum")
                             (Reference "i")))))]))
-            , Statement (Return (Reference "sum"))]))
+            , Statement (Return (Reference "sum"))])))
