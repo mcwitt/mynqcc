@@ -1,4 +1,7 @@
-module Token (Token (..)) where
+module Token
+  ( Token(..)
+  )
+where
 
 data Token = OpenBrace
            | CloseBrace

@@ -1,15 +1,18 @@
 {-# LANGUAGE ConstraintKinds  #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module Codegen (generate) where
+module Codegen
+  ( generate
+  )
+where
 
 import           AST
-import           Control.Monad        (when)
+import           Control.Monad                  ( when )
 import           Control.Monad.Except
 import           Control.Monad.State
 import           Control.Monad.Writer
-import qualified Data.Map             as Map
-import qualified Data.Set             as Set
+import qualified Data.Map                      as Map
+import qualified Data.Set                      as Set
 import           Error
 
 type MError  = MonadError Error
@@ -39,16 +42,18 @@ function (Function name params maybeBody) = do
   emit "push %ebp"
   emit "movl %esp, %ebp"
   let inner = block $ f name maybeBody
-      f "main" (Just []) = [Statement . Return . Constant $ 0]
-      f _ Nothing = []
-      f _ (Just items) = items
-      empty = Context { funcName   = name
-                      , labelCount = 0
-                      , stackIndex = -4
-                      , varMap     = Map.empty
-                      , localVars  = Set.empty
-                      , breakTo    = Nothing
-                      , continueTo = Nothing}
+      f "main" (Just [])    = [Statement . Return . Constant $ 0]
+      f _      Nothing      = []
+      f _      (Just items) = items
+      empty = Context
+        { funcName   = name
+        , labelCount = 0
+        , stackIndex = -4
+        , varMap     = Map.empty
+        , localVars  = Set.empty
+        , breakTo    = Nothing
+        , continueTo = Nothing
+        }
   execStateT inner empty
   emit $ "_" ++ name ++ "__end:"
   emit "movl %ebp, %esp"
@@ -65,23 +70,28 @@ block items = withNestedContext $ do
 
 blockItem :: (MState m, MWriter m, MError m) => BlockItem -> m ()
 blockItem item = case item of
-  Statement stat -> statement stat
+  Statement   stat -> statement stat
   Declaration decl -> declaration decl
 
 declaration :: (MState m, MWriter m, MError m) => Declaration -> m ()
 declaration (Decl name maybeExpr) = do
   vars <- gets localVars
-  when (Set.member name vars) $ throwError . CodegenError $
-    "Multiple declarations of `" ++ name ++ "` in the same block."
+  when (Set.member name vars)
+    $  throwError
+    .  CodegenError
+    $  "Multiple declarations of `"
+    ++ name
+    ++ "` in the same block."
   case maybeExpr of
     Just expr -> expression expr
-    Nothing -> return ()
+    Nothing   -> return ()
   emit "push %eax"
   sidx <- gets stackIndex
   vmap <- gets varMap
   modify $ \c -> c { stackIndex = stackIndex c - 4
-                   , varMap = Map.insert name sidx vmap
-                   , localVars = Set.insert name vars}
+                   , varMap     = Map.insert name sidx vmap
+                   , localVars  = Set.insert name vars
+                   }
 
 statement :: (MState m, MWriter m, MError m) => Statement -> m ()
 statement st = case st of
@@ -96,7 +106,7 @@ statement st = case st of
 
   Expression expr -> case expr of
     Just expr -> expression expr
-    Nothing -> return ()
+    Nothing   -> return ()
 
   If expr s1 maybeStat -> do
     expression expr
@@ -112,7 +122,7 @@ statement st = case st of
       Nothing -> return ()
     emit $ labelEndIf ++ ":"
 
-  Compound items -> block items
+  Compound items  -> block items
 
   While expr stat -> do
     labelBegin <- label "while_begin"
@@ -122,8 +132,7 @@ statement st = case st of
     labelEnd <- label "while_end"
     emit $ "je " ++ labelEnd
     withNestedContext $ do
-      modify $ \c -> c { breakTo    = Just labelEnd
-                       , continueTo = Just labelBegin}
+      modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelBegin }
       statement stat
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
@@ -133,8 +142,7 @@ statement st = case st of
     emit $ labelBegin ++ ":"
     labelEnd <- label "do_end"
     withNestedContext $ do
-      modify $ \c -> c { breakTo    = Just labelEnd
-                       , continueTo = Just labelBegin}
+      modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelBegin }
       statement stat
     expression expr
     emit "cmpl $0, %eax"
@@ -154,8 +162,7 @@ statement st = case st of
     emit $ "je " ++ labelEnd
     labelPost <- label "for_post"
     withNestedContext $ do
-      modify $ \c -> c { breakTo    = Just labelEnd
-                       , continueTo = Just labelPost}
+      modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelPost }
       statement stat
     emit $ labelPost ++ ":"
     case maybePost of
@@ -174,8 +181,7 @@ statement st = case st of
     labelEnd <- label "for_end"
     emit $ "je " ++ labelEnd
     labelPost <- label "for_post"
-    modify $ \c -> c { breakTo    = Just labelEnd
-                     , continueTo = Just labelPost}
+    modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelPost }
     statement stat
     emit $ labelPost ++ ":"
     case maybePost of
@@ -188,45 +194,53 @@ statement st = case st of
   Break -> do
     maybeLabel <- gets breakTo
     case maybeLabel of
-      Just l -> emit $ "jmp " ++ l
-      Nothing -> throwError $ CodegenError
-        "Found `break` outside of a loop."
+      Just l  -> emit $ "jmp " ++ l
+      Nothing -> throwError $ CodegenError "Found `break` outside of a loop."
 
   Continue -> do
     maybeLabel <- gets continueTo
     case maybeLabel of
       Just l -> emit $ "jmp " ++ l
-      Nothing -> throwError $ CodegenError
-        "Found `continue` outside of a loop."
+      Nothing ->
+        throwError $ CodegenError "Found `continue` outside of a loop."
 
 expression :: (MState m, MWriter m, MError m) => Expression -> m ()
 expression expr = case expr of
 
-  Constant i -> emit $ "movl $" ++ show i ++ ", %eax"
+  Constant i           -> emit $ "movl $" ++ show i ++ ", %eax"
 
   Assignment name expr -> do
     expression expr
     vmap <- gets varMap
     case Map.lookup name vmap of
       Just offset -> emit $ "movl %eax, " ++ show offset ++ "(%ebp)"
-      Nothing -> throwError . CodegenError $
-                 "Assignment to undeclared variable, `" ++ name ++ "`."
+      Nothing ->
+        throwError
+          .  CodegenError
+          $  "Assignment to undeclared variable, `"
+          ++ name
+          ++ "`."
 
   Reference name -> do
     vmap <- gets varMap
     case Map.lookup name vmap of
       Just offset -> emit $ "movl " ++ show offset ++ "(%ebp), %eax"
-      Nothing -> throwError . CodegenError $
-                 "Reference to undeclared variable, `" ++ name ++ "`."
+      Nothing ->
+        throwError
+          .  CodegenError
+          $  "Reference to undeclared variable, `"
+          ++ name
+          ++ "`."
 
   Unary op expr -> do
     expression expr
-    case op of Negation -> emit "neg %eax"
-               BitwiseComplement -> emit "not %eax"
-               LogicalNegation -> do
-                 emit "cmpl $0, %eax"
-                 emit "movl $0, %eax"
-                 emit "sete %al"
+    case op of
+      Negation          -> emit "neg %eax"
+      BitwiseComplement -> emit "not %eax"
+      LogicalNegation   -> do
+        emit "cmpl $0, %eax"
+        emit "movl $0, %eax"
+        emit "sete %al"
 
   {- General strategy for evaluating binary operators on sub-expressions e1, e2:
      1. Evaluate e1, push result onto the stack
@@ -239,13 +253,10 @@ expression expr = case expr of
     expression e1
     emit "pop %ecx"
     case op of
-      Addition ->
-        emit "addl %ecx, %eax"
-      Subtraction ->
-        emit "subl %ecx, %eax"
-      Multiplication ->
-        emit "imul %ecx, %eax"
-      Division -> do
+      Addition       -> emit "addl %ecx, %eax"
+      Subtraction    -> emit "subl %ecx, %eax"
+      Multiplication -> emit "imul %ecx, %eax"
+      Division       -> do
         emit "movl $0, %edx"
         emit "idivl %ecx"
       Modulo -> do
@@ -303,7 +314,7 @@ expression expr = case expr of
 label :: MState m => String -> m String
 label s = do
   prefix <- gets funcName
-  lc <- gets labelCount
+  lc     <- gets labelCount
   modify $ \ctx -> ctx { labelCount = succ lc }
   return $ "_" ++ prefix ++ "__" ++ s ++ "__" ++ show lc
 
@@ -313,6 +324,6 @@ emit = tell . pure
 withNestedContext :: MState m => m a -> m a
 withNestedContext inner = do
   outerContext <- get
-  result <- inner
+  result       <- inner
   put outerContext
   return (result)

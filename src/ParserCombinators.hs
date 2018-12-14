@@ -11,7 +11,7 @@
 -}
 
 module ParserCombinators
-  ( Parser (..)
+  ( Parser(..)
   , item
   , peek
   , empty
@@ -23,7 +23,8 @@ module ParserCombinators
   , string
   , chainl1
   , (<|>)
-  ) where
+  )
+where
 
 import           Control.Applicative
 
@@ -33,15 +34,15 @@ newtype Parser a b = P { parse :: [a] -> [(b, [a])]}
 
 -- | Simplest parser. Just read a single atom from the input stream.
 item :: Parser a a
-item = P $ \st ->
-  case st of [] -> []
-             x:xs -> [(x, xs)]
+item = P $ \st -> case st of
+  []     -> []
+  x : xs -> [(x, xs)]
 
 -- | Peek ahead one atom without removing it from the input stream.
 peek :: Parser a a
-peek = P $ \st ->
-  case st of [] -> []
-             x:xs -> [(x, x:xs)]
+peek = P $ \st -> case st of
+  []     -> []
+  x : xs -> [(x, x : xs)]
 
 instance Functor (Parser a) where
   -- fmap :: (a -> b) -> f a -> f b
@@ -80,23 +81,32 @@ instance Alternative (Parser a) where
 
 -- | Parser that consumes an atom x for which p x is true.
 satisfy :: (a -> Bool) -> Parser a a
-satisfy p = do x <- item
-               if p x then return x else empty
+satisfy p = do
+  x <- item
+  if p x then return x else empty
 
 -- | Parser that consumes one of the specified atom.
 atom :: (Eq a) => a -> Parser a a
-atom x = satisfy (==x)
+atom x = satisfy (== x)
 
 -- | Parser that consumes the specified string of atoms.
 string :: (Eq a) => [a] -> Parser a ()
-string [] = return ()
-string (x:xs) = do { atom x; string xs }
+string []       = return ()
+string (x : xs) = do
+  atom x
+  string xs
 
 -- | Parser that consumes a string of binary operations, combining
 -- | left-associatively
 chainl1 :: Parser a b -> Parser a (b -> b -> b) -> Parser a b
-p `chainl1` op = do { a <- p; rest a }
-  where rest a = (do f <- op
-                     b <- p
-                     rest (f a b))
-                 <|> return a
+p `chainl1` op = do
+  a <- p
+  rest a
+ where
+  rest a =
+    (do
+        f <- op
+        b <- p
+        rest (f a b)
+      )
+      <|> return a
