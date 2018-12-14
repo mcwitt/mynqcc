@@ -375,7 +375,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex associativity.c" $ 
+    it "should lex associativity.c" $
       lexString "int main() {\n\
                 \    return 1 - 2 - 3;\n\
                 \}"
@@ -413,7 +413,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex div.c" $ 
+    it "should lex div.c" $
       lexString "int main() {\n\
                 \    return 4 / 2;\n\
                 \}"
@@ -430,7 +430,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex mult.c" $ 
+    it "should lex mult.c" $
       lexString "int main() {\n\
                 \    return 2 * 3;\n\
                 \}"
@@ -447,7 +447,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex parens.c" $ 
+    it "should lex parens.c" $
       lexString "int main() {\n\
                 \    return 2 * (3 + 4);\n\
                 \}"
@@ -468,7 +468,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex precedence.c" $ 
+    it "should lex precedence.c" $
       lexString "int main() {\n\
                 \    return 2 + 3 * 4;\n\
                 \}"
@@ -487,7 +487,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex sub.c" $ 
+    it "should lex sub.c" $
       lexString "int main() {\n\
                 \    return 1 - 2;\n\
                 \}"
@@ -504,7 +504,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex sub_neg.c" $ 
+    it "should lex sub_neg.c" $
       lexString "int main() {\n\
                 \    return 2- -1;\n\
                 \}"
@@ -522,7 +522,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex unop_add.c" $ 
+    it "should lex unop_add.c" $
       lexString "int main() {\n\
                 \    return ~2 + 3;\n\
                 \}"
@@ -540,7 +540,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex unop_parens.c" $ 
+    it "should lex unop_parens.c" $
       lexString "int main() {\n\
                 \    return ~(1 + 1);\n\
                 \}"
@@ -560,7 +560,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex malformed_paren.c" $ 
+    it "should lex malformed_paren.c" $
       lexString "int main() {\n\
                 \    return 2 (- 3);\n\
                 \}"
@@ -579,7 +579,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex missing_first.c" $ 
+    it "should lex missing_first.c" $
       lexString "int main() {\n\
                 \    return /3;\n\
                 \}"
@@ -595,7 +595,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex no_semicolon.c" $ 
+    it "should lex no_semicolon.c" $
       lexString "int main() {\n\
                 \    return 2*2\n\
                 \}"
@@ -630,7 +630,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex and_true.c" $ 
+    it "should lex and_true.c" $
       lexString "int main() {\n\
                 \    return 1 && -1;\n\
                 \}"
@@ -648,7 +648,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex eq_false.c" $ 
+    it "should lex eq_false.c" $
       lexString "int main() {\n\
                 \    return 1 == 2;\n\
                 \}"
@@ -665,7 +665,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex eq_true.c" $ 
+    it "should lex eq_true.c" $
       lexString "int main() {\n\
                 \    return 1 == 1;\n\
                 \}"
@@ -682,7 +682,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex ge_false.c" $ 
+    it "should lex ge_false.c" $
       lexString "int main() {\n\
                 \    return 1 >= 2;\n\
                 \}"
@@ -699,7 +699,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex ge_true.c" $ 
+    it "should lex ge_true.c" $
       lexString "int main() {\n\
                 \    return 1 >= 1;\n\
                 \}"
@@ -716,7 +716,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex gt_false.c" $ 
+    it "should lex gt_false.c" $
       lexString "int main() {\n\
                 \    return 1 > 2;\n\
                 \}"
@@ -733,7 +733,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex gt_true.c" $ 
+    it "should lex gt_true.c" $
       lexString "int main() {\n\
                 \    return 1 > 0;\n\
                 \}"
@@ -750,7 +750,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex le_false.c" $ 
+    it "should lex le_false.c" $
       lexString "int main() {\n\
                 \    return 1 <= -1;\n\
                 \}"
@@ -768,7 +768,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex le_true.c" $ 
+    it "should lex le_true.c" $
       lexString "int main() {\n\
                 \    return 0 <= 2;\n\
                 \}"
@@ -785,7 +785,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex lt_false.c" $ 
+    it "should lex lt_false.c" $
       lexString "int main() {\n\
                 \    return 2 < 1;\n\
                 \}"
@@ -802,7 +802,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex lt_true.c" $ 
+    it "should lex lt_true.c" $
       lexString "int main() {\n\
                 \    return 1 < 2;\n\
                 \}"
@@ -819,7 +819,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex ne_false.c" $ 
+    it "should lex ne_false.c" $
       lexString "int main() {\n\
                 \    return 0 != 0;\n\
                 \}"
@@ -836,7 +836,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex ne_true.c" $ 
+    it "should lex ne_true.c" $
       lexString "int main() {\n\
                 \    return -1 != -2;\n\
                 \}"
@@ -855,7 +855,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex or_false.c" $ 
+    it "should lex or_false.c" $
       lexString "int main() {\n\
                 \    return 0 || 0;\n\
                 \}"
@@ -872,7 +872,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex or_true.c" $ 
+    it "should lex or_true.c" $
       lexString "int main() {\n\
                 \    return 1 || 0;\n\
                 \}"
@@ -889,7 +889,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex precedence.c" $ 
+    it "should lex precedence.c" $
       lexString "int main() {\n\
                 \    return 1 || 0 && 2;\n\
                 \}"
@@ -908,7 +908,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex precedence_2.c" $ 
+    it "should lex precedence_2.c" $
       lexString "int main() {\n\
                 \    return (1 || 0) && 0;\n\
                 \}"
@@ -930,7 +930,7 @@ spec = do
             , CloseBrace]
 
 
-    it "should lex precedence_3.c" $ 
+    it "should lex precedence_3.c" $
       lexString "int main() {\n\
                 \    return 2 == 2 > 0;\n\
                 \}"
@@ -949,7 +949,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex precedence_4.c" $ 
+    it "should lex precedence_4.c" $
       lexString "int main() {\n\
                 \    return 2 == 2 || 0;\n\
                 \}"
@@ -968,7 +968,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex missing_first_op.c" $ 
+    it "should lex missing_first_op.c" $
       lexString "int main() {\n\
                 \    return <= 2;\n\
                 \}"
@@ -984,7 +984,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex missing_mid_op.c" $ 
+    it "should lex missing_mid_op.c" $
       lexString "int main() {\n\
                 \    return 1 < > 3;\n\
                 \}"
@@ -1002,7 +1002,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex missing_second_op.c" $ 
+    it "should lex missing_second_op.c" $
       lexString "int main() {\n\
                 \    return 2 &&\n\
                 \}"
@@ -1017,7 +1017,7 @@ spec = do
             , LogicalAnd
             , CloseBrace]
 
-    it "should lex missing_semicolon.c" $ 
+    it "should lex missing_semicolon.c" $
       lexString "int main() {\n\
                 \    return 1 || 2\n\
                 \}"
@@ -1060,7 +1060,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex assign_val.c" $ 
+    it "should lex assign_val.c" $
       lexString "int main() {\n\
                 \    int a;\n\
                 \    int b = a = 0;\n\
@@ -1087,7 +1087,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex exp_return_val.c" $ 
+    it "should lex exp_return_val.c" $
       lexString "int main() {\n\
                 \    int a;\n\
                 \    int b;\n\
@@ -1119,7 +1119,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex initialize.c" $ 
+    it "should lex initialize.c" $
       lexString "int main() {\n\
                 \    int a = 2;\n\
                 \    return 0;\n\
@@ -1140,7 +1140,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex missing_return.c" $ 
+    it "should lex missing_return.c" $
       lexString "int main() {\n\
                 \\n\
                 \}"
@@ -1152,7 +1152,7 @@ spec = do
             , OpenBrace
             , CloseBrace]
 
-    it "should lex multiple_vars.c" $ 
+    it "should lex multiple_vars.c" $
       lexString "int main() {\n\
                 \    int a = 1;\n\
                 \    int b = 2;\n\
@@ -1181,7 +1181,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex no_initialize.c" $ 
+    it "should lex no_initialize.c" $
       lexString "int main() {\n\
                 \    int a;\n\
                 \    return 0;\n\
@@ -1200,7 +1200,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex refer.c" $ 
+    it "should lex refer.c" $
       lexString "int main() {\n\
                 \    int a = 2;\n\
                 \    return a;\n\
@@ -1221,7 +1221,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex unused_exp.c" $ 
+    it "should lex unused_exp.c" $
       lexString "int main() {\n\
                 \    2 + 2;\n\
                 \    return 0;\n\
@@ -1241,7 +1241,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex redefine.c" $ 
+    it "should lex redefine.c" $
       lexString "int main() {\n\
                 \    int a = 1;\n\
                 \    int a = 2;\n\
@@ -1268,7 +1268,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex syntax_err_bad_decl.c" $ 
+    it "should lex syntax_err_bad_decl.c" $
       lexString "int main() {\n\
                 \    ints a = 1;\n\
                 \    return a;\n\
@@ -1289,7 +1289,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex syntax_err_bad_decl_2.c" $ 
+    it "should lex syntax_err_bad_decl_2.c" $
       lexString "int main() {\n\
                 \    int foo bar = 3;\n\
                 \    return bar;\n\
@@ -1311,7 +1311,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex syntax_err_bad_lvalue.c" $ 
+    it "should lex syntax_err_bad_lvalue.c" $
       lexString "int main() {\n\
                 \    int a = 2;\n\
                 \    a + 3 = 4;\n\
@@ -1339,7 +1339,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex syntax_err_bad_lvalue2.c" $ 
+    it "should lex syntax_err_bad_lvalue2.c" $
       lexString "int main() {\n\
                 \    int a = 2;\n\
                 \    !a = 3;\n\
@@ -1366,7 +1366,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex syntax_err_no_semicolon.c" $ 
+    it "should lex syntax_err_no_semicolon.c" $
       lexString "int main() {\n\
                 \    int a = 2\n\
                 \    a = a + 4;\n\
@@ -1393,7 +1393,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex undeclared_var.c" $ 
+    it "should lex undeclared_var.c" $
       lexString "int main() {\n\
                 \    return a;\n\
                 \}"
@@ -1408,7 +1408,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex var_declared_late.c" $ 
+    it "should lex var_declared_late.c" $
       lexString "int main() {\n\
                 \    a = 1 + 2;\n\
                 \    int a;\n\
@@ -1466,7 +1466,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex multiple_ternary.c" $ 
+    it "should lex multiple_ternary.c" $
       lexString "int main() {\n\
                 \    int a = 1 > 2 ? 3 : 4;\n\
                 \    int b = 1 > 2 ? 5 : 6;\n\
@@ -1507,7 +1507,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex nested_ternary.c" $ 
+    it "should lex nested_ternary.c" $
       lexString "int main() {\n\
                 \    int a = 1;\n\
                 \    int b = 2;\n\
@@ -1550,7 +1550,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex nested_ternary_2.c" $ 
+    it "should lex nested_ternary_2.c" $
       lexString "int main() {\n\
                 \    int a = 1 ? 2 ? 3 : 4 : 5;\n\
                 \    int b = 0 ? 2 ? 3 : 4 : 5;\n\
@@ -1595,7 +1595,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex rh_assignment.c" $ 
+    it "should lex rh_assignment.c" $
       lexString "int main() {\n\
                 \    int flag = 1;\n\
                 \    int a = 0;\n\
@@ -1635,7 +1635,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex ternary.c" $ 
+    it "should lex ternary.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    return a > -1 ? 4 : 5;\n\
@@ -1663,7 +1663,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex incomplete_ternary.c" $ 
+    it "should lex incomplete_ternary.c" $
       lexString "int main() {\n\
                 \    return 1 ? 2;\n\
                 \}"
@@ -1680,7 +1680,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex malformed_ternary.c" $ 
+    it "should lex malformed_ternary.c" $
       lexString "int main() {\n\
                 \    return 1 ? 2 : 3 : 4;\n\
                 \}"
@@ -1701,7 +1701,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex malformed_ternary_2.c" $ 
+    it "should lex malformed_ternary_2.c" $
       lexString "int main() {\n\
                 \    return 1 ? 2 ? 3 : 4;\n\
                 \}"
@@ -1722,7 +1722,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex ternary_assign.c" $ 
+    it "should lex ternary_assign.c" $
       lexString "int main() {\n\
                 \    int a = 2;\n\
                 \    int b = 1;\n\
@@ -1762,7 +1762,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex else.c" $ 
+    it "should lex else.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    if (a)\n\
@@ -1794,7 +1794,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex if_nested.c" $ 
+    it "should lex if_nested.c" $
       lexString "int main() {\n\
                 \    int a = 1;\n\
                 \    int b = 0;\n\
@@ -1842,7 +1842,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex if_nested_2.c" $ 
+    it "should lex if_nested_2.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    int b = 1;\n\
@@ -1890,7 +1890,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex if_nested_3.c" $ 
+    it "should lex if_nested_3.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    if (1)\n\
@@ -1934,7 +1934,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex if_nested_4.c" $ 
+    it "should lex if_nested_4.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    if (1)\n\
@@ -1978,7 +1978,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex if_nested_5.c" $ 
+    it "should lex if_nested_5.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    if (0)\n\
@@ -2029,7 +2029,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex if_not_taken.c" $ 
+    it "should lex if_not_taken.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    int b = 0;\n\
@@ -2066,7 +2066,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex if_taken.c" $ 
+    it "should lex if_taken.c" $
       lexString "int main() {\n\
                 \    int a = 1;\n\
                 \    int b = 0;\n\
@@ -2103,7 +2103,7 @@ spec = do
             , Semicolon
             , CloseBrace]
 
-    it "should lex multiple_if.c" $ 
+    it "should lex multiple_if.c" $
       lexString "int main() {\n\
                 \    int a = 0;\n\
                 \    int b = 0;\n\
@@ -2168,3 +2168,19 @@ spec = do
             , Identifier "b"
             , Semicolon
             , CloseBrace]
+
+  describe "Stage 9" $do
+
+    it "should lex a function prototype" $
+      lexString "int foo(int a, int b);"
+      `shouldBe`
+      Right [ KWInt
+            , Identifier "foo"
+            , OpenParen
+            , KWInt
+            , Identifier "a"
+            , Comma
+            , KWInt
+            , Identifier "b"
+            , CloseParen
+            , Semicolon]

@@ -47,6 +47,7 @@ lexer = many . token $
   <|> charToken ':' Colon
   <|> charToken '?' QuestionMark
   <|> charToken '%' PercentSign
+  <|> charToken ',' Comma
 
   <|> identifier
   <|> integer

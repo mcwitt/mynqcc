@@ -28,10 +28,11 @@ data Token = OpenBrace
            | KWElse
            | Colon
            | QuestionMark
+           | PercentSign
+           | Comma
            | KWFor
            | KWWhile
            | KWDo
            | KWBreak
            | KWContinue
-           | PercentSign
            deriving (Show, Eq)
