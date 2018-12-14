@@ -1,10 +1,11 @@
 module Lexer ( lexString
              ) where
 
-import           Data.Char
-import           Error
-import           ParserCombinators
-import           Token
+import Control.Monad (void)
+import Data.Char
+import Error
+import ParserCombinators
+import Token
 
 lexString :: String -> Either Error [Token]
 lexString st = case parse lexer st of
@@ -12,8 +13,8 @@ lexString st = case parse lexer st of
                  otherwise -> Left $ LexerError "Failed to lex the program."
 
 lexer :: Parser Char [Token]
-lexer = many . token $
-      reservedWord "int"      KWInt
+lexer = many $ space >>
+    ( reservedWord "int"      KWInt
   <|> reservedWord "return"   KWReturn
   <|> reservedWord "if"       KWIf
   <|> reservedWord "else"     KWElse
@@ -50,18 +51,13 @@ lexer = many . token $
   <|> charToken ',' Comma
 
   <|> identifier
-  <|> integer
-
-token :: Parser Char a -> Parser Char a
-token p = do space
-             val <- p
-             return val
+  <|> integer)
 
 charToken :: Char -> Token -> Parser Char Token
-charToken ch tok = do atom ch; return tok
+charToken ch tok = atom ch >> return tok
 
 stringToken :: String -> Token -> Parser Char Token
-stringToken st tok = do string st; return tok
+stringToken st tok = string st >> return tok
 
 reservedWord :: String -> Token -> Parser Char Token
 reservedWord st tok = do res <- stringToken st tok
@@ -71,14 +67,13 @@ reservedWord st tok = do res <- stringToken st tok
                            else return res
 
 identifier :: Parser Char Token
-identifier = do s <- (do c <- letter
-                         cs <- many (letter <|> number)
-                         return (c:cs))
+identifier = do s <- do c <- letter
+                        cs <- many (letter <|> number)
+                        return (c:cs)
                 return $ Identifier s
 
 integer :: Parser Char Token
-integer = do s <- some number
-             return $ Integer (read s)
+integer = pure (Integer . read) <*> some number
 
 number :: Parser Char Char
 number = satisfy isNumber
@@ -87,6 +82,5 @@ letter :: Parser Char Char
 letter = satisfy isLetter
 
 space :: Parser Char ()
-space = do many $ satisfy isSpace
-           return ()
+space = void $ many (satisfy isSpace)
 
