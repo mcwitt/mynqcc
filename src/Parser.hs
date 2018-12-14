@@ -1,10 +1,10 @@
 module Parser ( parseTokens
               ) where
 
-import           AST
-import           Error
-import           ParserCombinators
-import           Token
+import AST
+import Error
+import ParserCombinators
+import Token
 
 parseTokens :: [Token] -> Either Error Program
 parseTokens ts = case parse program ts of
@@ -12,8 +12,7 @@ parseTokens ts = case parse program ts of
   otherwise   -> Left $ ParserError "Failed to parse the program."
 
 program :: Parser Token Program
-program = do f <- function
-             return (Program f)
+program = pure Program <*> function
 
 function :: Parser Token Function
 function = do atom KWInt
@@ -195,69 +194,68 @@ unaryOperation = negation
                  <|> logicalNegation
 
 constant :: Parser Token Expression
-constant = do Integer i <- satisfy $ \t ->
-                case t of Integer _ -> True
-                          _         -> False
-              return $ AST.Constant i
+constant = pure (\(Integer i) -> AST.Constant i) <*>
+           satisfy (\t -> case t of Integer _ -> True
+                                    _         -> False)
 
 reference :: Parser Token Expression
-reference = do name <- identifier
-               return $ Reference name
+reference = pure Reference <*> identifier
 
 negation :: Parser Token Expression
-negation = do atom Token.Negation
-              fact <- factor
-              return $ Unary AST.Negation fact
+negation = atom Token.Negation >>
+           pure (Unary AST.Negation) <*>
+           factor
 
 bitwiseComplement :: Parser Token Expression
-bitwiseComplement = do atom Token.BitwiseComplement
-                       fact <- factor
-                       return $ Unary AST.BitwiseComplement fact
+bitwiseComplement = atom Token.BitwiseComplement >>
+                    pure (Unary AST.BitwiseComplement) <*>
+                    factor
 
 logicalNegation :: Parser Token Expression
-logicalNegation = do atom Token.LogicalNegation
-                     fact <- factor
-                     return $ Unary AST.LogicalNegation fact
+logicalNegation = atom Token.LogicalNegation >>
+                  pure (Unary AST.LogicalNegation) <*>
+                  factor
 
 
 multiplication :: Parser Token (Expression -> Expression -> Expression)
-multiplication = do atom Token.Multiplication; return $ Binary AST.Multiplication
+multiplication = atom Token.Multiplication >>
+                 return (Binary AST.Multiplication)
 
 division :: Parser Token (Expression -> Expression -> Expression)
-division = do atom Token.Division; return $ Binary AST.Division
+division = atom Token.Division >> return (Binary AST.Division)
 
 modulo :: Parser Token (Expression -> Expression -> Expression)
-modulo = do atom PercentSign; return $ Binary Modulo
+modulo = atom PercentSign >> return (Binary Modulo)
 
 addition :: Parser Token (Expression -> Expression -> Expression)
-addition = do atom Token.Addition; return $ Binary AST.Addition
+addition = atom Token.Addition >> return (Binary AST.Addition)
 
 subtraction :: Parser Token (Expression -> Expression -> Expression)
-subtraction = do atom Token.Negation; return $ Binary AST.Subtraction
+subtraction = atom Token.Negation >> return (Binary AST.Subtraction)
 
 lessThan :: Parser Token (Expression -> Expression -> Expression)
-lessThan = do atom Token.LessThan; return $ Binary AST.LessThan
+lessThan = atom Token.LessThan >> return (Binary AST.LessThan)
 
 greaterThan :: Parser Token (Expression -> Expression -> Expression)
-greaterThan = do atom Token.GreaterThan; return $ Binary AST.GreaterThan
+greaterThan = atom Token.GreaterThan >> return (Binary AST.GreaterThan)
 
 lessEqual :: Parser Token (Expression -> Expression -> Expression)
-lessEqual = do atom Token.LessEqual; return $ Binary AST.LessEqual
+lessEqual = atom Token.LessEqual >> return (Binary AST.LessEqual)
 
 greaterEqual :: Parser Token (Expression -> Expression -> Expression)
-greaterEqual = do atom Token.GreaterEqual; return $ Binary AST.GreaterEqual
+greaterEqual = atom Token.GreaterEqual >> return (Binary AST.GreaterEqual)
 
 equality :: Parser Token (Expression -> Expression -> Expression)
-equality = do atom Token.Equality; return $ Binary AST.Equality
+equality = atom Token.Equality >> return (Binary AST.Equality)
 
 inequality :: Parser Token (Expression -> Expression -> Expression)
-inequality = do atom Token.Inequality; return $ Binary AST.Inequality
+inequality = atom Token.Inequality >> return (Binary AST.Inequality)
 
 logicalAnd :: Parser Token (Expression -> Expression -> Expression)
-logicalAnd = do atom Token.LogicalAnd; return $ Binary AST.LogicalAnd
+logicalAnd = atom Token.LogicalAnd >> return (Binary AST.LogicalAnd)
 
 logicalOr :: Parser Token (Expression -> Expression -> Expression)
-logicalOr = do atom Token.LogicalOr; return $ Binary AST.LogicalOr
+logicalOr = atom Token.LogicalOr >> return (Binary AST.LogicalOr)
 
 
 -- Identifier
