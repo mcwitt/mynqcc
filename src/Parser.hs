@@ -14,7 +14,7 @@ parseTokens ts = case parse program ts of
   otherwise   -> Left $ ParserError "Failed to parse the program."
 
 program :: Parser Token Program
-program = pure Program <*> function
+program = Program <$> function
 
 function :: Parser Token Function
 function = do
@@ -44,10 +44,10 @@ blockItem :: Parser Token BlockItem
 blockItem = blockDeclaration <|> blockStatement
 
 blockDeclaration :: Parser Token BlockItem
-blockDeclaration = pure Declaration <*> declaration
+blockDeclaration = Declaration <$> declaration
 
 blockStatement :: Parser Token BlockItem
-blockStatement = pure Statement <*> statement
+blockStatement = Statement <$> statement
 
 -- Declarations
 
@@ -219,25 +219,25 @@ unaryOperation :: Parser Token Expression
 unaryOperation = negation <|> bitwiseComplement <|> logicalNegation
 
 constant :: Parser Token Expression
-constant = pure (\(Integer i) -> AST.Constant i) <*> satisfy
+constant = (\(Integer i) -> AST.Constant i) <$> satisfy
   (\t -> case t of
     Integer _ -> True
     _         -> False
   )
 
 reference :: Parser Token Expression
-reference = pure Reference <*> identifier
+reference = Reference <$> identifier
 
 negation :: Parser Token Expression
-negation = atom Token.Negation >> pure (Unary AST.Negation) <*> factor
+negation = atom Token.Negation >> Unary AST.Negation <$> factor
 
 bitwiseComplement :: Parser Token Expression
 bitwiseComplement =
-  atom Token.BitwiseComplement >> pure (Unary AST.BitwiseComplement) <*> factor
+  atom Token.BitwiseComplement >> Unary AST.BitwiseComplement <$> factor
 
 logicalNegation :: Parser Token Expression
 logicalNegation =
-  atom Token.LogicalNegation >> pure (Unary AST.LogicalNegation) <*> factor
+  atom Token.LogicalNegation >> Unary AST.LogicalNegation <$> factor
 
 
 multiplication :: Parser Token (Expression -> Expression -> Expression)

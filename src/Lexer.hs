@@ -71,15 +71,13 @@ reservedWord st tok = do
   if isAlphaNum c then empty else return res
 
 identifier :: Parser Char Token
-identifier = do
-  s <- do
-    c  <- letter
-    cs <- many (letter <|> number)
-    return (c : cs)
-  return $ Identifier s
+identifier = Identifier <$> do
+  c  <- letter
+  cs <- many (letter <|> number)
+  return (c : cs)
 
 integer :: Parser Char Token
-integer = pure (Integer . read) <*> some number
+integer = (Integer . read) <$> some number
 
 number :: Parser Char Char
 number = satisfy isNumber

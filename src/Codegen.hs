@@ -189,7 +189,7 @@ statement st = case st of
       Nothing   -> return ()
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
-    emit $ "addl $4, %esp"
+    emit "addl $4, %esp"
 
   Break -> do
     maybeLabel <- gets breakTo
@@ -326,4 +326,4 @@ withNestedContext inner = do
   outerContext <- get
   result       <- inner
   put outerContext
-  return (result)
+  return result
