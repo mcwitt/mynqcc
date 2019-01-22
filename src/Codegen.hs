@@ -31,14 +31,14 @@ data Context =
   deriving Show
 
 generate :: Target -> Program -> Either Error [String]
-generate target = runExcept . execWriterT . (program target)
+generate target = runExcept . execWriterT . program target
 
 program :: (MWriter m, MError m) => Target -> Program -> m ()
 program target (Program func) = function target func
 
 function :: (MWriter m, MError m) => Target -> Function -> m ()
 function (Target os) (Function name params maybeBody) = do
-  symbol <- return $ (symbolName os) name
+  let symbol = symbolName os name
   emit $ ".globl " ++ symbol
   emit $ symbol ++ ":"
   emit "push %ebp"
@@ -91,9 +91,7 @@ declaration (Decl name maybeExpr) = do
     $  "Multiple declarations of `"
     ++ name
     ++ "` in the same block."
-  case maybeExpr of
-    Just expr -> expression expr
-    Nothing   -> return ()
+  forM_ maybeExpr expression
   emit "push %eax"
   sidx <- gets stackIndex
   vmap <- gets varMap
@@ -113,9 +111,7 @@ statement st = case st of
     emit $ "addl $" ++ show bytes ++ ", %esp"
     emit $ "jmp _" ++ name ++ "__end"
 
-  Expression expr -> case expr of
-    Just expr -> expression expr
-    Nothing   -> return ()
+  Expression expr -> forM_ expr expression
 
   If expr s1 maybeStat -> do
     expression expr
@@ -126,9 +122,7 @@ statement st = case st of
     labelEndIf <- label "endif"
     emit $ "jmp " ++ labelEndIf
     emit $ labelElse ++ ":"
-    case maybeStat of
-      Just s2 -> statement s2
-      Nothing -> return ()
+    forM_ maybeStat statement
     emit $ labelEndIf ++ ":"
 
   Compound items  -> block items
@@ -160,42 +154,24 @@ statement st = case st of
     emit $ labelEnd ++ ":"
 
   For maybeInit cond maybePost stat -> do
-    case maybeInit of
-      Just expr -> expression expr
-      Nothing   -> return ()
-    labelBegin <- label "for_begin"
-    emit $ labelBegin ++ ":"
-    expression cond
-    emit "cmpl $0, %eax"
-    labelEnd <- label "for_end"
-    emit $ "je " ++ labelEnd
-    labelPost <- label "for_post"
+    forM_ maybeInit expression
+    (labelBegin, labelEnd, labelPost) <- forBody cond
     withNestedContext $ do
       modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelPost }
       statement stat
     emit $ labelPost ++ ":"
-    case maybePost of
-      Just expr -> expression expr
-      Nothing   -> return ()
+    forM_ maybePost expression
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
 
   ForDecl decl cond maybePost stat -> withNestedContext $ do
     modify $ \c -> c { localVars = Set.empty }
     declaration decl
-    labelBegin <- label "for_begin"
-    emit $ labelBegin ++ ":"
-    expression cond
-    emit "cmpl $0, %eax"
-    labelEnd <- label "for_end"
-    emit $ "je " ++ labelEnd
-    labelPost <- label "for_post"
+    (labelBegin, labelEnd, labelPost) <- forBody cond
     modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelPost }
     statement stat
     emit $ labelPost ++ ":"
-    case maybePost of
-      Just expr -> expression expr
-      Nothing   -> return ()
+    forM_ maybePost expression
     emit $ "jmp " ++ labelBegin
     emit $ labelEnd ++ ":"
     emit "addl $4, %esp"
@@ -212,6 +188,17 @@ statement st = case st of
       Just l -> emit $ "jmp " ++ l
       Nothing ->
         throwError $ CodegenError "Found `continue` outside of a loop."
+
+forBody :: (MState m, MWriter m, MError m) => Expression -> m (String, String, String)
+forBody cond = do
+    labelBegin <- label "for_begin"
+    emit $ labelBegin ++ ":"
+    expression cond
+    emit "cmpl $0, %eax"
+    labelEnd <- label "for_end"
+    emit $ "je " ++ labelEnd
+    labelPost <- label "for_post"
+    return (labelBegin, labelEnd, labelPost)
 
 expression :: (MState m, MWriter m, MError m) => Expression -> m ()
 expression expr = case expr of

@@ -1,3 +1,5 @@
+{-# LANGUAGE LambdaCase #-}
+
 {-|
   This module implements a parser-combinator strategy for lexing input strings
   into lists of tokens, and for parsing lists of tokens into an AST. If this
@@ -22,6 +24,7 @@ module ParserCombinators
   , atom
   , string
   , chainl1
+  , surrounded
   , (<|>)
   )
 where
@@ -30,17 +33,17 @@ import           Control.Applicative
 
 -- | A parser is a function from a list of atoms (e.g. character strings) to
 -- | zero or more possible (parsed, rest) pairs.
-newtype Parser a b = P { parse :: [a] -> [(b, [a])]}
+newtype Parser a b = P { parse :: [a] -> [(b, [a])] }
 
 -- | Simplest parser. Just read a single atom from the input stream.
 item :: Parser a a
-item = P $ \st -> case st of
+item = P $ \case
   []     -> []
   x : xs -> [(x, xs)]
 
 -- | Peek ahead one atom without removing it from the input stream.
 peek :: Parser a a
-peek = P $ \st -> case st of
+peek = P $ \case
   []     -> []
   x : xs -> [(x, x : xs)]
 
@@ -72,7 +75,7 @@ instance Monad (Parser a) where
 -- | Allows chaining parsers such that if the first fails, we try the next, etc.
 instance Alternative (Parser a) where
   -- empty :: Parser a
-  empty = P $ \st -> []
+  empty = P $ const []
 
   -- (<|>) :: Parser a -> Parser a -> Parser a
   p <|> q = P $ \st ->
@@ -110,3 +113,6 @@ p `chainl1` op = do
         rest (f a b)
       )
       <|> return a
+
+surrounded :: Parser a a -> Parser a a -> Parser a b -> Parser a b
+surrounded left right parser = left *> parser <* right
