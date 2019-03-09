@@ -14,7 +14,7 @@ import           Control.Monad.Writer
 import qualified Data.Map                      as Map
 import qualified Data.Set                      as Set
 import           Error
-import Target
+import           Target
 
 type MError  = MonadError Error
 type MWriter = MonadWriter [String]
@@ -31,7 +31,10 @@ data Context =
   deriving Show
 
 generate :: Target -> Program -> Either Error [String]
-generate (Target Linux) = runExcept . execWriterT . program
+generate target = case target of
+  Target Linux -> runExcept . execWriterT . program
+  Target os ->
+    \_ -> Left $ UnsupportedOSError "Code generation not implemented for target OS"
 
 program :: (MWriter m, MError m) => Program -> m ()
 program (Program func) = function func
