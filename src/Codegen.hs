@@ -31,18 +31,16 @@ data Context =
   deriving Show
 
 generate :: Target -> Program -> Either Error [String]
-generate target = case target of
-  Target Linux -> runExcept . execWriterT . program
-  Target os ->
-    \_ -> Left $ UnsupportedOSError "Code generation not implemented for target OS"
+generate target = runExcept . execWriterT . (program target)
 
-program :: (MWriter m, MError m) => Program -> m ()
-program (Program func) = function func
+program :: (MWriter m, MError m) => Target -> Program -> m ()
+program target (Program func) = function target func
 
-function :: (MWriter m, MError m) => Function -> m ()
-function (Function name params maybeBody) = do
-  emit $ ".globl " ++ name
-  emit $ name ++ ":"
+function :: (MWriter m, MError m) => Target -> Function -> m ()
+function (Target os) (Function name params maybeBody) = do
+  symbol <- return $ (symbolName os) name
+  emit $ ".globl " ++ symbol
+  emit $ symbol ++ ":"
   emit "push %ebp"
   emit "movl %esp, %ebp"
   let inner = block $ f name maybeBody
@@ -63,6 +61,13 @@ function (Function name params maybeBody) = do
   emit "movl %ebp, %esp"
   emit "pop %ebp"
   emit "ret"
+
+symbolName :: OS -> String -> String
+symbolName os = (prefix ++)
+ where
+  prefix = case os of
+    Darwin -> "_"
+    _      -> ""
 
 block :: (MState m, MWriter m, MError m) => [BlockItem] -> m ()
 block items = withNestedContext $ do
