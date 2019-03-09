@@ -7,17 +7,20 @@ import           AST
 import           Codegen
 import           Error                          ( Error(CodegenError) )
 import           Parser
+import Target
 import           Test.Hspec                     ( Spec
                                                 , describe
                                                 , it
                                                 , shouldBe
                                                 )
 
+testGenerate = generate (Target Linux)
+
 spec :: Spec
 spec = do
   describe "Stage 1"
     $          it "should generate code for multi_digit.c"
-    $          generate
+    $          testGenerate
                  (Program (Function "main" [] (Just [Statement (Return (Constant 100))]))
                  )
     `shouldBe` Right
@@ -37,7 +40,7 @@ spec = do
 
   describe "Stage 2"
     $          it "should generate code for bitwise.c"
-    $          generate
+    $          testGenerate
                  (Program
                    (Function
                      "main"
@@ -67,7 +70,7 @@ spec = do
   describe "Stage 3" $ do
 
     it "should generate code for add.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -100,7 +103,7 @@ spec = do
                    ]
 
     it "should generate code for associativity.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -142,7 +145,7 @@ spec = do
                    ]
 
     it "should generate code for associativity_2.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -185,7 +188,7 @@ spec = do
                    ]
 
     it "should generate code for div.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -218,7 +221,7 @@ spec = do
                    ]
 
     it "should generate code for mult.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -252,7 +255,7 @@ spec = do
                    ]
 
     it "should generate code for parens.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -295,7 +298,7 @@ spec = do
   describe "Stage 4" $ do
 
     it "should generate code for and_false.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -332,7 +335,7 @@ spec = do
                    ]
 
     it "should generate code for and_true.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -375,7 +378,7 @@ spec = do
                    ]
 
     it "should generate code for eq_false.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -409,7 +412,7 @@ spec = do
                    ]
 
     it "should generate code for eq_true.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -443,7 +446,7 @@ spec = do
                    ]
 
     it "should generate code for ge_false.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -477,7 +480,7 @@ spec = do
                    ]
 
     it "should generate code for ge_true.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -511,7 +514,7 @@ spec = do
                    ]
 
     it "should generate code for precedence.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -562,7 +565,7 @@ spec = do
   describe "Stage 5" $ do
 
     it "should generate code for assign.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -595,7 +598,7 @@ spec = do
                    ]
 
     it "should generate code for assign_val.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -629,7 +632,7 @@ spec = do
                    ]
 
     it "should generate code for exp_return_val.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -675,7 +678,7 @@ spec = do
                    ]
 
     it "should generate code for initialize.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -705,7 +708,7 @@ spec = do
                    ]
 
     it "should generate code for missing_return.c"
-      $          generate (Program (Function "main" [] (Just [])))
+      $          testGenerate (Program (Function "main" [] (Just [])))
       `shouldBe` Right
                    [ ".globl main"
                    , "main:"
@@ -722,7 +725,7 @@ spec = do
                    ]
 
     it "should generate code for multiple_vars.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -760,7 +763,7 @@ spec = do
                    ]
 
     it "should generate code for no_initialize.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -789,7 +792,7 @@ spec = do
                    ]
 
     it "should generate code for refer.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -819,7 +822,7 @@ spec = do
                    ]
 
     it "should generate code for unused_exp.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -855,7 +858,7 @@ spec = do
                    ]
 
     it "should fail to generate code for redefine.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -874,14 +877,14 @@ spec = do
                    )
 
     it "should fail to generate code for undeclared_var.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function "main" [] (Just [Statement (Return (Reference "a"))]))
                    )
       `shouldBe` Left (CodegenError "Reference to undeclared variable, `a`.")
 
     it "should fail to generate code for var_declared_late.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -906,7 +909,7 @@ spec = do
 
   describe "Stage 6" $ do
     it "should generate code for assign_ternary.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -954,7 +957,7 @@ spec = do
                    ]
 
     it "should generate code for multiple_ternary.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1038,7 +1041,7 @@ spec = do
                    ]
 
     it "should generate code for nested_ternary.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1101,7 +1104,7 @@ spec = do
                    ]
 
     it "should generate code for nested_ternary_2.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1189,7 +1192,7 @@ spec = do
                    ]
 
     it "should generate code for rh_assignment.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1241,7 +1244,7 @@ spec = do
                    ]
 
     it "should generate code for ternary.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1295,7 +1298,7 @@ spec = do
                    ]
 
     it "should generate code for else.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1338,7 +1341,7 @@ spec = do
                    ]
 
     it "should generate code for if_nested.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1399,7 +1402,7 @@ spec = do
                    ]
 
     it "should generate code for if_nested_2.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1460,7 +1463,7 @@ spec = do
                    ]
 
     it "should generate code for if_nested_3.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1518,7 +1521,7 @@ spec = do
                    ]
 
     it "should generate code for if_nested_4.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1576,7 +1579,7 @@ spec = do
                    ]
 
     it "should generate code for if_nested_5.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1636,7 +1639,7 @@ spec = do
                    ]
 
     it "should generate code for if_not_taken.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1682,7 +1685,7 @@ spec = do
                    ]
 
     it "should generate code for if_taken.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1730,7 +1733,7 @@ spec = do
   describe "Stage 7" $ do
 
     it "should generate code for consecutive_blocks.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1766,7 +1769,7 @@ spec = do
                    ]
 
     it "should generate code for consecutive_declarations.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1832,7 +1835,7 @@ spec = do
                    ]
 
     it "should generate code for declare_after_block.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1870,7 +1873,7 @@ spec = do
                    ]
 
     it "should generate code for declare_block.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1915,7 +1918,7 @@ spec = do
                    ]
 
     it "should generate code for declare_late.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -1957,7 +1960,7 @@ spec = do
                    ]
 
     it "should generate code for multi_nesting.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -2022,7 +2025,7 @@ spec = do
   describe "Stage 8" $ do
 
     it "should generate code for break.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"
@@ -2129,7 +2132,7 @@ spec = do
                    ]
 
     it "should generate code for continue.c"
-      $          generate
+      $          testGenerate
                    (Program
                      (Function
                        "main"

@@ -14,6 +14,7 @@ import           Control.Monad.Writer
 import qualified Data.Map                      as Map
 import qualified Data.Set                      as Set
 import           Error
+import Target
 
 type MError  = MonadError Error
 type MWriter = MonadWriter [String]
@@ -29,8 +30,8 @@ data Context =
           , continueTo :: Maybe String}
   deriving Show
 
-generate :: Program -> Either Error [String]
-generate = runExcept . execWriterT . program
+generate :: Target -> Program -> Either Error [String]
+generate (Target Linux) = runExcept . execWriterT . program
 
 program :: (MWriter m, MError m) => Program -> m ()
 program (Program func) = function func

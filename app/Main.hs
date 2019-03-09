@@ -2,6 +2,7 @@ module Main where
 
 import Data.List ( intercalate)
 import Options.Applicative
+import qualified System.Info
 import System.IO ( IOMode (ReadMode)
                  , withFile
                  , readFile
@@ -10,16 +11,14 @@ import System.IO ( IOMode (ReadMode)
 import System.FilePath.Posix (dropExtension)
 
 import Codegen ( generate)
-import Error   ( Error ( LexerError
-                       , ParserError
-                       , CodegenError))
+import Error
 import Lexer   ( lexString)
 import Parser  ( parseTokens)
+import Target
 
 data CmdOptions = CmdOptions { verbose    :: Bool
                              , outputFile :: String
                              , inputFiles :: [String]}
-
 
 cmdOptions :: Parser CmdOptions
 cmdOptions = CmdOptions
@@ -55,10 +54,16 @@ run opts = do
     Left (ParserError  msg) -> putStrLn $ "Parser error: "  ++ msg
     Left (CodegenError msg) -> putStrLn $ "Codegen error: " ++ msg
 
+hostOs :: Either Error Target.OS
+hostOs = case System.Info.os of
+  "linux" -> Right Linux
+  "darwin" -> Right Darwin
+  name -> Left $ UnsupportedOSError name
 
 compile :: String -> Either Error String
 compile src = do
   tokens <- lexString src
   ast <- parseTokens tokens
-  code <- generate ast
+  os <- hostOs
+  code <- generate (Target os) ast
   return $ intercalate "\n" code
