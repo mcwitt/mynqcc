@@ -48,10 +48,11 @@ run :: CmdOptions -> IO ()
 run opts = do
   src <- readFile $ head . inputFiles $ opts
   case compile src of
-    Right code               -> writeFile (outputFile opts) code
-    Left  (LexerError   msg) -> putStrLn $ "Lexer error: " ++ msg
-    Left  (ParserError  msg) -> putStrLn $ "Parser error: " ++ msg
-    Left  (CodegenError msg) -> putStrLn $ "Codegen error: " ++ msg
+    Right code                     -> writeFile (outputFile opts) code
+    Left  (LexerError         msg) -> putStrLn $ "Lexer error: " ++ msg
+    Left  (ParserError        msg) -> putStrLn $ "Parser error: " ++ msg
+    Left  (CodegenError       msg) -> putStrLn $ "Codegen error: " ++ msg
+    Left  (UnsupportedOSError msg) -> putStrLn $ "Unsupported OS: " ++ msg
 
 hostOs :: Either Error Target.OS
 hostOs = case System.Info.os of
