@@ -17,7 +17,7 @@ parseTokens ts = case parse program ts of
   _           -> Left $ ParserError "Failed to parse the program."
 
 program :: Parser Token Program
-program = Program <$> function
+program = Program <$> many function
 
 function :: Parser Token Function
 function =

@@ -1,7 +1,7 @@
 module AST where
 
-data Program
-  = Program Function
+newtype Program
+  = Program [Function]
   deriving (Eq, Show)
 
 data Function

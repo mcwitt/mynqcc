@@ -34,7 +34,7 @@ generate :: Target -> Program -> Either Error [String]
 generate target = runExcept . execWriterT . program target
 
 program :: (MWriter m, MError m) => Target -> Program -> m ()
-program target (Program func) = function target func
+program target (Program functions) = mapM_ (function target) functions
 
 function :: (MWriter m, MError m) => Target -> Function -> m ()
 function (Target os) (Function name params maybeBody) = do
