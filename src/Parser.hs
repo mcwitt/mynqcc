@@ -6,7 +6,9 @@ module Parser
 where
 
 import           AST
+import           Control.Monad
 import           Data.Functor
+import           Data.Maybe
 import           Error
 import           ParserCombinators
 import           Token
@@ -24,7 +26,7 @@ function =
   Function
     <$  atom KWInt
     <*> identifier
-    <*> (parenthesized . many) (atom KWInt *> identifier <* atom Comma)
+    <*> parenthesized (commaDelimitedList (atom KWInt *> identifier))
     <*> (optional . braced) (many blockItem)
 
 -- Block items
@@ -176,7 +178,8 @@ constant = (\(Integer i) -> AST.Constant i) <$> satisfy
 
 reference = Reference <$> identifier
 
-funCall = FunCall <$> identifier <*> (parenthesized . many) expression
+funCall =
+  FunCall <$> identifier <*> parenthesized (commaDelimitedList expression)
 
 negation = Unary AST.Negation <$ atom Token.Negation <*> factor
 
@@ -226,6 +229,13 @@ identifier = (\(Identifier name) -> name) <$> satisfy
   )
 
 -------------------------------------------------------------------------------
+
+commaDelimitedList :: Parser Token a -> Parser Token [a]
+commaDelimitedList = delimitedList $ void (atom Comma)
+
+delimitedList :: Parser Token () -> Parser Token a -> Parser Token [a]
+delimitedList sep elem =
+  (++) <$> (maybeToList <$> optional elem) <*> many (sep *> elem)
 
 parenthesized :: Parser Token a -> Parser Token a
 parenthesized = surrounded (atom OpenParen) (atom CloseParen)

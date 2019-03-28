@@ -87,4 +87,3 @@ letter = satisfy isLetter
 
 space :: Parser Char ()
 space = void $ many (satisfy isSpace)
-
