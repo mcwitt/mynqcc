@@ -162,7 +162,7 @@ additiveExpr = term `chainl1` (addition <|> subtraction)
 
 term = factor `chainl1` (multiplication <|> division <|> modulo)
 
-factor = parenExpr <|> unaryOperation <|> constant <|> reference
+factor = parenExpr <|> unaryOperation <|> constant <|> funCall <|> reference
 
 parenExpr = parenthesized expression
 
