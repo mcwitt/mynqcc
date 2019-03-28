@@ -37,6 +37,7 @@ data Expression
   | Unary UnaryOp Expression
   | Binary BinaryOp Expression Expression
   | Conditional Expression Expression Expression
+  | FunCall String [Expression]
   deriving (Eq, Show)
 
 data UnaryOp

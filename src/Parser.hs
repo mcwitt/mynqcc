@@ -176,6 +176,8 @@ constant = (\(Integer i) -> AST.Constant i) <$> satisfy
 
 reference = Reference <$> identifier
 
+funCall = FunCall <$> identifier <*> (parenthesized . many) expression
+
 negation = Unary AST.Negation <$ atom Token.Negation <*> factor
 
 bitwiseComplement =
