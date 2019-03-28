@@ -3805,3 +3805,90 @@ spec = do
                          )
                      ]
                    )
+
+  describe "Stage 9" $ do
+
+    it "should parse tokens from continue.c"
+      $          parseTokens
+                   [ KWInt
+                   , Identifier "add"
+                   , OpenParen
+                   , KWInt
+                   , Identifier "a"
+                   , Comma
+                   , KWInt
+                   , Identifier "b"
+                   , CloseParen
+                   , OpenBrace
+                   , KWReturn
+                   , Identifier "a"
+                   , Token.Addition
+                   , Identifier "b"
+                   , Semicolon
+                   , CloseBrace
+                   , KWInt
+                   , Identifier "main"
+                   , OpenParen
+                   , CloseParen
+                   , OpenBrace
+                   , KWInt
+                   , Identifier "sum"
+                   , Token.Assignment
+                   , Identifier "add"
+                   , OpenParen
+                   , Integer 1
+                   , Token.Addition
+                   , Integer 2
+                   , Comma
+                   , Integer 4
+                   , CloseParen
+                   , Semicolon
+                   , KWReturn
+                   , Identifier "sum"
+                   , Token.Addition
+                   , Identifier "sum"
+                   , Semicolon
+                   , CloseBrace
+                   ]
+      `shouldBe` Right
+                   (Program
+                     [ Function
+                       "add"
+                       ["a", "b"]
+                       (Just
+                         [ Statement
+                             (Return
+                               (Binary AST.Addition
+                                       (Reference "a")
+                                       (Reference "b")
+                               )
+                             )
+                         ]
+                       )
+                     , Function
+                       "main"
+                       []
+                       (Just
+                         [ Declaration
+                           (Decl
+                             "sum"
+                             (Just
+                               (FunCall
+                                 "add"
+                                 [ Binary AST.Addition (Constant 1) (Constant 2)
+                                 , Constant 4
+                                 ]
+                               )
+                             )
+                           )
+                         , Statement
+                           (Return
+                             (Binary AST.Addition
+                                     (Reference "sum")
+                                     (Reference "sum")
+                             )
+                           )
+                         ]
+                       )
+                     ]
+                   )
