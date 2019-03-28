@@ -3808,7 +3808,7 @@ spec = do
 
   describe "Stage 9" $ do
 
-    it "should parse tokens from continue.c"
+    it "should parse tokens from expression_args.c"
       $          parseTokens
                    [ KWInt
                    , Identifier "add"
