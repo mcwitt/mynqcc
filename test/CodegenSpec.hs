@@ -2253,3 +2253,88 @@ spec = do
                    , "pop %ebp"
                    , "ret"
                    ]
+
+  describe "Stage 9" $ do
+
+    it "should generate code for expression_args.c" $ do
+      testGenerate
+          (Program
+            [ Function
+              "add"
+              ["a", "b"]
+              (Just
+                [ Statement
+                    (Return
+                      (Binary AST.Addition (Reference "a") (Reference "b"))
+                    )
+                ]
+              )
+            , Function
+              "main"
+              []
+              (Just
+                [ Declaration
+                  (Decl
+                    "sum"
+                    (Just
+                      (FunCall
+                        "add"
+                        [ Binary AST.Addition (Constant 1) (Constant 2)
+                        , Constant 4
+                        ]
+                      )
+                    )
+                  )
+                , Statement
+                  (Return
+                    (Binary AST.Addition (Reference "sum") (Reference "sum"))
+                  )
+                ]
+              )
+            ]
+          )
+        `shouldBe` Right
+                     [ ".globl add"
+                     , "add:"
+                     , "push %ebp"
+                     , "movl %esp, %ebp"
+                     , "movl 12(%ebp), %eax"
+                     , "push %eax"
+                     , "movl 8(%ebp), %eax"
+                     , "pop %ecx"
+                     , "addl %ecx, %eax"
+                     , "addl $0, %esp"
+                     , "jmp _add__end"
+                     , "addl $0, %esp"
+                     , "_add__end:"
+                     , "movl %ebp, %esp"
+                     , "pop %ebp"
+                     , "ret"
+                     , ".globl main"
+                     , "main:"
+                     , "push %ebp"
+                     , "movl %esp, %ebp"
+                     , "movl $4, %eax"
+                     , "push %eax"
+                     , "movl $2, %eax"
+                     , "push %eax"
+                     , "movl $1, %eax"
+                     , "pop %ecx"
+                     , "addl %ecx, %eax"
+                     , "push %eax"
+                     , "call add"
+                     , "add $0x8, %esp"
+                     , "push %eax"
+                     , "movl -4(%ebp), %eax"
+                     , "push %eax"
+                     , "movl -4(%ebp), %eax"
+                     , "pop %ecx"
+                     , "addl %ecx, %eax"
+                     , "addl $4, %esp"
+                     , "jmp _main__end"
+                     , "addl $4, %esp"
+                     , "_main__end:"
+                     , "movl %ebp, %esp"
+                     , "pop %ebp"
+                     , "ret"
+                     ]
