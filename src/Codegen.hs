@@ -51,8 +51,8 @@ function (Target os) (Function name params maybeBody) = do
         { funcName   = name
         , labelCount = 0
         , stackIndex = -4
-        , varMap     = Map.empty
-        , localVars  = Set.empty
+        , varMap     = Map.fromList $ zip params [8, 12..]
+        , localVars  = Set.fromList params
         , breakTo    = Nothing
         , continueTo = Nothing
         }
