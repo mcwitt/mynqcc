@@ -310,7 +310,7 @@ expression expr = case expr of
     emit $ labelPostCond ++ ":"
 
   FunCall name args -> do
-    mapM_ (\expr -> expression expr >> emit "push %eax") args
+    mapM_ (\expr -> expression expr >> emit "push %eax") $ reverse args
     emit $ "call " ++ name
     emit $ "add $" ++ showHex (length args * 4) "" ++ ", %esp"
 
