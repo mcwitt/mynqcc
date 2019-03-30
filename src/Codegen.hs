@@ -13,6 +13,7 @@ import           Control.Monad.State
 import           Control.Monad.Writer
 import qualified Data.Map                      as Map
 import qualified Data.Set                      as Set
+import           Numeric                        ( showHex )
 import           Error
 import           Target
 
@@ -306,6 +307,11 @@ expression expr = case expr of
     emit $ labelE3 ++ ":"
     expression e3
     emit $ labelPostCond ++ ":"
+
+  FunCall name args -> do
+    mapM_ (\expr -> expression expr >> emit "push %eax") args
+    emit $ "call " ++ name
+    emit $ "add $" ++ showHex (length args * 4) "" ++ ", %esp"
 
 label :: MState m => String -> m String
 label s = do
