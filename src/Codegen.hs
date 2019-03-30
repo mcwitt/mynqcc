@@ -312,7 +312,7 @@ expression expr = case expr of
   FunCall name args -> do
     mapM_ (\expr -> expression expr >> emit "push %eax") $ reverse args
     emit $ "call " ++ name
-    emit $ "add $" ++ showHex (length args * 4) "" ++ ", %esp"
+    emit $ "add $0x" ++ showHex (length args * 4) "" ++ ", %esp"
 
 label :: MState m => String -> m String
 label s = do
