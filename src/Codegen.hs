@@ -52,7 +52,7 @@ function (Target os) (Function name params maybeBody) = do
         { funcName   = name
         , labelCount = 0
         , stackIndex = -4
-        , varMap     = Map.fromList $ zip params [8, 12..]
+        , varMap     = Map.fromList $ zip params [8, 12 ..]
         , localVars  = Set.fromList params
         , breakTo    = Nothing
         , continueTo = Nothing
@@ -112,7 +112,7 @@ statement st = case st of
     emit $ "addl $" ++ show bytes ++ ", %esp"
     emit $ "jmp _" ++ name ++ "__end"
 
-  Expression expr -> forM_ expr expression
+  Expression expr      -> forM_ expr expression
 
   If expr s1 maybeStat -> do
     expression expr
@@ -190,16 +190,17 @@ statement st = case st of
       Nothing ->
         throwError $ CodegenError "Found `continue` outside of a loop."
 
-forBody :: (MState m, MWriter m, MError m) => Expression -> m (String, String, String)
+forBody
+  :: (MState m, MWriter m, MError m) => Expression -> m (String, String, String)
 forBody cond = do
-    labelBegin <- label "for_begin"
-    emit $ labelBegin ++ ":"
-    expression cond
-    emit "cmpl $0, %eax"
-    labelEnd <- label "for_end"
-    emit $ "je " ++ labelEnd
-    labelPost <- label "for_post"
-    return (labelBegin, labelEnd, labelPost)
+  labelBegin <- label "for_begin"
+  emit $ labelBegin ++ ":"
+  expression cond
+  emit "cmpl $0, %eax"
+  labelEnd <- label "for_end"
+  emit $ "je " ++ labelEnd
+  labelPost <- label "for_post"
+  return (labelBegin, labelEnd, labelPost)
 
 expression :: (MState m, MWriter m, MError m) => Expression -> m ()
 expression expr = case expr of
