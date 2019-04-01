@@ -3892,3 +3892,127 @@ spec = do
                        )
                      ]
                    )
+
+    it "should parse tokens from fib.c"
+      $          parseTokens
+                   [ KWInt
+                   , Identifier "fib"
+                   , OpenParen
+                   , KWInt
+                   , Identifier "n"
+                   , CloseParen
+                   , OpenBrace
+                   , KWIf
+                   , OpenParen
+                   , Identifier "n"
+                   , Token.Equality
+                   , Integer 0
+                   , Token.LogicalOr
+                   , Identifier "n"
+                   , Token.Equality
+                   , Integer 1
+                   , CloseParen
+                   , OpenBrace
+                   , KWReturn
+                   , Identifier "n"
+                   , Semicolon
+                   , CloseBrace
+                   , KWElse
+                   , OpenBrace
+                   , KWReturn
+                   , Identifier "fib"
+                   , OpenParen
+                   , Identifier "n"
+                   , Token.Negation
+                   , Integer 1
+                   , CloseParen
+                   , Token.Addition
+                   , Identifier "fib"
+                   , OpenParen
+                   , Identifier "n"
+                   , Token.Negation
+                   , Integer 2
+                   , CloseParen
+                   , Semicolon
+                   , CloseBrace
+                   , CloseBrace
+                   , KWInt
+                   , Identifier "main"
+                   , OpenParen
+                   , CloseParen
+                   , OpenBrace
+                   , KWInt
+                   , Identifier "n"
+                   , Token.Assignment
+                   , Integer 5
+                   , Semicolon
+                   , KWReturn
+                   , Identifier "fib"
+                   , OpenParen
+                   , Identifier "n"
+                   , CloseParen
+                   , Semicolon
+                   , CloseBrace
+                   ]
+      `shouldBe` (Right
+                   (Program
+                     [ Function
+                       "fib"
+                       ["n"]
+                       (Just
+                         [ Statement
+                             (If
+                               (Binary
+                                 AST.LogicalOr
+                                 (Binary AST.Equality
+                                         (Reference "n")
+                                         (Constant 0)
+                                 )
+                                 (Binary AST.Equality
+                                         (Reference "n")
+                                         (Constant 1)
+                                 )
+                               )
+                               (Compound [Statement (Return (Reference "n"))])
+                               (Just
+                                 (Compound
+                                   [ Statement
+                                       (Return
+                                         (Binary
+                                           AST.Addition
+                                           (FunCall
+                                             "fib"
+                                             [ (Binary Subtraction
+                                                       (Reference "n")
+                                                       (Constant 1)
+                                               )
+                                             ]
+                                           )
+                                           (FunCall
+                                             "fib"
+                                             [ (Binary Subtraction
+                                                       (Reference "n")
+                                                       (Constant 2)
+                                               )
+                                             ]
+                                           )
+                                         )
+                                       )
+                                   ]
+                                 )
+                               )
+                             )
+                         ]
+                       )
+                     , Function
+                       "main"
+                       []
+                       (Just
+                         [ Declaration (Decl "n" (Just (Constant 5)))
+                         , (Statement (Return (FunCall "fib" [(Reference "n")]))
+                           )
+                         ]
+                       )
+                     ]
+                   )
+                 )
