@@ -12,51 +12,51 @@ import           Token
 lexString :: String -> Either Error [Token]
 lexString st = case parse lexer st of
   [(res, [])] -> Right res
-  otherwise   -> Left $ LexerError "Failed to lex the program."
+  _           -> Left $ LexerError "Failed to lex the program."
 
 lexer :: Parser Char [Token]
-lexer =
-  many
-    $  space
-    >> (   reservedWord "int"      KWInt
-       <|> reservedWord "return"   KWReturn
-       <|> reservedWord "if"       KWIf
-       <|> reservedWord "else"     KWElse
-       <|> reservedWord "for"      KWFor
-       <|> reservedWord "while"    KWWhile
-       <|> reservedWord "do"       KWDo
-       <|> reservedWord "break"    KWBreak
-       <|> reservedWord "continue" KWContinue
+lexer = many (space *> token) <* optional space
 
-       <|> stringToken "&&" LogicalAnd
-       <|> stringToken "||" LogicalOr
-       <|> stringToken "==" Equality
-       <|> stringToken "!=" Inequality
-       <|> stringToken "<=" LessEqual
-       <|> stringToken ">=" GreaterEqual
+token :: Parser Char Token
+token =
+  reservedWord "int" KWInt
+    <|> reservedWord "return"   KWReturn
+    <|> reservedWord "if"       KWIf
+    <|> reservedWord "else"     KWElse
+    <|> reservedWord "for"      KWFor
+    <|> reservedWord "while"    KWWhile
+    <|> reservedWord "do"       KWDo
+    <|> reservedWord "break"    KWBreak
+    <|> reservedWord "continue" KWContinue
 
-       <|> charToken '{' OpenBrace
-       <|> charToken '}' CloseBrace
-       <|> charToken '(' OpenParen
-       <|> charToken ')' CloseParen
-       <|> charToken ';' Semicolon
-       <|> charToken '-' Negation
-       <|> charToken '~' BitwiseComplement
-       <|> charToken '!' LogicalNegation
-       <|> charToken '+' Addition
-       <|> charToken '*' Multiplication
-       <|> charToken '/' Division
-       <|> charToken '<' LessThan
-       <|> charToken '>' GreaterThan
-       <|> charToken '=' Assignment
-       <|> charToken ':' Colon
-       <|> charToken '?' QuestionMark
-       <|> charToken '%' PercentSign
-       <|> charToken ',' Comma
+    <|> stringToken "&&" LogicalAnd
+    <|> stringToken "||" LogicalOr
+    <|> stringToken "==" Equality
+    <|> stringToken "!=" Inequality
+    <|> stringToken "<=" LessEqual
+    <|> stringToken ">=" GreaterEqual
 
-       <|> identifier
-       <|> integer
-       )
+    <|> charToken '{' OpenBrace
+    <|> charToken '}' CloseBrace
+    <|> charToken '(' OpenParen
+    <|> charToken ')' CloseParen
+    <|> charToken ';' Semicolon
+    <|> charToken '-' Negation
+    <|> charToken '~' BitwiseComplement
+    <|> charToken '!' LogicalNegation
+    <|> charToken '+' Addition
+    <|> charToken '*' Multiplication
+    <|> charToken '/' Division
+    <|> charToken '<' LessThan
+    <|> charToken '>' GreaterThan
+    <|> charToken '=' Assignment
+    <|> charToken ':' Colon
+    <|> charToken '?' QuestionMark
+    <|> charToken '%' PercentSign
+    <|> charToken ',' Comma
+
+    <|> identifier
+    <|> integer
 
 charToken :: Char -> Token -> Parser Char Token
 charToken ch tok = atom ch >> return tok
