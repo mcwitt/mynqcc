@@ -27,7 +27,7 @@ function =
     <$  atom KWInt
     <*> identifier
     <*> parenthesized (commaDelimitedList (atom KWInt *> identifier))
-    <*> (optional . braced) (many blockItem)
+    <*> ((Just <$> braced (many blockItem)) <|> (Nothing <$ atom Semicolon))
 
 -- Block items
 
