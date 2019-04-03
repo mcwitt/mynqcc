@@ -38,16 +38,16 @@ program :: (MWriter m, MError m) => Target -> Program -> m ()
 program target (Program functions) = mapM_ (function target) functions
 
 function :: (MWriter m, MError m) => Target -> Function -> m ()
-function (Target os) (Function name params maybeBody) = do
+function _ (Function name params Nothing) = return ()
+function (Target os) (Function name params (Just body)) = do
   let symbol = symbolName os name
   emit $ ".globl " ++ symbol
   emit $ symbol ++ ":"
   emit "push %ebp"
   emit "movl %esp, %ebp"
-  let inner = block $ f name maybeBody
-      f "main" (Just [])    = [Statement . Return . Constant $ 0]
-      f _      Nothing      = []
-      f _      (Just items) = items
+  let inner = block $ f name body
+      f "main" []    = [Statement . Return . Constant $ 0]
+      f _      items = items
       empty = Context
         { funcName   = name
         , labelCount = 0
