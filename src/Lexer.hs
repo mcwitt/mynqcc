@@ -59,10 +59,10 @@ token =
     <|> integer
 
 charToken :: Char -> Token -> Parser Char Token
-charToken ch tok = atom ch >> return tok
+charToken ch tok = tok <$ atom ch
 
 stringToken :: String -> Token -> Parser Char Token
-stringToken st tok = string st >> return tok
+stringToken str tok = tok <$ string str
 
 reservedWord :: String -> Token -> Parser Char Token
 reservedWord st tok = do
@@ -71,13 +71,11 @@ reservedWord st tok = do
   if isAlphaNum c then empty else return res
 
 identifier :: Parser Char Token
-identifier = Identifier <$> do
-  c  <- letter
-  cs <- many (letter <|> number)
-  return (c : cs)
+identifier =
+  (fmap . fmap) Identifier (:) <$> letter <*> many (letter <|> number)
 
 integer :: Parser Char Token
-integer = (Integer . read) <$> some number
+integer = Integer . read <$> some number
 
 number :: Parser Char Char
 number = satisfy isNumber
@@ -86,4 +84,4 @@ letter :: Parser Char Char
 letter = satisfy isLetter
 
 space :: Parser Char ()
-space = void $ many (satisfy isSpace)
+space = void $ many $ satisfy isSpace
