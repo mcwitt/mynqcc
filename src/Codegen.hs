@@ -5,11 +5,11 @@ module Codegen
   ( generate
   )
 where
-
 import           AST
 import           Control.Monad                  ( when )
 import           Control.Monad.Except
 import           Control.Monad.State
+import           Control.Monad.Reader
 import           Control.Monad.Writer
 import qualified Data.Map                      as Map
 import qualified Data.Set                      as Set
@@ -17,9 +17,9 @@ import           Numeric                        ( showHex )
 import           Error
 import           Target
 
-type MError  = MonadError Error
-type MWriter = MonadWriter [String]
-type MState  = MonadState Context
+type Asm = [String]
+
+newtype Config = Config { target :: Target }
 
 data Context =
   Context { funcName   :: String
@@ -31,15 +31,23 @@ data Context =
           , continueTo :: Maybe String}
   deriving Show
 
-generate :: Target -> Program -> Either Error [String]
-generate target = runExcept . execWriterT . program target
+type ConfigReader = MonadReader Config
+type GenError = MonadError Error
+type CodeWriter = MonadWriter Asm
+type GenState = MonadState Context
 
-program :: (MWriter m, MError m) => Target -> Program -> m ()
-program target (Program functions) = mapM_ (function target) functions
+generate :: Target -> Program -> Either Error Asm
+generate target prog = runExcept
+  (execWriterT (runReaderT (program prog) config))
+  where config = Config {target = target}
 
-function :: (MWriter m, MError m) => Target -> Function -> m ()
-function _ (Function name params Nothing) = return ()
-function (Target os) (Function name params (Just body)) = do
+program :: (ConfigReader m, GenError m, CodeWriter m) => Program -> m ()
+program (Program funcs) = mapM_ function funcs
+
+function :: (ConfigReader m, GenError m, CodeWriter m) => Function -> m ()
+function (Function name params Nothing    ) = return ()
+function (Function name params (Just body)) = do
+  Target os <- asks target
   let symbol = symbolName os name
   emit $ ".globl " ++ symbol
   emit $ symbol ++ ":"
@@ -70,7 +78,10 @@ symbolName os = (prefix ++)
     Darwin -> "_"
     _      -> ""
 
-block :: (MState m, MWriter m, MError m) => [BlockItem] -> m ()
+block
+  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  => [BlockItem]
+  -> m ()
 block items = withNestedContext $ do
   modify $ \c -> c { localVars = Set.empty }
   mapM_ blockItem items
@@ -78,12 +89,16 @@ block items = withNestedContext $ do
   let bytes = 4 * Set.size vars
   emit $ "addl $" ++ show bytes ++ ", %esp"
 
-blockItem :: (MState m, MWriter m, MError m) => BlockItem -> m ()
+blockItem
+  :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => BlockItem -> m ()
 blockItem item = case item of
   Statement   stat -> statement stat
   Declaration decl -> declaration decl
 
-declaration :: (MState m, MWriter m, MError m) => Declaration -> m ()
+declaration
+  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  => Declaration
+  -> m ()
 declaration (Decl name maybeExpr) = do
   vars <- gets localVars
   when (Set.member name vars)
@@ -101,7 +116,7 @@ declaration (Decl name maybeExpr) = do
                    , localVars  = Set.insert name vars
                    }
 
-statement :: (MState m, MWriter m, MError m) => Statement -> m ()
+statement :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => Statement -> m ()
 statement st = case st of
 
   Return expr -> do
@@ -191,7 +206,9 @@ statement st = case st of
         throwError $ CodegenError "Found `continue` outside of a loop."
 
 forBody
-  :: (MState m, MWriter m, MError m) => Expression -> m (String, String, String)
+  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  => Expression
+  -> m (String, String, String)
 forBody cond = do
   labelBegin <- label "for_begin"
   emit $ labelBegin ++ ":"
@@ -202,7 +219,8 @@ forBody cond = do
   labelPost <- label "for_post"
   return (labelBegin, labelEnd, labelPost)
 
-expression :: (MState m, MWriter m, MError m) => Expression -> m ()
+expression
+  :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => Expression -> m ()
 expression expr = case expr of
 
   Constant i           -> emit $ "movl $" ++ show i ++ ", %eax"
@@ -310,21 +328,22 @@ expression expr = case expr of
     emit $ labelPostCond ++ ":"
 
   FunCall name args -> do
+    Target os <- asks target
     mapM_ (\expr -> expression expr >> emit "push %eax") $ reverse args
-    emit $ "call " ++ name
+    emit $ "call " ++ symbolName os name
     emit $ "add $0x" ++ showHex (length args * 4) "" ++ ", %esp"
 
-label :: MState m => String -> m String
+label :: GenState m => String -> m String
 label s = do
   prefix <- gets funcName
   lc     <- gets labelCount
   modify $ \ctx -> ctx { labelCount = succ lc }
   return $ "_" ++ prefix ++ "__" ++ s ++ "__" ++ show lc
 
-emit :: MWriter m => String -> m ()
+emit :: CodeWriter m => String -> m ()
 emit = tell . pure
 
-withNestedContext :: MState m => m a -> m a
+withNestedContext :: GenState m => m a -> m a
 withNestedContext inner = do
   outerContext <- get
   result       <- inner
