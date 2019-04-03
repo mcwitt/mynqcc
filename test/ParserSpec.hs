@@ -4016,3 +4016,46 @@ spec = do
                      ]
                    )
                  )
+
+    it "should parse tokens from forward_decl.c"
+      $          parseTokens
+                   [ KWInt
+                   , Identifier "foo"
+                   , OpenParen
+                   , CloseParen
+                   , Semicolon
+                   , KWInt
+                   , Identifier "main"
+                   , OpenParen
+                   , CloseParen
+                   , OpenBrace
+                   , KWReturn
+                   , Identifier "foo"
+                   , OpenParen
+                   , CloseParen
+                   , Semicolon
+                   , CloseBrace
+                   , KWInt
+                   , Identifier "foo"
+                   , OpenParen
+                   , CloseParen
+                   , OpenBrace
+                   , KWReturn
+                   , Integer 3
+                   , Semicolon
+                   , CloseBrace
+                   ]
+      `shouldBe` Right
+                   (Program
+                     [ Function "foo" [] Nothing
+                     , Function
+                       "main"
+                       []
+                       (Just [(Statement (Return (FunCall "foo" [])))])
+                     , Function "foo"
+                                []
+                                (Just [(Statement (Return (Constant 3)))])
+                     ]
+                   )
+
+

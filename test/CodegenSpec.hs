@@ -2338,3 +2338,42 @@ spec = do
                      , "pop %ebp"
                      , "ret"
                      ]
+
+    it "should generate code for forward_decl.c" $ do
+      testGenerate
+          (Program
+            [ Function "foo" [] Nothing
+            , Function "main"
+                       []
+                       (Just [(Statement (Return (FunCall "foo" [])))])
+            , Function "foo" [] (Just [(Statement (Return (Constant 3)))])
+            ]
+          )
+        `shouldBe` Right
+                     [ ".globl main"
+                     , "main:"
+                     , "push %ebp"
+                     , "movl %esp, %ebp"
+                     , "call foo"
+                     , "add $0x0, %esp"
+                     , "addl $0, %esp"
+                     , "jmp _main__end"
+                     , "addl $0, %esp"
+                     , "_main__end:"
+                     , "movl %ebp, %esp"
+                     , "pop %ebp"
+                     , "ret"
+                     , ".globl foo"
+                     , "foo:"
+                     , "push %ebp"
+                     , "movl %esp, %ebp"
+                     , "movl $3, %eax"
+                     , "addl $0, %esp"
+                     , "jmp _foo__end"
+                     , "addl $0, %esp"
+                     , "_foo__end:"
+                     , "movl %ebp, %esp"
+                     , "pop %ebp"
+                     , "ret"
+                     ]
+
