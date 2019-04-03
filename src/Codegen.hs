@@ -37,9 +37,8 @@ type CodeWriter = MonadWriter Asm
 type GenState = MonadState Context
 
 generate :: Target -> Program -> Either Error Asm
-generate target prog = runExcept
-  (execWriterT (runReaderT (program prog) config))
-  where config = Config {target = target}
+generate target prog =
+  runExcept $ execWriterT $ runReaderT (program prog) Config {target = target}
 
 program :: (ConfigReader m, GenError m, CodeWriter m) => Program -> m ()
 program (Program funcs) = mapM_ function funcs
@@ -116,7 +115,8 @@ declaration (Decl name maybeExpr) = do
                    , localVars  = Set.insert name vars
                    }
 
-statement :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => Statement -> m ()
+statement
+  :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => Statement -> m ()
 statement st = case st of
 
   Return expr -> do
@@ -220,7 +220,9 @@ forBody cond = do
   return (labelBegin, labelEnd, labelPost)
 
 expression
-  :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => Expression -> m ()
+  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  => Expression
+  -> m ()
 expression expr = case expr of
 
   Constant i           -> emit $ "movl $" ++ show i ++ ", %eax"
