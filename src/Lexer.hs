@@ -71,14 +71,17 @@ reservedWord st tok = do
   if isAlphaNum c then empty else return res
 
 identifier :: Parser Char Token
-identifier =
-  (fmap . fmap) Identifier (:) <$> letter <*> many (letter <|> number)
+identifier = (fmap . fmap) Identifier (:) <$> (letter <|> underscore) <*> many
+  (letter <|> number <|> underscore)
 
 integer :: Parser Char Token
 integer = Integer . read <$> some number
 
 number :: Parser Char Char
 number = satisfy isNumber
+
+underscore :: Parser Char Char
+underscore = atom '_'
 
 letter :: Parser Char Char
 letter = satisfy isLetter
