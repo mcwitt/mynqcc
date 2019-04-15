@@ -1,3 +1,24 @@
+{- |
+This module implements code generation, i.e., the transformation from
+the AST to assembly code.
+
+Code generation works by traversing the AST and emitting assembly code
+for each node of the tree. Roughly, the traversal takes place in the
+following monad transformer stack:
+
+1. Reader: passes dependencies (configuration, immutable context) down
+   the hierarchy
+2. Error: for exception handling (provides 'throwError')
+3. Writer: collects emitted assembly code
+4. State: keeps track of mutable state, e.g. label count, stack index,
+   local vars, etc.
+
+We split the state hierarchically into two pieces: the first is
+mutated only by top-level AST nodes (e.g., function declarations); the
+second is mutated by blockitem-level nodes, and contains, e.g., the
+stack index and map of local variables to their location on the stack.
+-}
+
 {-# LANGUAGE ConstraintKinds  #-}
 {-# LANGUAGE FlexibleContexts #-}
 
@@ -22,11 +43,12 @@ type Asm = [String]
 
 newtype Config = Config { target :: Target }
 
+-- state that is read and written while generating function nodes
 newtype GlobalState = GlobalState { functions :: Map.Map String FunctionInfo }
 
 data FunctionInfo = FunctionInfo { isDefined :: Bool, numArgs :: Int }
 
--- state that is read and written while generating code for functions
+-- state that is read and written while generating block nodes (and below)
 data FunctionState =
   FunctionState { labelCount :: Int
                 , stackIndex :: Int
@@ -36,7 +58,7 @@ data FunctionState =
                 , continueTo :: Maybe String}
   deriving Show
 
--- state that is read-only while generating function code
+-- state that is read-only while generating block nodes
 data FunctionContext =
   FunctionContext { config              :: Config
                   , globalState         :: GlobalState
@@ -48,25 +70,29 @@ type ConfigReaderM = MonadReader Config
 type ErrorM = MonadError Error
 type AsmWriterM = MonadWriter Asm
 type GlobalStateM = MonadState GlobalState
+
+-- | Monad in which we generate Function nodes
+type FunctionGeneratorM m = (ConfigReaderM m, ErrorM m, AsmWriterM m, GlobalStateM m)
+
 type FunctionStateM = MonadState FunctionState
 type FunctionContextReaderM = MonadReader FunctionContext
 
+{-| Monad in which we generate Block nodes. Note that the global state
+ accessible only through the Reader monad and thus can't be mutated.
+-}
+type BlockGeneratorM m = (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
+
+-- | Top-level function to generate assembly code given an AST
 generate :: Target -> Program -> Either Error Asm
 generate target prog = runExcept . execWriterT $ runReaderT
   (evalStateT (program prog) initialState)
   Config {target = target}
   where initialState = GlobalState {functions = Map.empty}
 
-program
-  :: (ConfigReaderM m, ErrorM m, AsmWriterM m, GlobalStateM m)
-  => Program
-  -> m ()
+program :: FunctionGeneratorM m => Program -> m ()
 program (Program funcs) = mapM_ function funcs
 
-function
-  :: (ConfigReaderM m, ErrorM m, AsmWriterM m, GlobalStateM m)
-  => Function
-  -> m ()
+function :: FunctionGeneratorM m => Function -> m ()
 function (Function name params body) = do
   globalState <- get
   let funcs = functions globalState
@@ -136,10 +162,7 @@ symbolName os = (prefix ++)
     Darwin -> "_"
     _      -> ""
 
-block
-  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
-  => [BlockItem]
-  -> m ()
+block :: BlockGeneratorM m => [BlockItem] -> m ()
 block items = withNestedContext $ do
   modify $ \c -> c { localVars = Set.empty }
   mapM_ blockItem items
@@ -147,18 +170,12 @@ block items = withNestedContext $ do
   let bytes = 4 * Set.size vars
   emit $ "addl $" ++ show bytes ++ ", %esp"
 
-blockItem
-  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
-  => BlockItem
-  -> m ()
+blockItem :: BlockGeneratorM m => BlockItem -> m ()
 blockItem item = case item of
   Statement   stat -> statement stat
   Declaration decl -> declaration decl
 
-declaration
-  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
-  => Declaration
-  -> m ()
+declaration :: BlockGeneratorM m => Declaration -> m ()
 declaration (Decl name maybeExpr) = do
   vars <- gets localVars
   when (Set.member name vars)
@@ -183,10 +200,7 @@ declaration (Decl name maybeExpr) = do
                    , localVars  = Set.insert name vars
                    }
 
-statement
-  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
-  => Statement
-  -> m ()
+statement :: BlockGeneratorM m => Statement -> m ()
 statement st = case st of
 
   Return expr -> do
@@ -275,10 +289,7 @@ statement st = case st of
       Nothing ->
         throwError $ CodegenError "Found `continue` outside of a loop."
 
-forBody
-  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
-  => Expression
-  -> m (String, String, String)
+forBody :: BlockGeneratorM m => Expression -> m (String, String, String)
 forBody cond = do
   labelBegin <- label "for_begin"
   emit $ labelBegin ++ ":"
@@ -289,10 +300,7 @@ forBody cond = do
   labelPost <- label "for_post"
   return (labelBegin, labelEnd, labelPost)
 
-expression
-  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
-  => Expression
-  -> m ()
+expression :: BlockGeneratorM m => Expression -> m ()
 expression expr = case expr of
 
   Constant i           -> emit $ "movl $" ++ show i ++ ", %eax"
