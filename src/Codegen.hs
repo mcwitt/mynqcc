@@ -12,6 +12,7 @@ import           Control.Monad.State
 import           Control.Monad.Reader
 import           Control.Monad.Writer
 import qualified Data.Map                      as Map
+import           Data.Maybe                     ( isJust )
 import qualified Data.Set                      as Set
 import           Numeric                        ( showHex )
 import           Error
@@ -21,54 +22,112 @@ type Asm = [String]
 
 newtype Config = Config { target :: Target }
 
-data Context =
-  Context { funcName   :: String
-          , labelCount :: Int
-          , stackIndex :: Int
-          , varMap     :: Map.Map String Int
-          , localVars  :: Set.Set String
-          , breakTo    :: Maybe String
-          , continueTo :: Maybe String}
+newtype GlobalState = GlobalState { functions :: Map.Map String FunctionInfo }
+
+data FunctionInfo = FunctionInfo { isDefined :: Bool, numArgs :: Int }
+
+-- state that is read and written while generating code for functions
+data FunctionState =
+  FunctionState { labelCount :: Int
+                , stackIndex :: Int
+                , varMap     :: Map.Map String Int
+                , localVars  :: Set.Set String
+                , breakTo    :: Maybe String
+                , continueTo :: Maybe String}
   deriving Show
 
-type ConfigReader = MonadReader Config
-type GenError = MonadError Error
-type CodeWriter = MonadWriter Asm
-type GenState = MonadState Context
+-- state that is read-only while generating function code
+data FunctionContext =
+  FunctionContext { config              :: Config
+                  , globalState         :: GlobalState
+                  , currentFunctionName :: String
+                  , params              :: Set.Set String
+                  }
+
+type ConfigReaderM = MonadReader Config
+type ErrorM = MonadError Error
+type AsmWriterM = MonadWriter Asm
+type GlobalStateM = MonadState GlobalState
+type FunctionStateM = MonadState FunctionState
+type FunctionContextReaderM = MonadReader FunctionContext
 
 generate :: Target -> Program -> Either Error Asm
-generate target prog =
-  runExcept $ execWriterT $ runReaderT (program prog) Config {target = target}
+generate target prog = runExcept . execWriterT $ runReaderT
+  (evalStateT (program prog) initialState)
+  Config {target = target}
+  where initialState = GlobalState {functions = Map.empty}
 
-program :: (ConfigReader m, GenError m, CodeWriter m) => Program -> m ()
+program
+  :: (ConfigReaderM m, ErrorM m, AsmWriterM m, GlobalStateM m)
+  => Program
+  -> m ()
 program (Program funcs) = mapM_ function funcs
 
-function :: (ConfigReader m, GenError m, CodeWriter m) => Function -> m ()
-function (Function name params Nothing    ) = return ()
-function (Function name params (Just body)) = do
-  Target os <- asks target
-  let symbol = symbolName os name
-  emit $ ".globl " ++ symbol
-  emit $ symbol ++ ":"
-  emit "push %ebp"
-  emit "movl %esp, %ebp"
-  let inner = block $ f name body
-      f "main" []    = [Statement . Return . Constant $ 0]
-      f _      items = items
-      empty = Context
-        { funcName   = name
-        , labelCount = 0
-        , stackIndex = -4
-        , varMap     = Map.fromList $ zip params [8, 12 ..]
-        , localVars  = Set.fromList params
-        , breakTo    = Nothing
-        , continueTo = Nothing
-        }
-  execStateT inner empty
-  emit $ "_" ++ name ++ "__end:"
-  emit "movl %ebp, %esp"
-  emit "pop %ebp"
-  emit "ret"
+function
+  :: (ConfigReaderM m, ErrorM m, AsmWriterM m, GlobalStateM m)
+  => Function
+  -> m ()
+function (Function name params body) = do
+  globalState <- get
+  let funcs = functions globalState
+      info  = Map.lookup name funcs
+  case info of
+    Just info -> do
+      when (length params /= numArgs info)
+        $  throwError
+        .  CodegenError
+        $  "Inconsistent declaration of function `"
+        ++ name
+        ++ "`"
+      when (isJust body) $ if isDefined info
+        then
+          throwError
+          .  CodegenError
+          $  "Multiple definitions of function `"
+          ++ name
+          ++ "`"
+        else modify $ \c -> c
+          { functions = Map.insert name
+                                   (FunctionInfo True (length params))
+                                   funcs
+          }
+    Nothing -> modify $ \c -> c
+      { functions = Map.insert name
+                               (FunctionInfo (isJust body) (length params))
+                               funcs
+      }
+  case body of
+    Just body -> do
+      config <- ask
+      let Target os = target config
+          symbol    = symbolName os name
+          context   = FunctionContext
+            { config              = config
+            , globalState         = globalState
+            , currentFunctionName = name
+            , params              = Set.fromList params
+            }
+      emit $ ".globl " ++ symbol
+      emit $ symbol ++ ":"
+      emit "push %ebp"
+      emit "movl %esp, %ebp"
+      let inner = block $ f name body
+          f "main" []    = [Statement . Return . Constant $ 0]
+          f _      items = items
+          initialState = FunctionState
+            { labelCount = 0
+            , stackIndex = -4
+            , varMap     = Map.fromList $ zip params [8, 12 ..]
+            , localVars  = Set.fromList params
+            , breakTo    = Nothing
+            , continueTo = Nothing
+            }
+      evalStateT (runReaderT inner context) initialState
+      emit $ "_" ++ name ++ "__end:"
+      emit "movl %ebp, %esp"
+      emit "pop %ebp"
+      emit "ret"
+    Nothing -> return ()
 
 symbolName :: OS -> String -> String
 symbolName os = (prefix ++)
@@ -78,7 +137,7 @@ symbolName os = (prefix ++)
     _      -> ""
 
 block
-  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
   => [BlockItem]
   -> m ()
 block items = withNestedContext $ do
@@ -89,13 +148,15 @@ block items = withNestedContext $ do
   emit $ "addl $" ++ show bytes ++ ", %esp"
 
 blockItem
-  :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => BlockItem -> m ()
+  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
+  => BlockItem
+  -> m ()
 blockItem item = case item of
   Statement   stat -> statement stat
   Declaration decl -> declaration decl
 
 declaration
-  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
   => Declaration
   -> m ()
 declaration (Decl name maybeExpr) = do
@@ -106,6 +167,13 @@ declaration (Decl name maybeExpr) = do
     $  "Multiple declarations of `"
     ++ name
     ++ "` in the same block."
+  params <- asks params
+  when (Set.member name params)
+    $  throwError
+    .  CodegenError
+    $  "Cannot redeclare function parameter `"
+    ++ name
+    ++ "` as a local variable"
   forM_ maybeExpr expression
   emit "push %eax"
   sidx <- gets stackIndex
@@ -116,12 +184,14 @@ declaration (Decl name maybeExpr) = do
                    }
 
 statement
-  :: (ConfigReader m, GenError m, CodeWriter m, GenState m) => Statement -> m ()
+  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
+  => Statement
+  -> m ()
 statement st = case st of
 
   Return expr -> do
     expression expr
-    name <- gets funcName
+    name <- asks currentFunctionName
     sidx <- gets stackIndex
     let bytes = -(4 + sidx)
     emit $ "addl $" ++ show bytes ++ ", %esp"
@@ -206,7 +276,7 @@ statement st = case st of
         throwError $ CodegenError "Found `continue` outside of a loop."
 
 forBody
-  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
   => Expression
   -> m (String, String, String)
 forBody cond = do
@@ -220,7 +290,7 @@ forBody cond = do
   return (labelBegin, labelEnd, labelPost)
 
 expression
-  :: (ConfigReader m, GenError m, CodeWriter m, GenState m)
+  :: (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
   => Expression
   -> m ()
 expression expr = case expr of
@@ -330,22 +400,32 @@ expression expr = case expr of
     emit $ labelPostCond ++ ":"
 
   FunCall name args -> do
-    Target os <- asks target
+    info <- asks $ Map.lookup name . functions . globalState
+    case info of
+      Just info ->
+        when (length args /= numArgs info)
+          $  throwError
+          .  CodegenError
+          $  "Function `"
+          ++ name
+          ++ "` called with wrong number of arguments"
+      Nothing -> return ()
+    Target os <- asks $ target . config
     mapM_ (\expr -> expression expr >> emit "push %eax") $ reverse args
     emit $ "call " ++ symbolName os name
     emit $ "add $0x" ++ showHex (length args * 4) "" ++ ", %esp"
 
-label :: GenState m => String -> m String
+label :: (FunctionContextReaderM m, FunctionStateM m) => String -> m String
 label s = do
-  prefix <- gets funcName
+  prefix <- asks currentFunctionName
   lc     <- gets labelCount
   modify $ \ctx -> ctx { labelCount = succ lc }
   return $ "_" ++ prefix ++ "__" ++ s ++ "__" ++ show lc
 
-emit :: CodeWriter m => String -> m ()
+emit :: AsmWriterM m => String -> m ()
 emit = tell . pure
 
-withNestedContext :: GenState m => m a -> m a
+withNestedContext :: FunctionStateM m => m a -> m a
 withNestedContext inner = do
   outerContext <- get
   result       <- inner
