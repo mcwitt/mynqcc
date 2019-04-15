@@ -1,7 +1,8 @@
 # mynqcc
 
-Educational implementation of a C compiler in Haskell, following Nora Sandler's
-[Writing a C Compiler](https://github.com/nlsandler/nqcc) blog post series.
+Experimental C99 compiler written in Haskell, following Nora Sandler's
+excellent blog post series, [Writing a C
+Compiler](https://github.com/nlsandler/nqcc).
 
 ## Installation
 
@@ -21,10 +22,10 @@ These steps are automated in the script `mycc.sh`.
 
 Nora Sandler's blog post series is accompanied by a
 [test suite](https://github.com/nlsandler/write_a_c_compiler), which is included
-as a submodule of this repo. To run the tests for stages 1 through 7, do
+as a submodule of this repo. To run the tests for stages 1 through 9, do
 
 ```shell
 git clone https://github.com/mcwitt/mynqcc --recurse-submodules
 cd mynqcc/write_a_c_compiler
-./test_compiler "../mycc.sh /path/to/mynqcc-exe" $(seq 1 8)
+./test_compiler "../mycc.sh /path/to/mynqcc-exe" $(seq 1 9)
 ```
