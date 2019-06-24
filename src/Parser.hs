@@ -5,7 +5,7 @@ module Parser
   )
 where
 
-import           AST
+import qualified          AST
 import           Control.Monad
 import           Data.Functor
 import           Data.Maybe
@@ -13,17 +13,17 @@ import           Error
 import           ParserCombinators
 import           Token
 
-parseTokens :: [Token] -> Either Error Program
+parseTokens :: [Token] -> Either Error AST.Program
 parseTokens ts = case parse program ts of
   [(res, [])] -> Right res
   _           -> Left $ ParserError "Failed to parse the program."
 
-program :: Parser Token Program
-program = Program <$> many function
+program :: Parser Token AST.Program
+program = AST.Program <$> many function
 
-function :: Parser Token Function
+function :: Parser Token AST.Function
 function =
-  Function
+  AST.Function
     <$  atom KWInt
     <*> identifier
     <*> parenthesized (commaDelimitedList (atom KWInt *> identifier))
@@ -31,21 +31,21 @@ function =
 
 -- Block items
 
-blockItem :: Parser Token BlockItem
+blockItem :: Parser Token AST.BlockItem
 blockItem = blockDeclaration <|> blockStatement
 
-blockDeclaration :: Parser Token BlockItem
-blockDeclaration = Declaration <$> declaration
+blockDeclaration :: Parser Token AST.BlockItem
+blockDeclaration = AST.Declaration <$> declaration
 
-blockStatement :: Parser Token BlockItem
-blockStatement = Statement <$> statement
+blockStatement :: Parser Token AST.BlockItem
+blockStatement = AST.Statement <$> statement
 
 -- Declarations
 -------------------------------------------------------------------------------
 
-declaration :: Parser Token Declaration
+declaration :: Parser Token AST.Declaration
 declaration =
-  Decl
+  AST.Decl
     <$  atom KWInt
     <*> identifier
     <*> optional (atom Token.Assignment *> expression)
@@ -54,7 +54,7 @@ declaration =
 -- Statements
 -------------------------------------------------------------------------------
 
-statement :: Parser Token Statement
+statement :: Parser Token AST.Statement
 statement =
   ifStatement
     <|> returnStatement
@@ -67,78 +67,78 @@ statement =
     <|> breakStatement
     <|> continueStatement
 
-ifStatement :: Parser Token Statement
+ifStatement :: Parser Token AST.Statement
 ifStatement =
-  If <$ atom KWIf <*> parenthesized expression <*> statement <*> optional
+  AST.if_ <$ atom KWIf <*> parenthesized expression <*> statement <*> optional
     (atom KWElse *> statement)
 
-returnStatement :: Parser Token Statement
-returnStatement = Return <$> (atom KWReturn *> expression <* atom Semicolon)
+returnStatement :: Parser Token AST.Statement
+returnStatement = AST.return_ <$> (atom KWReturn *> expression <* atom Semicolon)
 
-standaloneExpr :: Parser Token Statement
-standaloneExpr = Expression <$> (optional expression <* atom Semicolon)
+standaloneExpr :: Parser Token AST.Statement
+standaloneExpr = AST.expression <$> (optional expression <* atom Semicolon)
 
-compoundStatement :: Parser Token Statement
-compoundStatement = Compound <$> braced (many blockItem)
+compoundStatement :: Parser Token AST.Statement
+compoundStatement = AST.compound <$> braced (many blockItem)
 
-forStatement :: Parser Token Statement
+forStatement :: Parser Token AST.Statement
 forStatement =
-  (\(init, cond, post) body -> For init cond post body)
+  (\(init, cond, post) body -> AST.for init cond post body)
     <$  atom KWFor
     <*> parenthesized
           (   tuple3
           <$> optional expression
           <*  atom Semicolon
-          <*> (expression <|> pure (Constant 1))
+          <*> (expression <|> pure (AST.constant 1))
           <*  atom Semicolon
           <*> optional expression
           )
     <*> statement
 
-forDeclStatement :: Parser Token Statement
+forDeclStatement :: Parser Token AST.Statement
 forDeclStatement =
-  (\(init, cond, post) body -> ForDecl init cond post body)
+  (\(init, cond, post) body -> AST.forDecl init cond post body)
     <$  atom KWFor
     <*> parenthesized
           (   tuple3
           <$> declaration
-          <*> (expression <|> pure (Constant 1))
+          <*> (expression <|> pure (AST.constant 1))
           <*  atom Semicolon
           <*> optional expression
           )
     <*> statement
 
-whileStatement :: Parser Token Statement
+whileStatement :: Parser Token AST.Statement
 whileStatement =
-  While <$ atom KWWhile <*> parenthesized expression <*> statement
+  AST.while <$ atom KWWhile <*> parenthesized expression <*> statement
 
-doStatement :: Parser Token Statement
+doStatement :: Parser Token AST.Statement
 doStatement =
-  Do
+  AST.do_
     <$  atom KWDo
     <*> statement
     <*  atom KWWhile
     <*> parenthesized expression
     <*  atom Semicolon
 
-breakStatement :: Parser Token Statement
-breakStatement = Break <$ atom KWBreak <* atom Semicolon
+breakStatement :: Parser Token AST.Statement
+breakStatement = AST.break <$ atom KWBreak <* atom Semicolon
 
-continueStatement :: Parser Token Statement
-continueStatement = Continue <$ atom KWContinue <* atom Semicolon
+continueStatement :: Parser Token AST.Statement
+continueStatement = AST.continue <$ atom KWContinue <* atom Semicolon
 
 -- Expressions
 -------------------------------------------------------------------------------
 
-expression :: Parser Token Expression
+expression :: Parser Token AST.Expression
 expression = assignment <|> conditionalExpr
 
 assignment =
-  AST.Assignment <$> identifier <* atom Token.Assignment <*> expression
+  AST.assignment <$> identifier <* atom Token.Assignment <*> expression
 
 conditionalExpr =
   (\e1 e23 -> case e23 of
-      Just (e2, e3) -> Conditional e1 e2 e3
+      Just (e2, e3) -> AST.conditional e1 e2 e3
       Nothing       -> e1
     )
     <$> logicalOrExpr
@@ -170,54 +170,54 @@ parenExpr = parenthesized expression
 
 unaryOperation = negation <|> bitwiseComplement <|> logicalNegation
 
-constant = (\(Integer i) -> AST.Constant i) <$> satisfy
+constant = (\(Integer i) -> AST.constant i) <$> satisfy
   (\case
     Integer _ -> True
     _         -> False
   )
 
-reference = Reference <$> identifier
+reference = AST.reference <$> identifier
 
 funCall =
-  FunCall <$> identifier <*> parenthesized (commaDelimitedList expression)
+  AST.funCall <$> identifier <*> parenthesized (commaDelimitedList expression)
 
-negation = Unary AST.Negation <$ atom Token.Negation <*> factor
+negation = AST.unary AST.Negation <$ atom Token.Negation <*> factor
 
 bitwiseComplement =
-  Unary AST.BitwiseComplement <$ atom Token.BitwiseComplement <*> factor
+  AST.unary AST.BitwiseComplement <$ atom Token.BitwiseComplement <*> factor
 
 logicalNegation =
-  Unary AST.LogicalNegation <$ atom Token.LogicalNegation <*> factor
+  AST.unary AST.LogicalNegation <$ atom Token.LogicalNegation <*> factor
 
 -- Binary operators
 -------------------------------------------------------------------------------
 
-multiplication :: Parser Token (Expression -> Expression -> Expression)
-multiplication = Binary AST.Multiplication <$ atom Token.Multiplication
+multiplication :: Parser Token (AST.Expression -> AST.Expression -> AST.Expression)
+multiplication = AST.binary AST.Multiplication <$ atom Token.Multiplication
 
-division = Binary AST.Division <$ atom Token.Division
+division = AST.binary AST.Division <$ atom Token.Division
 
-modulo = Binary Modulo <$ atom PercentSign
+modulo = AST.binary AST.Modulo <$ atom PercentSign
 
-addition = Binary AST.Addition <$ atom Token.Addition
+addition = AST.binary AST.Addition <$ atom Token.Addition
 
-subtraction = Binary AST.Subtraction <$ atom Token.Negation
+subtraction = AST.binary AST.Subtraction <$ atom Token.Negation
 
-lessThan = Binary AST.LessThan <$ atom Token.LessThan
+lessThan = AST.binary AST.LessThan <$ atom Token.LessThan
 
-greaterThan = Binary AST.GreaterThan <$ atom Token.GreaterThan
+greaterThan = AST.binary AST.GreaterThan <$ atom Token.GreaterThan
 
-lessEqual = Binary AST.LessEqual <$ atom Token.LessEqual
+lessEqual = AST.binary AST.LessEqual <$ atom Token.LessEqual
 
-greaterEqual = Binary AST.GreaterEqual <$ atom Token.GreaterEqual
+greaterEqual = AST.binary AST.GreaterEqual <$ atom Token.GreaterEqual
 
-equality = Binary AST.Equality <$ atom Token.Equality
+equality = AST.binary AST.Equality <$ atom Token.Equality
 
-inequality = Binary AST.Inequality <$ atom Token.Inequality
+inequality = AST.binary AST.Inequality <$ atom Token.Inequality
 
-logicalAnd = Binary AST.LogicalAnd <$ atom Token.LogicalAnd
+logicalAnd = AST.binary AST.LogicalAnd <$ atom Token.LogicalAnd
 
-logicalOr = Binary AST.LogicalOr <$ atom Token.LogicalOr
+logicalOr = AST.binary AST.LogicalOr <$ atom Token.LogicalOr
 
 -------------------------------------------------------------------------------
 
