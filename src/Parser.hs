@@ -41,7 +41,6 @@ blockStatement :: Parser Token AST.BlockItem
 blockStatement = AST.Statement <$> statement
 
 -- Declarations
--------------------------------------------------------------------------------
 
 declaration :: Parser Token AST.Declaration
 declaration =
@@ -52,7 +51,6 @@ declaration =
     <*  atom Semicolon
 
 -- Statements
--------------------------------------------------------------------------------
 
 statement :: Parser Token AST.Statement
 statement =
@@ -128,7 +126,6 @@ continueStatement :: Parser Token AST.Statement
 continueStatement = AST.continue <$ atom KWContinue <* atom Semicolon
 
 -- Expressions
--------------------------------------------------------------------------------
 
 expression :: Parser Token AST.Expression
 expression = assignment <|> conditionalExpr
@@ -190,7 +187,6 @@ logicalNegation =
   AST.unary AST.LogicalNegation <$ atom Token.LogicalNegation <*> factor
 
 -- Binary operators
--------------------------------------------------------------------------------
 
 multiplication :: Parser Token (AST.Expression -> AST.Expression -> AST.Expression)
 multiplication = AST.binary AST.Multiplication <$ atom Token.Multiplication
@@ -219,7 +215,6 @@ logicalAnd = AST.binary AST.LogicalAnd <$ atom Token.LogicalAnd
 
 logicalOr = AST.binary AST.LogicalOr <$ atom Token.LogicalOr
 
--------------------------------------------------------------------------------
 
 identifier :: Parser Token String
 identifier = (\(Identifier name) -> name) <$> satisfy
@@ -227,8 +222,6 @@ identifier = (\(Identifier name) -> name) <$> satisfy
     Identifier name -> True
     _               -> False
   )
-
--------------------------------------------------------------------------------
 
 commaDelimitedList :: Parser Token a -> Parser Token [a]
 commaDelimitedList = delimitedList $ void (atom Comma)
