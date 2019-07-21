@@ -21,7 +21,7 @@ spec = do
   describe "Stage 1"
     $          it "should generate code for multi_digit.c"
     $          testGenerate
-                 (Program [Function "main" [] (Just [Statement (Return (Constant 100))])]
+                 (Program [Function "main" [] (Just [Statement (return_ (constant 100))])]
                  )
     `shouldBe` Right
                  [ ".globl main"
@@ -46,7 +46,7 @@ spec = do
                        "main"
                        []
                        (Just
-                         [Statement (Return (Unary AST.LogicalNegation (Constant 12)))]
+                         [Statement (return_ (unary AST.LogicalNegation (constant 12)))]
                        )
                    ]
                  )
@@ -78,7 +78,7 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return (Binary AST.Addition (Constant 1) (Constant 2)))
+                               (return_ (binary AST.Addition (constant 1) (constant 2)))
                            ]
                          )
                      ]
@@ -111,11 +111,11 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary
+                               (return_
+                                 (binary
                                    AST.Subtraction
-                                   (Binary AST.Subtraction (Constant 1) (Constant 2))
-                                   (Constant 3)
+                                   (binary AST.Subtraction (constant 1) (constant 2))
+                                   (constant 3)
                                  )
                                )
                            ]
@@ -153,11 +153,11 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary
+                               (return_
+                                 (binary
                                    AST.Division
-                                   (Binary AST.Division (Constant 6) (Constant 3))
-                                   (Constant 2)
+                                   (binary AST.Division (constant 6) (constant 3))
+                                   (constant 2)
                                  )
                                )
                            ]
@@ -197,7 +197,7 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return (Binary AST.Division (Constant 4) (Constant 2)))
+                               (return_ (binary AST.Division (constant 4) (constant 2)))
                            ]
                          )
                      ]
@@ -230,8 +230,8 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary AST.Multiplication (Constant 2) (Constant 3))
+                               (return_
+                                 (binary AST.Multiplication (constant 2) (constant 3))
                                )
                            ]
                          )
@@ -264,11 +264,11 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary
+                               (return_
+                                 (binary
                                    AST.Multiplication
-                                   (Constant 2)
-                                   (Binary AST.Addition (Constant 3) (Constant 4))
+                                   (constant 2)
+                                   (binary AST.Addition (constant 3) (constant 4))
                                  )
                                )
                            ]
@@ -308,7 +308,7 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return (Binary AST.LogicalAnd (Constant 1) (Constant 0)))
+                               (return_ (binary AST.LogicalAnd (constant 1) (constant 0)))
                            ]
                          )
                      ]
@@ -345,10 +345,10 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary AST.LogicalAnd
-                                         (Constant 1)
-                                         (Unary AST.Negation (Constant 1))
+                               (return_
+                                 (binary AST.LogicalAnd
+                                         (constant 1)
+                                         (unary AST.Negation (constant 1))
                                  )
                                )
                            ]
@@ -388,7 +388,7 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return (Binary AST.Equality (Constant 1) (Constant 2)))
+                               (return_ (binary AST.Equality (constant 1) (constant 2)))
                            ]
                          )
                      ]
@@ -422,7 +422,7 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return (Binary AST.Equality (Constant 1) (Constant 1)))
+                               (return_ (binary AST.Equality (constant 1) (constant 1)))
                            ]
                          )
                      ]
@@ -456,8 +456,8 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary AST.GreaterEqual (Constant 1) (Constant 2))
+                               (return_
+                                 (binary AST.GreaterEqual (constant 1) (constant 2))
                                )
                            ]
                          )
@@ -492,8 +492,8 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary AST.GreaterEqual (Constant 1) (Constant 1))
+                               (return_
+                                 (binary AST.GreaterEqual (constant 1) (constant 1))
                                )
                            ]
                          )
@@ -528,11 +528,11 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (Return
-                                 (Binary
+                               (return_
+                                 (binary
                                    AST.LogicalOr
-                                   (Constant 1)
-                                   (Binary AST.LogicalAnd (Constant 0) (Constant 2))
+                                   (constant 1)
+                                   (binary AST.LogicalAnd (constant 0) (constant 2))
                                  )
                                )
                            ]
@@ -580,8 +580,8 @@ spec = do
                          (Just
                            [ Declaration (Decl "a" Nothing)
                            , Statement
-                             (Expression (Just (AST.Assignment "a" (Constant 2))))
-                           , Statement (Return (Reference "a"))
+                             (expression (Just (AST.assignment "a" (constant 2))))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -613,8 +613,8 @@ spec = do
                          (Just
                            [ Declaration (Decl "a" Nothing)
                            , Declaration
-                             (Decl "b" (Just (AST.Assignment "a" (Constant 0))))
-                           , Statement (Return (Reference "b"))
+                             (Decl "b" (Just (AST.assignment "a" (constant 0))))
+                           , Statement (return_ (reference "b"))
                            ]
                          )
                      ]
@@ -648,14 +648,14 @@ spec = do
                            [ Declaration (Decl "a" Nothing)
                            , Declaration (Decl "b" Nothing)
                            , Statement
-                             (Expression
+                             (expression
                                (Just
-                                 (AST.Assignment "a" (AST.Assignment "b" (Constant 4)))
+                                 (AST.assignment "a" (AST.assignment "b" (constant 4)))
                                )
                              )
                            , Statement
-                             (Return
-                               (Binary AST.Subtraction (Reference "a") (Reference "b"))
+                             (return_
+                               (binary AST.Subtraction (reference "a") (reference "b"))
                              )
                            ]
                          )
@@ -692,8 +692,8 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 2)))
-                           , Statement (Return (Constant 0))
+                           [ Declaration (Decl "a" (Just (constant 2)))
+                           , Statement (return_ (constant 0))
                            ]
                          )
                      ]
@@ -739,11 +739,11 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 1)))
-                           , Declaration (Decl "b" (Just (Constant 2)))
+                           [ Declaration (Decl "a" (Just (constant 1)))
+                           , Declaration (Decl "b" (Just (constant 2)))
                            , Statement
-                             (Return
-                               (Binary AST.Addition (Reference "a") (Reference "b"))
+                             (return_
+                               (binary AST.Addition (reference "a") (reference "b"))
                              )
                            ]
                          )
@@ -780,7 +780,7 @@ spec = do
                          []
                          (Just
                            [ Declaration (Decl "a" Nothing)
-                           , Statement (Return (Constant 0))
+                           , Statement (return_ (constant 0))
                            ]
                          )
                      ]
@@ -808,8 +808,8 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 2)))
-                           , Statement (Return (Reference "a"))
+                           [ Declaration (Decl "a" (Just (constant 2)))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -839,10 +839,10 @@ spec = do
                          []
                          (Just
                            [ Statement
-                             (Expression
-                               (Just (Binary AST.Addition (Constant 2) (Constant 2)))
+                             (expression
+                               (Just (binary AST.Addition (constant 2) (constant 2)))
                              )
-                           , Statement (Return (Constant 0))
+                           , Statement (return_ (constant 0))
                            ]
                          )
                      ]
@@ -874,9 +874,9 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 1)))
-                           , Declaration (Decl "a" (Just (Constant 2)))
-                           , Statement (Return (Reference "a"))
+                           [ Declaration (Decl "a" (Just (constant 1)))
+                           , Declaration (Decl "a" (Just (constant 2)))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -889,7 +889,7 @@ spec = do
     it "should fail to generate code for undeclared_var.c"
       $          testGenerate
                    (Program
-                     [Function "main" [] (Just [Statement (Return (Reference "a"))])]
+                     [Function "main" [] (Just [Statement (return_ (reference "a"))])]
                    )
       `shouldBe` Left (CodegenError "Reference to undeclared variable, `a`.")
 
@@ -901,16 +901,16 @@ spec = do
                          []
                          (Just
                            [ Statement
-                             (Expression
+                             (expression
                                (Just
-                                 (AST.Assignment
+                                 (AST.assignment
                                    "a"
-                                   (Binary AST.Addition (Constant 1) (Constant 2))
+                                   (binary AST.Addition (constant 1) (constant 2))
                                  )
                                )
                              )
                            , Declaration (Decl "a" Nothing)
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -925,17 +925,17 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (Expression
+                             (expression
                                (Just
-                                 (AST.Assignment
+                                 (AST.assignment
                                    "a"
-                                   (Conditional (Constant 1) (Constant 2) (Constant 3))
+                                   (conditional (constant 1) (constant 2) (constant 3))
                                  )
                                )
                              )
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -977,10 +977,10 @@ spec = do
                              (Decl
                                "a"
                                (Just
-                                 (Conditional
-                                   (Binary AST.GreaterThan (Constant 1) (Constant 2))
-                                   (Constant 3)
-                                   (Constant 4)
+                                 (conditional
+                                   (binary AST.GreaterThan (constant 1) (constant 2))
+                                   (constant 3)
+                                   (constant 4)
                                  )
                                )
                              )
@@ -988,16 +988,16 @@ spec = do
                              (Decl
                                "b"
                                (Just
-                                 (Conditional
-                                   (Binary AST.GreaterThan (Constant 1) (Constant 2))
-                                   (Constant 5)
-                                   (Constant 6)
+                                 (conditional
+                                   (binary AST.GreaterThan (constant 1) (constant 2))
+                                   (constant 5)
+                                   (constant 6)
                                  )
                                )
                              )
                            , Statement
-                             (Return
-                               (Binary AST.Addition (Reference "a") (Reference "b"))
+                             (return_
+                               (binary AST.Addition (reference "a") (reference "b"))
                              )
                            ]
                          )
@@ -1059,17 +1059,17 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 1)))
-                           , Declaration (Decl "b" (Just (Constant 2)))
-                           , Declaration (Decl "flag" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 1)))
+                           , Declaration (Decl "b" (Just (constant 2)))
+                           , Declaration (Decl "flag" (Just (constant 0)))
                            , Statement
-                             (Return
-                               (Conditional
-                                 (Binary AST.GreaterThan (Reference "a") (Reference "b"))
-                                 (Constant 5)
-                                 (Conditional (Reference "flag")
-                                              (Constant 6)
-                                              (Constant 7)
+                             (return_
+                               (conditional
+                                 (binary AST.GreaterThan (reference "a") (reference "b"))
+                                 (constant 5)
+                                 (conditional (reference "flag")
+                                              (constant 6)
+                                              (constant 7)
                                  )
                                )
                              )
@@ -1129,10 +1129,10 @@ spec = do
                              (Decl
                                "a"
                                (Just
-                                 (Conditional
-                                   (Constant 1)
-                                   (Conditional (Constant 2) (Constant 3) (Constant 4))
-                                   (Constant 5)
+                                 (conditional
+                                   (constant 1)
+                                   (conditional (constant 2) (constant 3) (constant 4))
+                                   (constant 5)
                                  )
                                )
                              )
@@ -1140,16 +1140,16 @@ spec = do
                              (Decl
                                "b"
                                (Just
-                                 (Conditional
-                                   (Constant 0)
-                                   (Conditional (Constant 2) (Constant 3) (Constant 4))
-                                   (Constant 5)
+                                 (conditional
+                                   (constant 0)
+                                   (conditional (constant 2) (constant 3) (constant 4))
+                                   (constant 5)
                                  )
                                )
                              )
                            , Statement
-                             (Return
-                               (Binary AST.Multiplication (Reference "a") (Reference "b")
+                             (return_
+                               (binary AST.Multiplication (reference "a") (reference "b")
                                )
                              )
                            ]
@@ -1214,18 +1214,18 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "flag" (Just (Constant 1)))
-                           , Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "flag" (Just (constant 1)))
+                           , Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (Expression
+                             (expression
                                (Just
-                                 (Conditional (Reference "flag")
-                                              (AST.Assignment "a" (Constant 1))
-                                              (AST.Assignment "a" (Constant 0))
+                                 (conditional (reference "flag")
+                                              (AST.assignment "a" (constant 1))
+                                              (AST.assignment "a" (constant 0))
                                  )
                                )
                              )
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -1266,16 +1266,16 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (Return
-                               (Conditional
-                                 (Binary AST.GreaterThan
-                                         (Reference "a")
-                                         (Unary AST.Negation (Constant 1))
+                             (return_
+                               (conditional
+                                 (binary AST.GreaterThan
+                                         (reference "a")
+                                         (unary AST.Negation (constant 1))
                                  )
-                                 (Constant 4)
-                                 (Constant 5)
+                                 (constant 4)
+                                 (constant 5)
                                )
                              )
                            ]
@@ -1320,11 +1320,11 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (If (Reference "a")
-                                 (Return (Constant 1))
-                                 (Just (Return (Constant 2)))
+                             (if_ (reference "a")
+                                 (return_ (constant 1))
+                                 (Just (return_ (constant 2)))
                              )
                            ]
                          )
@@ -1363,21 +1363,21 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 1)))
-                           , Declaration (Decl "b" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 1)))
+                           , Declaration (Decl "b" (Just (constant 0)))
                            , Statement
-                             (If
-                               (Reference "a")
-                               (Expression (Just (AST.Assignment "b" (Constant 1))))
+                             (if_
+                               (reference "a")
+                               (expression (Just (AST.assignment "b" (constant 1))))
                                (Just
-                                 (If
-                                   (Reference "b")
-                                   (Expression (Just (AST.Assignment "b" (Constant 2))))
+                                 (if_
+                                   (reference "b")
+                                   (expression (Just (AST.assignment "b" (constant 2))))
                                    Nothing
                                  )
                                )
                              )
-                           , Statement (Return (Reference "b"))
+                           , Statement (return_ (reference "b"))
                            ]
                          )
                      ]
@@ -1424,21 +1424,21 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
-                           , Declaration (Decl "b" (Just (Constant 1)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
+                           , Declaration (Decl "b" (Just (constant 1)))
                            , Statement
-                             (If
-                               (Reference "a")
-                               (Expression (Just (AST.Assignment "b" (Constant 1))))
+                             (if_
+                               (reference "a")
+                               (expression (Just (AST.assignment "b" (constant 1))))
                                (Just
-                                 (If
-                                   (Reference "b")
-                                   (Expression (Just (AST.Assignment "b" (Constant 2))))
+                                 (if_
+                                   (reference "b")
+                                   (expression (Just (AST.assignment "b" (constant 2))))
                                    Nothing
                                  )
                                )
                              )
-                           , Statement (Return (Reference "b"))
+                           , Statement (return_ (reference "b"))
                            ]
                          )
                      ]
@@ -1485,20 +1485,20 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (If
-                               (Constant 1)
-                               (If
-                                 (Constant 2)
-                                 (Expression (Just (AST.Assignment "a" (Constant 3))))
+                             (if_
+                               (constant 1)
+                               (if_
+                                 (constant 2)
+                                 (expression (Just (AST.assignment "a" (constant 3))))
                                  (Just
-                                   (Expression (Just (AST.Assignment "a" (Constant 4))))
+                                   (expression (Just (AST.assignment "a" (constant 4))))
                                  )
                                )
                                Nothing
                              )
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -1543,20 +1543,20 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (If
-                               (Constant 1)
-                               (If
-                                 (Constant 0)
-                                 (Expression (Just (AST.Assignment "a" (Constant 3))))
+                             (if_
+                               (constant 1)
+                               (if_
+                                 (constant 0)
+                                 (expression (Just (AST.assignment "a" (constant 3))))
                                  (Just
-                                   (Expression (Just (AST.Assignment "a" (Constant 4))))
+                                   (expression (Just (AST.assignment "a" (constant 4))))
                                  )
                                )
                                Nothing
                              )
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -1601,22 +1601,22 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (If
-                               (Constant 0)
-                               (If
-                                 (Constant 0)
-                                 (Expression (Just (AST.Assignment "a" (Constant 3))))
+                             (if_
+                               (constant 0)
+                               (if_
+                                 (constant 0)
+                                 (expression (Just (AST.assignment "a" (constant 3))))
                                  (Just
-                                   (Expression (Just (AST.Assignment "a" (Constant 4))))
+                                   (expression (Just (AST.assignment "a" (constant 4))))
                                  )
                                )
                                (Just
-                                 (Expression (Just (AST.Assignment "a" (Constant 1))))
+                                 (expression (Just (AST.assignment "a" (constant 1))))
                                )
                              )
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -1663,14 +1663,14 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
-                           , Declaration (Decl "b" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
+                           , Declaration (Decl "b" (Just (constant 0)))
                            , Statement
-                             (If (Reference "a")
-                                 (Expression (Just (AST.Assignment "b" (Constant 1))))
+                             (if_ (reference "a")
+                                 (expression (Just (AST.assignment "b" (constant 1))))
                                  Nothing
                              )
-                           , Statement (Return (Reference "b"))
+                           , Statement (return_ (reference "b"))
                            ]
                          )
                      ]
@@ -1709,14 +1709,14 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 1)))
-                           , Declaration (Decl "b" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 1)))
+                           , Declaration (Decl "b" (Just (constant 0)))
                            , Statement
-                             (If (Reference "a")
-                                 (Expression (Just (AST.Assignment "b" (Constant 1))))
+                             (if_ (reference "a")
+                                 (expression (Just (AST.assignment "b" (constant 1))))
                                  Nothing
                              )
-                           , Statement (Return (Reference "b"))
+                           , Statement (return_ (reference "b"))
                            ]
                          )
                      ]
@@ -1757,10 +1757,10 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 1)))
+                           [ Declaration (Decl "a" (Just (constant 1)))
                            , Statement
-                             (Compound [Declaration (Decl "a" (Just (Constant 2)))])
-                           , Statement (Compound [Statement (Return (Reference "a"))])
+                             (compound [Declaration (Decl "a" (Just (constant 2)))])
+                           , Statement (compound [Statement (return_ (reference "a"))])
                            ]
                          )
                      ]
@@ -1793,32 +1793,32 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 0)))
+                           [ Declaration (Decl "a" (Just (constant 0)))
                            , Statement
-                             (Compound
-                               [ Declaration (Decl "b" (Just (Constant 1)))
+                             (compound
+                               [ Declaration (Decl "b" (Just (constant 1)))
                                , Statement
-                                 (Expression (Just (AST.Assignment "a" (Reference "b"))))
+                                 (expression (Just (AST.assignment "a" (reference "b"))))
                                ]
                              )
                            , Statement
-                             (Compound
-                               [ Declaration (Decl "b" (Just (Constant 2)))
+                             (compound
+                               [ Declaration (Decl "b" (Just (constant 2)))
                                , Statement
-                                 (Expression
+                                 (expression
                                    (Just
-                                     (AST.Assignment
+                                     (AST.assignment
                                        "a"
-                                       (Binary AST.Addition
-                                               (Reference "a")
-                                               (Reference "b")
+                                       (binary AST.Addition
+                                               (reference "a")
+                                               (reference "b")
                                        )
                                      )
                                    )
                                  )
                                ]
                              )
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -1861,11 +1861,11 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "i" (Just (Constant 0)))
+                           [ Declaration (Decl "i" (Just (constant 0)))
                            , Statement
-                             (Compound [Declaration (Decl "a" (Just (Constant 2)))])
-                           , Declaration (Decl "b" (Just (Constant 3)))
-                           , Statement (Return (Reference "b"))
+                             (compound [Declaration (Decl "a" (Just (constant 2)))])
+                           , Declaration (Decl "b" (Just (constant 3)))
+                           , Statement (return_ (reference "b"))
                            ]
                          )
                      ]
@@ -1900,11 +1900,11 @@ spec = do
                          []
                          (Just
                            [ Statement
-                               (If
-                                 (Constant 5)
-                                 (Compound
-                                   [ Declaration (Decl "i" (Just (Constant 0)))
-                                   , Statement (Return (Reference "i"))
+                               (if_
+                                 (constant 5)
+                                 (compound
+                                   [ Declaration (Decl "i" (Just (constant 0)))
+                                   , Statement (return_ (reference "i"))
                                    ]
                                  )
                                  Nothing
@@ -1944,15 +1944,15 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 2)))
+                           [ Declaration (Decl "a" (Just (constant 2)))
                            , Statement
-                             (Compound
+                             (compound
                                [ Statement
-                                 (Expression (Just (AST.Assignment "a" (Constant 3))))
-                               , Declaration (Decl "a" (Just (Constant 0)))
+                                 (expression (Just (AST.assignment "a" (constant 3))))
+                               , Declaration (Decl "a" (Just (constant 0)))
                                ]
                              )
-                           , Statement (Return (Reference "a"))
+                           , Statement (return_ (reference "a"))
                            ]
                          )
                      ]
@@ -1986,18 +1986,18 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "a" (Just (Constant 2)))
+                           [ Declaration (Decl "a" (Just (constant 2)))
                            , Statement
-                             (If
-                               (Binary AST.LessThan (Reference "a") (Constant 3))
-                               (Compound
+                             (if_
+                               (binary AST.LessThan (reference "a") (constant 3))
+                               (compound
                                  [ Statement
-                                   (Compound
-                                     [ Declaration (Decl "a" (Just (Constant 3)))
-                                     , Statement (Return (Reference "a"))
+                                   (compound
+                                     [ Declaration (Decl "a" (Just (constant 3)))
+                                     , Statement (return_ (reference "a"))
                                      ]
                                    )
-                                 , Statement (Return (Reference "a"))
+                                 , Statement (return_ (reference "a"))
                                  ]
                                )
                                Nothing
@@ -2051,43 +2051,43 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "sum" (Just (Constant 0)))
+                           [ Declaration (Decl "sum" (Just (constant 0)))
                            , Statement
-                             (ForDecl
-                               (Decl "i" (Just (Constant 0)))
-                               (Binary AST.LessThan (Reference "i") (Constant 10))
+                             (forDecl
+                               (Decl "i" (Just (constant 0)))
+                               (binary AST.LessThan (reference "i") (constant 10))
                                (Just
-                                 (AST.Assignment
+                                 (AST.assignment
                                    "i"
-                                   (Binary AST.Addition (Reference "i") (Constant 1))
+                                   (binary AST.Addition (reference "i") (constant 1))
                                  )
                                )
-                               (Compound
+                               (compound
                                  [ Statement
-                                   (Expression
+                                   (expression
                                      (Just
-                                       (AST.Assignment
+                                       (AST.assignment
                                          "sum"
-                                         (Binary AST.Addition
-                                                 (Reference "sum")
-                                                 (Reference "i")
+                                         (binary AST.Addition
+                                                 (reference "sum")
+                                                 (reference "i")
                                          )
                                        )
                                      )
                                    )
                                  , Statement
-                                   (If
-                                     (Binary AST.GreaterThan
-                                             (Reference "sum")
-                                             (Constant 10)
+                                   (if_
+                                     (binary AST.GreaterThan
+                                             (reference "sum")
+                                             (constant 10)
                                      )
-                                     Break
+                                     AST.break
                                      Nothing
                                    )
                                  ]
                                )
                              )
-                           , Statement (Return (Reference "sum"))
+                           , Statement (return_ (reference "sum"))
                            ]
                          )
                      ]
@@ -2158,31 +2158,31 @@ spec = do
                          "main"
                          []
                          (Just
-                           [ Declaration (Decl "sum" (Just (Constant 0)))
+                           [ Declaration (Decl "sum" (Just (constant 0)))
                            , Statement
-                             (ForDecl
-                               (Decl "i" (Just (Constant 0)))
-                               (Binary AST.LessThan (Reference "i") (Constant 10))
+                             (forDecl
+                               (Decl "i" (Just (constant 0)))
+                               (binary AST.LessThan (reference "i") (constant 10))
                                (Just
-                                 (AST.Assignment
+                                 (AST.assignment
                                    "i"
-                                   (Binary AST.Addition (Reference "i") (Constant 1))
+                                   (binary AST.Addition (reference "i") (constant 1))
                                  )
                                )
-                               (Compound
+                               (compound
                                  [ Statement
-                                   (If (Binary Modulo (Reference "sum") (Constant 2))
-                                       Continue
+                                   (if_ (binary Modulo (reference "sum") (constant 2))
+                                       continue
                                        Nothing
                                    )
                                  , Statement
-                                   (Expression
+                                   (expression
                                      (Just
-                                       (AST.Assignment
+                                       (AST.assignment
                                          "sum"
-                                         (Binary AST.Addition
-                                                 (Reference "sum")
-                                                 (Reference "i")
+                                         (binary AST.Addition
+                                                 (reference "sum")
+                                                 (reference "i")
                                          )
                                        )
                                      )
@@ -2190,7 +2190,7 @@ spec = do
                                  ]
                                )
                              )
-                           , Statement (Return (Reference "sum"))
+                           , Statement (return_ (reference "sum"))
                            ]
                          )
                      ]
@@ -2264,8 +2264,8 @@ spec = do
               ["a", "b"]
               (Just
                 [ Statement
-                    (Return
-                      (Binary AST.Addition (Reference "a") (Reference "b"))
+                    (return_
+                      (binary AST.Addition (reference "a") (reference "b"))
                     )
                 ]
               )
@@ -2277,17 +2277,17 @@ spec = do
                   (Decl
                     "sum"
                     (Just
-                      (FunCall
+                      (funCall
                         "add"
-                        [ Binary AST.Addition (Constant 1) (Constant 2)
-                        , Constant 4
+                        [ binary AST.Addition (constant 1) (constant 2)
+                        , constant 4
                         ]
                       )
                     )
                   )
                 , Statement
-                  (Return
-                    (Binary AST.Addition (Reference "sum") (Reference "sum"))
+                  (return_
+                    (binary AST.Addition (reference "sum") (reference "sum"))
                   )
                 ]
               )
@@ -2345,8 +2345,8 @@ spec = do
             [ Function "foo" [] Nothing
             , Function "main"
                        []
-                       (Just [(Statement (Return (FunCall "foo" [])))])
-            , Function "foo" [] (Just [(Statement (Return (Constant 3)))])
+                       (Just [(Statement (return_ (funCall "foo" [])))])
+            , Function "foo" [] (Just [(Statement (return_ (constant 3)))])
             ]
           )
         `shouldBe` Right
