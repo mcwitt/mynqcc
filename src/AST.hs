@@ -5,10 +5,10 @@ module AST where
 import           Control.Arrow
 import           RecursionSchemes               ( Fix(Fix) )
 
-{-| AST elements are parametrized by the type of subexpressions to
-  "factor out" the recursion and allow use with recursion-schemes. To
-  represent arbitrarily-deep nesting of subexpressions, we use the
-  fixed-point functor, "Fix", e.g.
+{-| Recursive AST types like @Statement@ and @Expression@ are defined
+  as parametric types to "factor out" the recursion and allow use with
+  recursion-schemes. To represent arbitrarily-deep nesting of
+  subexpressions, we use the fixed-point functor, "Fix", e.g.
 
   >> type Program = Fix ProgF
 
