@@ -76,7 +76,8 @@ type AsmWriterM = MonadWriter Asm
 type GlobalStateM = MonadState GlobalState
 
 -- | Monad in which we generate Function nodes
-type FunctionGeneratorM m = (ConfigReaderM m, ErrorM m, AsmWriterM m, GlobalStateM m)
+type FunctionGeneratorM m
+  = (ConfigReaderM m, ErrorM m, AsmWriterM m, GlobalStateM m)
 
 type FunctionStateM = MonadState FunctionState
 type FunctionContextReaderM = MonadReader FunctionContext
@@ -84,7 +85,8 @@ type FunctionContextReaderM = MonadReader FunctionContext
 {-| Monad in which we generate Block nodes. Note that the global state
  accessible only through the Reader monad and thus can't be mutated.
 -}
-type BlockGeneratorM m = (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
+type BlockGeneratorM m
+  = (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
 
 -- | Top-level function to generate assembly code given an AST
 generate :: Target -> Program -> Either CodegenError Asm
@@ -110,9 +112,22 @@ genFunction (Function name params body) = do
         ++ name
         ++ "`"
       when (isJust body) $ if isDefined info
-        then throwError . CodegenError $ "Multiple definitions of function `" ++ name ++ "`"
-        else modify $ \c -> c { functions = Map.insert name (FunctionInfo True (length params)) funcs }
-    Nothing -> modify $ \c -> c { functions = Map.insert name (FunctionInfo (isJust body) (length params)) funcs }
+        then
+          throwError
+          .  CodegenError
+          $  "Multiple definitions of function `"
+          ++ name
+          ++ "`"
+        else modify $ \c -> c
+          { functions = Map.insert name
+                                   (FunctionInfo True (length params))
+                                   funcs
+          }
+    Nothing -> modify $ \c -> c
+      { functions = Map.insert name
+                               (FunctionInfo (isJust body) (length params))
+                               funcs
+      }
   case body of
     Just body -> do
       config <- ask
@@ -121,7 +136,7 @@ genFunction (Function name params body) = do
           context   = FunctionContext { config              = config
                                       , globalState         = globalState
                                       , currentFunctionName = name
-                                      , params              = Set.fromList params
+                                      , params = Set.fromList params
                                       }
       emit $ ".globl " ++ symbol
       emit $ symbol ++ ":"
@@ -130,13 +145,14 @@ genFunction (Function name params body) = do
       let inner = genBlock $ f name body
           f "main" []    = [Statement . return_ . constant $ 0]
           f _      items = items
-          initialState = FunctionState { labelCount = 0
-                                       , stackIndex = -4
-                                       , varMap     = Map.fromList $ zip params [8, 12 ..]
-                                       , localVars  = Set.fromList params
-                                       , breakTo    = Nothing
-                                       , continueTo = Nothing
-                                       }
+          initialState = FunctionState
+            { labelCount = 0
+            , stackIndex = -4
+            , varMap     = Map.fromList $ zip params [8, 12 ..]
+            , localVars  = Set.fromList params
+            , breakTo    = Nothing
+            , continueTo = Nothing
+            }
       evalStateT (runReaderT inner context) initialState
       emit $ "_" ++ name ++ "__end:"
       emit "movl %ebp, %esp"
@@ -184,8 +200,10 @@ genDeclaration (Decl name maybeExpr) = do
   emit "push %eax"
   sidx <- gets stackIndex
   vmap <- gets varMap
-  modify
-    $ \c -> c { stackIndex = stackIndex c - 4, varMap = Map.insert name sidx vmap, localVars = Set.insert name vars }
+  modify $ \c -> c { stackIndex = stackIndex c - 4
+                   , varMap     = Map.insert name sidx vmap
+                   , localVars  = Set.insert name vars
+                   }
 
 genStatement :: BlockGeneratorM m => Statement -> m ()
 genStatement = cata alg
@@ -225,7 +243,8 @@ genStatement = cata alg
       labelEnd <- label "while_end"
       emit $ "je " ++ labelEnd
       withNestedContext $ do
-        modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelBegin }
+        modify
+          $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelBegin }
         stat
       emit $ "jmp " ++ labelBegin
       emit $ labelEnd ++ ":"
@@ -235,7 +254,8 @@ genStatement = cata alg
       emit $ labelBegin ++ ":"
       labelEnd <- label "do_end"
       withNestedContext $ do
-        modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelBegin }
+        modify
+          $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelBegin }
         stat
       genExpression expr
       emit "cmpl $0, %eax"
@@ -247,7 +267,8 @@ genStatement = cata alg
       forM_ maybeInit genExpression
       (labelBegin, labelEnd, labelPost) <- genForBody cond
       withNestedContext $ do
-        modify $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelPost }
+        modify
+          $ \c -> c { breakTo = Just labelEnd, continueTo = Just labelPost }
         stat
       emit $ labelPost ++ ":"
       forM_ maybePost genExpression
@@ -275,8 +296,9 @@ genStatement = cata alg
     Continue -> do
       maybeLabel <- gets continueTo
       case maybeLabel of
-        Just l  -> emit $ "jmp " ++ l
-        Nothing -> throwError $ CodegenError "Found `continue` outside of a loop."
+        Just l -> emit $ "jmp " ++ l
+        Nothing ->
+          throwError $ CodegenError "Found `continue` outside of a loop."
 
 genForBody :: BlockGeneratorM m => Expression -> m (String, String, String)
 genForBody cond = do
@@ -291,119 +313,129 @@ genForBody cond = do
 
 genExpression :: BlockGeneratorM m => Expression -> m ()
 genExpression = cata alg
-  where
-    alg :: BlockGeneratorM m => ExprF (m ()) -> m ()
-    alg = \case
+ where
+  alg :: BlockGeneratorM m => ExprF (m ()) -> m ()
+  alg = \case
 
-      Constant i           -> emit $ "movl $" ++ show i ++ ", %eax"
+    Constant i           -> emit $ "movl $" ++ show i ++ ", %eax"
 
-      Assignment name expr -> do
-        expr
-        vmap <- gets varMap
-        case Map.lookup name vmap of
-          Just offset -> emit $ "movl %eax, " ++ show offset ++ "(%ebp)"
-          Nothing     -> throwError . CodegenError $ "Assignment to undeclared variable, `" ++ name ++ "`."
+    Assignment name expr -> do
+      expr
+      vmap <- gets varMap
+      case Map.lookup name vmap of
+        Just offset -> emit $ "movl %eax, " ++ show offset ++ "(%ebp)"
+        Nothing ->
+          throwError
+            .  CodegenError
+            $  "Assignment to undeclared variable, `"
+            ++ name
+            ++ "`."
 
-      Reference name -> do
-        vmap <- gets varMap
-        case Map.lookup name vmap of
-          Just offset -> emit $ "movl " ++ show offset ++ "(%ebp), %eax"
-          Nothing     -> throwError . CodegenError $ "Reference to undeclared variable, `" ++ name ++ "`."
-    
-      Unary op expr -> do
-        expr
-        case op of
-          Negation          -> emit "neg %eax"
-          BitwiseComplement -> emit "not %eax"
-          LogicalNegation   -> do
-            emit "cmpl $0, %eax"
-            emit "movl $0, %eax"
-            emit "sete %al"
-    
-      {- General strategy for evaluating binary operators on sub-expressions e1, e2:
+    Reference name -> do
+      vmap <- gets varMap
+      case Map.lookup name vmap of
+        Just offset -> emit $ "movl " ++ show offset ++ "(%ebp), %eax"
+        Nothing ->
+          throwError
+            .  CodegenError
+            $  "Reference to undeclared variable, `"
+            ++ name
+            ++ "`."
+
+    Unary op expr -> do
+      expr
+      case op of
+        Negation          -> emit "neg %eax"
+        BitwiseComplement -> emit "not %eax"
+        LogicalNegation   -> do
+          emit "cmpl $0, %eax"
+          emit "movl $0, %eax"
+          emit "sete %al"
+
+    {- General strategy for evaluating binary operators on sub-expressions e1, e2:
          1. Evaluate e1, push result onto the stack
          2. Evaluate e2
          3. Pop the result of e1 back into a register
          4. Perform the binary operation on e1, e2 -}
-      Binary op e1 e2 -> do
-        e2
-        emit "push %eax"
-        e1
-        emit "pop %ecx"
-        case op of
-          Addition       -> emit "addl %ecx, %eax"
-          Subtraction    -> emit "subl %ecx, %eax"
-          Multiplication -> emit "imul %ecx, %eax"
-          Division       -> do
-            emit "movl $0, %edx"
-            emit "idivl %ecx"
-          Modulo -> do
-            emit "movl $0, %edx"
-            emit "idivl %ecx"
-            emit "movl %edx, %eax"
-          Equality -> do
-            emit "cmpl %ecx, %eax"
-            emit "movl $0, %eax"
-            emit "sete %al"
-          Inequality -> do
-            emit "cmpl %ecx, %eax"
-            emit "movl $0, %eax"
-            emit "setne %al"
-          LessThan -> do
-            emit "cmpl %ecx, %eax"
-            emit "movl $0, %eax"
-            emit "setl %al"
-          GreaterThan -> do
-            emit "cmpl %ecx, %eax"
-            emit "movl $0, %eax"
-            emit "setg %al"
-          LessEqual -> do
-            emit "cmpl %ecx, %eax"
-            emit "movl $0, %eax"
-            emit "setle %al"
-          GreaterEqual -> do
-            emit "cmpl %ecx, %eax"
-            emit "movl $0, %eax"
-            emit "setge %al"
-          LogicalOr -> do
-            emit "orl %ecx, %eax"
-            emit "movl $0, %eax"
-            emit "setne %al"
-          LogicalAnd -> do
-            emit "cmpl $0, %ecx"
-            emit "setne %cl"
-            emit "cmpl $0, %eax"
-            emit "movl $0, %eax"
-            emit "setne %al"
-            emit "andb %cl, %al"
-    
-      Conditional e1 e2 e3 -> do
-        e1
-        emit "cmpl $0, %eax"
-        labelE3 <- label "e3"
-        emit $ "je " ++ labelE3
-        e2
-        labelPostCond <- label "post_conditional"
-        emit $ "jmp " ++ labelPostCond
-        emit $ labelE3 ++ ":"
-        e3
-        emit $ labelPostCond ++ ":"
-    
-      FunCall name args -> do
-        info <- asks $ Map.lookup name . functions . globalState
-        case info of
-          Just info ->
-            when (length args /= numArgs info)
-              $  throwError
-              .  CodegenError
-              $  "Function `"
-              ++ name
-              ++ "` called with wrong number of arguments"
-          Nothing -> return ()
-        Target os <- asks $ target . config
-        mapM_ (\expr -> expr >> emit "push %eax") $ reverse args
-        emit $ "call " ++ symbolName os name
-        emit $ "add $0x" ++ showHex (length args * 4) "" ++ ", %esp"
+    Binary op e1 e2 -> do
+      e2
+      emit "push %eax"
+      e1
+      emit "pop %ecx"
+      case op of
+        Addition       -> emit "addl %ecx, %eax"
+        Subtraction    -> emit "subl %ecx, %eax"
+        Multiplication -> emit "imul %ecx, %eax"
+        Division       -> do
+          emit "movl $0, %edx"
+          emit "idivl %ecx"
+        Modulo -> do
+          emit "movl $0, %edx"
+          emit "idivl %ecx"
+          emit "movl %edx, %eax"
+        Equality -> do
+          emit "cmpl %ecx, %eax"
+          emit "movl $0, %eax"
+          emit "sete %al"
+        Inequality -> do
+          emit "cmpl %ecx, %eax"
+          emit "movl $0, %eax"
+          emit "setne %al"
+        LessThan -> do
+          emit "cmpl %ecx, %eax"
+          emit "movl $0, %eax"
+          emit "setl %al"
+        GreaterThan -> do
+          emit "cmpl %ecx, %eax"
+          emit "movl $0, %eax"
+          emit "setg %al"
+        LessEqual -> do
+          emit "cmpl %ecx, %eax"
+          emit "movl $0, %eax"
+          emit "setle %al"
+        GreaterEqual -> do
+          emit "cmpl %ecx, %eax"
+          emit "movl $0, %eax"
+          emit "setge %al"
+        LogicalOr -> do
+          emit "orl %ecx, %eax"
+          emit "movl $0, %eax"
+          emit "setne %al"
+        LogicalAnd -> do
+          emit "cmpl $0, %ecx"
+          emit "setne %cl"
+          emit "cmpl $0, %eax"
+          emit "movl $0, %eax"
+          emit "setne %al"
+          emit "andb %cl, %al"
+
+    Conditional e1 e2 e3 -> do
+      e1
+      emit "cmpl $0, %eax"
+      labelE3 <- label "e3"
+      emit $ "je " ++ labelE3
+      e2
+      labelPostCond <- label "post_conditional"
+      emit $ "jmp " ++ labelPostCond
+      emit $ labelE3 ++ ":"
+      e3
+      emit $ labelPostCond ++ ":"
+
+    FunCall name args -> do
+      info <- asks $ Map.lookup name . functions . globalState
+      case info of
+        Just info ->
+          when (length args /= numArgs info)
+            $  throwError
+            .  CodegenError
+            $  "Function `"
+            ++ name
+            ++ "` called with wrong number of arguments"
+        Nothing -> return ()
+      Target os <- asks $ target . config
+      mapM_ (\expr -> expr >> emit "push %eax") $ reverse args
+      emit $ "call " ++ symbolName os name
+      emit $ "add $0x" ++ showHex (length args * 4) "" ++ ", %esp"
 
 label :: (FunctionContextReaderM m, FunctionStateM m) => String -> m String
 label s = do

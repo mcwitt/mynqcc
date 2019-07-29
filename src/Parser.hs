@@ -6,7 +6,7 @@ module Parser
   )
 where
 
-import qualified          AST
+import qualified AST
 import           Control.Monad
 import           Data.Functor
 import           Data.Maybe
@@ -73,7 +73,8 @@ ifStatement =
     (atom KWElse *> statement)
 
 returnStatement :: Parser Token AST.Statement
-returnStatement = AST.return_ <$> (atom KWReturn *> expression <* atom Semicolon)
+returnStatement =
+  AST.return_ <$> (atom KWReturn *> expression <* atom Semicolon)
 
 standaloneExpr :: Parser Token AST.Statement
 standaloneExpr = AST.expression <$> (optional expression <* atom Semicolon)
@@ -190,7 +191,8 @@ logicalNegation =
 
 -- Binary operators
 
-multiplication :: Parser Token (AST.Expression -> AST.Expression -> AST.Expression)
+multiplication
+  :: Parser Token (AST.Expression -> AST.Expression -> AST.Expression)
 multiplication = AST.binary AST.Multiplication <$ atom Token.Multiplication
 
 division = AST.binary AST.Division <$ atom Token.Division
