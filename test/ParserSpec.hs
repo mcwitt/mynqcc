@@ -4,7 +4,6 @@ module ParserSpec
 where
 
 import           AST
-import           Error
 import           Parser
 import           Test.Hspec                     ( Spec
                                                 , describe

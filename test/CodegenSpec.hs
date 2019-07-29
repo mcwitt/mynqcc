@@ -5,7 +5,6 @@ where
 
 import           AST
 import           Codegen
-import           Error                          ( Error(CodegenError) )
 import           Parser
 import           Target
 import           Test.Hspec                     ( Spec

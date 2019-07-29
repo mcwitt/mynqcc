@@ -25,6 +25,7 @@ stack index and map of local variables to their location on the stack.
 
 module Codegen
   ( generate
+  , CodegenError(CodegenError)
   )
 where
 import           AST
@@ -37,7 +38,6 @@ import qualified Data.Map                      as Map
 import           Data.Maybe                     ( isJust )
 import qualified Data.Set                      as Set
 import           Numeric                        ( showHex )
-import           Error
 import           Target
 import           RecursionSchemes               ( cata )
 
@@ -68,8 +68,10 @@ data FunctionContext =
                   , params              :: Set.Set String
                   }
 
+newtype CodegenError = CodegenError String deriving (Eq, Show)
+
 type ConfigReaderM = MonadReader Config
-type ErrorM = MonadError Error
+type ErrorM = MonadError CodegenError
 type AsmWriterM = MonadWriter Asm
 type GlobalStateM = MonadState GlobalState
 
@@ -85,9 +87,10 @@ type FunctionContextReaderM = MonadReader FunctionContext
 type BlockGeneratorM m = (FunctionContextReaderM m, ErrorM m, AsmWriterM m, FunctionStateM m)
 
 -- | Top-level function to generate assembly code given an AST
-generate :: Target -> Program -> Either Error Asm
-generate target prog = runExcept . execWriterT $ runReaderT (evalStateT (genProgram prog) initialState)
-                                                            Config { target = target }
+generate :: Target -> Program -> Either CodegenError Asm
+generate target prog = runExcept . execWriterT $ runReaderT
+  (evalStateT (genProgram prog) initialState)
+  Config { target = target }
   where initialState = GlobalState { functions = Map.empty }
 
 genProgram :: FunctionGeneratorM m => Program -> m ()

@@ -2,6 +2,7 @@
 
 module Parser
   ( parseTokens
+  , ParserError(ParserError)
   )
 where
 
@@ -9,11 +10,12 @@ import qualified          AST
 import           Control.Monad
 import           Data.Functor
 import           Data.Maybe
-import           Error
 import           ParserCombinators
 import           Token
 
-parseTokens :: [Token] -> Either Error AST.Program
+newtype ParserError = ParserError String deriving (Eq, Show)
+
+parseTokens :: [Token] -> Either ParserError AST.Program
 parseTokens ts = case parse program ts of
   [(res, [])] -> Right res
   _           -> Left $ ParserError "Failed to parse the program."

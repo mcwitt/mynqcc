@@ -1,15 +1,17 @@
 module Lexer
   ( lexString
+  , LexerError(LexerError)
   )
 where
 
 import           Control.Monad                  ( void )
 import           Data.Char
-import           Error
 import           ParserCombinators
 import           Token
 
-lexString :: String -> Either Error [Token]
+newtype LexerError = LexerError String deriving (Eq, Show)
+
+lexString :: String -> Either LexerError [Token]
 lexString st = case parse lexer st of
   [(res, [])] -> Right res
   _           -> Left $ LexerError "Failed to lex the program."
