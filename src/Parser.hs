@@ -5,7 +5,7 @@ module Parser
   )
 where
 
-import qualified          AST
+import qualified AST
 import           Control.Monad
 import           Data.Functor
 import           Data.Maybe
@@ -71,7 +71,8 @@ ifStatement =
     (atom KWElse *> statement)
 
 returnStatement :: Parser Token AST.Statement
-returnStatement = AST.return_ <$> (atom KWReturn *> expression <* atom Semicolon)
+returnStatement =
+  AST.return_ <$> (atom KWReturn *> expression <* atom Semicolon)
 
 standaloneExpr :: Parser Token AST.Statement
 standaloneExpr = AST.expression <$> (optional expression <* atom Semicolon)
@@ -84,7 +85,7 @@ forStatement =
   (\(init, cond, post) body -> AST.for init cond post body)
     <$  atom KWFor
     <*> parenthesized
-          (   tuple3
+          (   (,,)
           <$> optional expression
           <*  atom Semicolon
           <*> (expression <|> pure (AST.constant 1))
@@ -98,7 +99,7 @@ forDeclStatement =
   (\(init, cond, post) body -> AST.forDecl init cond post body)
     <$  atom KWFor
     <*> parenthesized
-          (   tuple3
+          (   (,,)
           <$> declaration
           <*> (expression <|> pure (AST.constant 1))
           <*  atom Semicolon
@@ -140,7 +141,7 @@ conditionalExpr =
     )
     <$> logicalOrExpr
     <*> optional
-          (   tuple2
+          (   (,)
           <$  atom QuestionMark
           <*> expression
           <*  atom Colon
@@ -188,7 +189,8 @@ logicalNegation =
 
 -- Binary operators
 
-multiplication :: Parser Token (AST.Expression -> AST.Expression -> AST.Expression)
+multiplication
+  :: Parser Token (AST.Expression -> AST.Expression -> AST.Expression)
 multiplication = AST.binary AST.Multiplication <$ atom Token.Multiplication
 
 division = AST.binary AST.Division <$ atom Token.Division
@@ -235,9 +237,3 @@ parenthesized = surrounded (atom OpenParen) (atom CloseParen)
 
 braced :: Parser Token a -> Parser Token a
 braced = surrounded (atom OpenBrace) (atom CloseBrace)
-
-tuple2 :: a -> b -> (a, b)
-tuple2 x y = (x, y)
-
-tuple3 :: a -> b -> c -> (a, b, c)
-tuple3 x y z = (x, y, z)
