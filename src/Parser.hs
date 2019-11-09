@@ -86,7 +86,7 @@ forStatement =
   (\(init, cond, post) body -> For init cond post body)
     <$  atom KWFor
     <*> parenthesized
-          (   tuple3
+          (   (,,)
           <$> optional expression
           <*  atom Semicolon
           <*> (expression <|> pure (Constant 1))
@@ -100,7 +100,7 @@ forDeclStatement =
   (\(init, cond, post) body -> ForDecl init cond post body)
     <$  atom KWFor
     <*> parenthesized
-          (   tuple3
+          (   (,,)
           <$> declaration
           <*> (expression <|> pure (Constant 1))
           <*  atom Semicolon
@@ -143,7 +143,7 @@ conditionalExpr =
     )
     <$> logicalOrExpr
     <*> optional
-          (   tuple2
+          (   (,)
           <$  atom QuestionMark
           <*> expression
           <*  atom Colon
@@ -242,9 +242,3 @@ parenthesized = surrounded (atom OpenParen) (atom CloseParen)
 
 braced :: Parser Token a -> Parser Token a
 braced = surrounded (atom OpenBrace) (atom CloseBrace)
-
-tuple2 :: a -> b -> (a, b)
-tuple2 x y = (x, y)
-
-tuple3 :: a -> b -> c -> (a, b, c)
-tuple3 x y z = (x, y, z)
